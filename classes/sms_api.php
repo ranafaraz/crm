@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -104,7 +104,7 @@ class sms_api extends DbTable
 		$this->fields['sms_api_mask'] = &$this->sms_api_mask;
 
 		// sms_api_reg_date
-		$this->sms_api_reg_date = new DbField('sms_api', 'sms_api', 'x_sms_api_reg_date', 'sms_api_reg_date', '`sms_api_reg_date`', CastDateFieldForLike("`sms_api_reg_date`", 0, "DB"), 133, 10, 0, FALSE, '`sms_api_reg_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->sms_api_reg_date = new DbField('sms_api', 'sms_api', 'x_sms_api_reg_date', 'sms_api_reg_date', '`sms_api_reg_date`', CastDateFieldForLike("`sms_api_reg_date`", 2, "DB"), 133, 10, 2, FALSE, '`sms_api_reg_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->sms_api_reg_date->Nullable = FALSE; // NOT NULL field
 		$this->sms_api_reg_date->Required = TRUE; // Required field
 		$this->sms_api_reg_date->Sortable = TRUE; // Allow sort
@@ -112,7 +112,7 @@ class sms_api extends DbTable
 		$this->fields['sms_api_reg_date'] = &$this->sms_api_reg_date;
 
 		// sms_api_expiry_date
-		$this->sms_api_expiry_date = new DbField('sms_api', 'sms_api', 'x_sms_api_expiry_date', 'sms_api_expiry_date', '`sms_api_expiry_date`', CastDateFieldForLike("`sms_api_expiry_date`", 0, "DB"), 133, 10, 0, FALSE, '`sms_api_expiry_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->sms_api_expiry_date = new DbField('sms_api', 'sms_api', 'x_sms_api_expiry_date', 'sms_api_expiry_date', '`sms_api_expiry_date`', CastDateFieldForLike("`sms_api_expiry_date`", 2, "DB"), 133, 10, 2, FALSE, '`sms_api_expiry_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->sms_api_expiry_date->Nullable = FALSE; // NOT NULL field
 		$this->sms_api_expiry_date->Required = TRUE; // Required field
 		$this->sms_api_expiry_date->Sortable = TRUE; // Allow sort
@@ -747,6 +747,7 @@ class sms_api extends DbTable
 		// sms_api_id
 
 		$this->sms_api_id->ViewValue = $this->sms_api_id->CurrentValue;
+		$this->sms_api_id->CssClass = "font-weight-bold";
 		$this->sms_api_id->ViewCustomAttributes = "";
 
 		// sms_api_user
@@ -767,12 +768,12 @@ class sms_api extends DbTable
 
 		// sms_api_reg_date
 		$this->sms_api_reg_date->ViewValue = $this->sms_api_reg_date->CurrentValue;
-		$this->sms_api_reg_date->ViewValue = FormatDateTime($this->sms_api_reg_date->ViewValue, 0);
+		$this->sms_api_reg_date->ViewValue = FormatDateTime($this->sms_api_reg_date->ViewValue, 2);
 		$this->sms_api_reg_date->ViewCustomAttributes = "";
 
 		// sms_api_expiry_date
 		$this->sms_api_expiry_date->ViewValue = $this->sms_api_expiry_date->CurrentValue;
-		$this->sms_api_expiry_date->ViewValue = FormatDateTime($this->sms_api_expiry_date->ViewValue, 0);
+		$this->sms_api_expiry_date->ViewValue = FormatDateTime($this->sms_api_expiry_date->ViewValue, 2);
 		$this->sms_api_expiry_date->ViewCustomAttributes = "";
 
 		// sms_api_total_sms
@@ -839,6 +840,7 @@ class sms_api extends DbTable
 		$this->sms_api_id->EditAttrs["class"] = "form-control";
 		$this->sms_api_id->EditCustomAttributes = "";
 		$this->sms_api_id->EditValue = $this->sms_api_id->CurrentValue;
+		$this->sms_api_id->CssClass = "font-weight-bold";
 		$this->sms_api_id->ViewCustomAttributes = "";
 
 		// sms_api_user
@@ -876,13 +878,13 @@ class sms_api extends DbTable
 		// sms_api_reg_date
 		$this->sms_api_reg_date->EditAttrs["class"] = "form-control";
 		$this->sms_api_reg_date->EditCustomAttributes = "";
-		$this->sms_api_reg_date->EditValue = FormatDateTime($this->sms_api_reg_date->CurrentValue, 8);
+		$this->sms_api_reg_date->EditValue = FormatDateTime($this->sms_api_reg_date->CurrentValue, 2);
 		$this->sms_api_reg_date->PlaceHolder = RemoveHtml($this->sms_api_reg_date->caption());
 
 		// sms_api_expiry_date
 		$this->sms_api_expiry_date->EditAttrs["class"] = "form-control";
 		$this->sms_api_expiry_date->EditCustomAttributes = "";
-		$this->sms_api_expiry_date->EditValue = FormatDateTime($this->sms_api_expiry_date->CurrentValue, 8);
+		$this->sms_api_expiry_date->EditValue = FormatDateTime($this->sms_api_expiry_date->CurrentValue, 2);
 		$this->sms_api_expiry_date->PlaceHolder = RemoveHtml($this->sms_api_expiry_date->caption());
 
 		// sms_api_total_sms

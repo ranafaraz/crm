@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -678,6 +678,7 @@ class country extends DbTable
 		// country_id
 
 		$this->country_id->ViewValue = $this->country_id->CurrentValue;
+		$this->country_id->CssClass = "font-weight-bold";
 		$this->country_id->ViewCustomAttributes = "";
 
 		// country_name
@@ -713,6 +714,7 @@ class country extends DbTable
 		$this->country_id->EditAttrs["class"] = "form-control";
 		$this->country_id->EditCustomAttributes = "";
 		$this->country_id->EditValue = $this->country_id->CurrentValue;
+		$this->country_id->CssClass = "font-weight-bold";
 		$this->country_id->ViewCustomAttributes = "";
 
 		// country_name

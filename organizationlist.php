@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $organization_list = new organization_list();
 $organization_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $organization_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$organization_list->isExport() && !$organization->CurrentAction) { ?>
 <form name="forganizationlistsrch" id="forganizationlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="forganizationlistsrch-search-panel" class="<?php echo $organization_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $organization_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $organization_list->showPageHeader(); ?>
 <?php
 $organization_list->showMessage();
 ?>
 <?php if ($organization_list->TotalRecords > 0 || $organization->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($organization_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> organization">
+<?php if (!$organization_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$organization_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $organization_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $organization_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="forganizationlist" id="forganizationlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -347,7 +363,7 @@ $organization_list->ListOptions->render("body", "left", $organization_list->RowC
 	<?php if ($organization_list->org_logo->Visible) { // org_logo ?>
 		<td data-name="org_logo" <?php echo $organization_list->org_logo->cellAttributes() ?>>
 <span id="el<?php echo $organization_list->RowCount ?>_organization_org_logo">
-<span<?php echo $organization_list->org_logo->viewAttributes() ?>><?php echo $organization_list->org_logo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($organization_list->org_logo, $organization_list->org_logo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	<?php } ?>

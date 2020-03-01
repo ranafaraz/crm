@@ -854,102 +854,67 @@
     <phrase id="thisyear" value="This year" />
   </global>
   <project>
-    <phrase id="footertext" value="&amp;copy;2019 e.World Technology Ltd. All rights reserved." />
-    <menu id="1">
-      <phrase id="menutext" value="acc head" />
-    </menu>
-    <menu id="2">
-      <phrase id="menutext" value="acc nature" />
-    </menu>
-    <menu id="3">
-      <phrase id="menutext" value="acc transaction" />
-    </menu>
-    <menu id="4">
-      <phrase id="menutext" value="branch" />
-    </menu>
-    <menu id="5">
-      <phrase id="menutext" value="business" />
-    </menu>
-    <menu id="6">
-      <phrase id="menutext" value="business nature" />
-    </menu>
-    <menu id="7">
-      <phrase id="menutext" value="business status" />
-    </menu>
-    <menu id="8">
-      <phrase id="menutext" value="business type" />
-    </menu>
-    <menu id="9">
-      <phrase id="menutext" value="city" />
-    </menu>
-    <menu id="10">
-      <phrase id="menutext" value="country" />
+    <phrase id="bodytitle" value="DEXDEVS" />
+    <phrase id="footertext" value="&amp;copy;2020 DEXDEVS. All Rights Reserved." />
+    <menu id="16">
+      <phrase id="menutext" value="Followup" />
     </menu>
     <menu id="11">
-      <phrase id="menutext" value="cus support" />
+      <phrase id="menutext" value="Customer Support" />
     </menu>
-    <menu id="12">
-      <phrase id="menutext" value="designation" />
+    <menu id="5">
+      <phrase id="menutext" value="Businesses" />
     </menu>
-    <menu id="13">
-      <phrase id="menutext" value="district" />
+    <menu id="6">
+      <phrase id="menutext" value="Business Nature" />
     </menu>
-    <menu id="14">
-      <phrase id="menutext" value="division" />
+    <menu id="7">
+      <phrase id="menutext" value="Business Status" />
     </menu>
-    <menu id="15">
-      <phrase id="menutext" value="employees" />
-    </menu>
-    <menu id="16">
-      <phrase id="menutext" value="followup" />
-    </menu>
-    <menu id="17">
-      <phrase id="menutext" value="followup no" />
-    </menu>
-    <menu id="18">
-      <phrase id="menutext" value="invoices" />
-    </menu>
-    <menu id="19">
-      <phrase id="menutext" value="organization" />
-    </menu>
-    <menu id="20">
-      <phrase id="menutext" value="quotation" />
-    </menu>
-    <menu id="21">
-      <phrase id="menutext" value="reference letter" />
-    </menu>
-    <menu id="22">
-      <phrase id="menutext" value="referral" />
-    </menu>
-    <menu id="23">
-      <phrase id="menutext" value="services" />
+    <menu id="8">
+      <phrase id="menutext" value="Business Type" />
     </menu>
     <menu id="24">
-      <phrase id="menutext" value="services availed by customer" />
+      <phrase id="menutext" value="Service Activation" />
     </menu>
-    <menu id="25">
-      <phrase id="menutext" value="sms api" />
+    <menu id="23">
+      <phrase id="menutext" value="Services" />
     </menu>
-    <menu id="26">
-      <phrase id="menutext" value="sms log" />
+    <menu id="22">
+      <phrase id="menutext" value="Referrals" />
     </menu>
-    <menu id="27">
-      <phrase id="menutext" value="sms package" />
+    <menu id="18">
+      <phrase id="menutext" value="Invoices" />
+    </menu>
+    <menu id="20">
+      <phrase id="menutext" value="Quotation" />
+    </menu>
+    <menu id="21">
+      <phrase id="menutext" value="Reference Letters" />
+    </menu>
+    <menu id="15">
+      <phrase id="menutext" value="Employees" />
+    </menu>
+    <menu id="38">
+      <phrase id="menutext" value="SMS" />
     </menu>
     <menu id="28">
-      <phrase id="menutext" value="sms template" />
+      <phrase id="menutext" value="SMS Templates" />
     </menu>
-    <menu id="29">
-      <phrase id="menutext" value="state" />
+    <menu id="25">
+      <phrase id="menutext" value="SMS APIs" />
     </menu>
-    <menu id="30">
-      <phrase id="menutext" value="tehsil" />
+    <menu id="27">
+      <phrase id="menutext" value="SMS Packages" />
+    </menu>
+    <menu id="26">
+      <phrase id="menutext" value="SMS Logs" />
     </menu>
     <menu id="31">
-      <phrase id="menutext" value="user" />
+      <phrase id="menutext" value="Users" />
     </menu>
     <menu id="32">
-      <phrase id="menutext" value="user type" />
+      <phrase id="menutext" value="User Type" />
     </menu>
     <menu id="33">
       <phrase id="menutext" value="userlevelpermissions" />
@@ -957,211 +922,262 @@
     <menu id="34">
       <phrase id="menutext" value="userlevels" />
     </menu>
+    <menu id="35">
+      <phrase id="menutext" value="Accounts" />
+    </menu>
+    <menu id="1">
+      <phrase id="menutext" value="Account Head" />
+    </menu>
+    <menu id="2">
+      <phrase id="menutext" value="Account Nature" />
+    </menu>
+    <menu id="3">
+      <phrase id="menutext" value="Account Transactions" />
+    </menu>
+    <menu id="36">
+      <phrase id="menutext" value="Settings" />
+    </menu>
+    <menu id="19">
+      <phrase id="menutext" value="Organization" />
+    </menu>
+    <menu id="4">
+      <phrase id="menutext" value="Branch" />
+    </menu>
+    <menu id="12">
+      <phrase id="menutext" value="Designation" />
+    </menu>
+    <menu id="37">
+      <phrase id="menutext" value="Location" />
+    </menu>
+    <menu id="10">
+      <phrase id="menutext" value="Country" />
+    </menu>
+    <menu id="29">
+      <phrase id="menutext" value="State" />
+    </menu>
+    <menu id="14">
+      <phrase id="menutext" value="Division" />
+    </menu>
+    <menu id="13">
+      <phrase id="menutext" value="District" />
+    </menu>
+    <menu id="30">
+      <phrase id="menutext" value="Tehsil" />
+    </menu>
+    <menu id="9">
+      <phrase id="menutext" value="City" />
+    </menu>
+    <menu id="17">
+      <phrase id="menutext" value="Followup #" />
+    </menu>
     <table id="acc_head">
-      <phrase id="tblcaption" value="acc head" />
+      <phrase id="tblcaption" value="Account Head" />
       <field id="acc_head_id">
-        <phrase id="fldcaption" value="acc head id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="acc_head_acc_nature_id">
-        <phrase id="fldcaption" value="acc head acc nature id" />
+        <phrase id="fldcaption" value="Nature" />
       </field>
       <field id="acc_head_caption">
-        <phrase id="fldcaption" value="acc head caption" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="acc_head_desc">
-        <phrase id="fldcaption" value="acc head desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="acc_nature">
-      <phrase id="tblcaption" value="acc nature" />
+      <phrase id="tblcaption" value="Account Nature" />
       <field id="acc_nature_id">
-        <phrase id="fldcaption" value="acc nature id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="acc_nature_name">
-        <phrase id="fldcaption" value="acc nature name" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="acc_nature_desc">
-        <phrase id="fldcaption" value="acc nature desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="acc_transaction">
-      <phrase id="tblcaption" value="acc transaction" />
+      <phrase id="tblcaption" value="Account Transactions" />
       <field id="acc_trans_id">
-        <phrase id="fldcaption" value="acc trans id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="acc_trans_branch_id">
-        <phrase id="fldcaption" value="acc trans branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="acc_trans_acc_head_id">
-        <phrase id="fldcaption" value="acc trans acc head id" />
+        <phrase id="fldcaption" value="Acc Head" />
       </field>
       <field id="acc_trans_narration">
-        <phrase id="fldcaption" value="acc trans narration" />
+        <phrase id="fldcaption" value="Narration" />
       </field>
       <field id="acc_trans_amount">
-        <phrase id="fldcaption" value="acc trans amount" />
+        <phrase id="fldcaption" value="Amount" />
       </field>
       <field id="acc_trans_date">
-        <phrase id="fldcaption" value="acc trans date" />
+        <phrase id="fldcaption" value="Date" />
       </field>
     </table>
     <table id="branch">
-      <phrase id="tblcaption" value="branch" />
+      <phrase id="tblcaption" value="Branch" />
       <field id="branch_id">
-        <phrase id="fldcaption" value="branch id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="branch_org_id">
-        <phrase id="fldcaption" value="branch org id" />
+        <phrase id="fldcaption" value="Organization" />
       </field>
       <field id="branch_name">
-        <phrase id="fldcaption" value="branch name" />
+        <phrase id="fldcaption" value="Branch Name" />
       </field>
       <field id="branch_manager">
-        <phrase id="fldcaption" value="branch manager" />
+        <phrase id="fldcaption" value="Manager" />
       </field>
       <field id="branch_contact">
-        <phrase id="fldcaption" value="branch contact" />
+        <phrase id="fldcaption" value="Contact #" />
       </field>
       <field id="branch_address">
-        <phrase id="fldcaption" value="branch address" />
+        <phrase id="fldcaption" value="Address" />
       </field>
     </table>
     <table id="business">
-      <phrase id="tblcaption" value="business" />
+      <phrase id="tblcaption" value="Businesses" />
       <field id="b_id">
-        <phrase id="fldcaption" value="b id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="b_branch_id">
-        <phrase id="fldcaption" value="b branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="b_b_type_id">
-        <phrase id="fldcaption" value="b b type id" />
+        <phrase id="fldcaption" value="Type" />
       </field>
       <field id="b_b_status_id">
-        <phrase id="fldcaption" value="b b status id" />
+        <phrase id="fldcaption" value="Status" />
       </field>
       <field id="b_b_nature_id">
-        <phrase id="fldcaption" value="b b nature id" />
+        <phrase id="fldcaption" value="Nature" />
       </field>
       <field id="b_city_id">
-        <phrase id="fldcaption" value="b city id" />
+        <phrase id="fldcaption" value="City" />
       </field>
       <field id="b_referral_id">
-        <phrase id="fldcaption" value="b referral id" />
+        <phrase id="fldcaption" value="Referral" />
       </field>
       <field id="b_name">
-        <phrase id="fldcaption" value="b name" />
+        <phrase id="fldcaption" value="Business Title" />
       </field>
       <field id="b_owner">
-        <phrase id="fldcaption" value="b owner" />
+        <phrase id="fldcaption" value="Owner" />
       </field>
       <field id="b_contact">
-        <phrase id="fldcaption" value="b contact" />
+        <phrase id="fldcaption" value="Contact #" />
       </field>
       <field id="b_address">
-        <phrase id="fldcaption" value="b address" />
+        <phrase id="fldcaption" value="Address" />
       </field>
       <field id="b_email">
-        <phrase id="fldcaption" value="b email" />
+        <phrase id="fldcaption" value="Email" />
       </field>
       <field id="b_ntn">
-        <phrase id="fldcaption" value="b ntn" />
+        <phrase id="fldcaption" value="NTN" />
       </field>
       <field id="b_logo">
-        <phrase id="fldcaption" value="b logo" />
+        <phrase id="fldcaption" value="Logo" />
       </field>
       <field id="b_no_of_emp">
-        <phrase id="fldcaption" value="b no of emp" />
+        <phrase id="fldcaption" value="No. of Employees" />
       </field>
       <field id="b_since">
-        <phrase id="fldcaption" value="b since" />
+        <phrase id="fldcaption" value="Since" />
       </field>
       <field id="b_no_of_branches">
-        <phrase id="fldcaption" value="b no of branches" />
+        <phrase id="fldcaption" value="No. of Branches" />
       </field>
       <field id="b_deal_with_referral">
-        <phrase id="fldcaption" value="b deal with referral" />
+        <phrase id="fldcaption" value="Deal with Referral" />
       </field>
       <field id="b_comments">
-        <phrase id="fldcaption" value="b comments" />
+        <phrase id="fldcaption" value="Comments" />
       </field>
     </table>
     <table id="business_nature">
-      <phrase id="tblcaption" value="business nature" />
+      <phrase id="tblcaption" value="Business Nature" />
       <field id="b_nature_id">
-        <phrase id="fldcaption" value="b nature id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="b_nature_caption">
-        <phrase id="fldcaption" value="b nature caption" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="b_nature_desc">
-        <phrase id="fldcaption" value="b nature desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="business_status">
-      <phrase id="tblcaption" value="business status" />
+      <phrase id="tblcaption" value="Business Status" />
       <field id="business_status_id">
-        <phrase id="fldcaption" value="business status id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="business_status_caption">
-        <phrase id="fldcaption" value="business status caption" />
+        <phrase id="fldcaption" value="Caption" />
+      </field>
+      <field id="b_status_desc">
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="business_type">
-      <phrase id="tblcaption" value="business type" />
+      <phrase id="tblcaption" value="Business Type" />
       <field id="business_type_id">
-        <phrase id="fldcaption" value="business type id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="business_type_name">
-        <phrase id="fldcaption" value="business type name" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="business_type_desc">
-        <phrase id="fldcaption" value="business type desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="city">
-      <phrase id="tblcaption" value="city" />
+      <phrase id="tblcaption" value="City" />
       <field id="city_id">
-        <phrase id="fldcaption" value="city id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="city_tehsil_id">
-        <phrase id="fldcaption" value="city tehsil id" />
+        <phrase id="fldcaption" value="Tehsil" />
       </field>
       <field id="city_name">
-        <phrase id="fldcaption" value="city name" />
+        <phrase id="fldcaption" value="City Name" />
       </field>
     </table>
     <table id="country">
-      <phrase id="tblcaption" value="country" />
+      <phrase id="tblcaption" value="Country" />
       <field id="country_id">
-        <phrase id="fldcaption" value="country id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="country_name">
-        <phrase id="fldcaption" value="country name" />
+        <phrase id="fldcaption" value="Country Name" />
       </field>
     </table>
     <table id="cus_support">
-      <phrase id="tblcaption" value="cus support" />
+      <phrase id="tblcaption" value="Customer Support" />
       <field id="cus_sup_id">
-        <phrase id="fldcaption" value="cus sup id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="cus_sup_branch_id">
-        <phrase id="fldcaption" value="cus sup branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="cus_sup_emp_id">
-        <phrase id="fldcaption" value="cus sup emp id" />
+        <phrase id="fldcaption" value="Employee" />
       </field>
       <field id="cus_sup_query">
-        <phrase id="fldcaption" value="cus sup query" />
+        <phrase id="fldcaption" value="Query" />
       </field>
       <field id="cus_sup_screen_shots">
-        <phrase id="fldcaption" value="cus sup screen shots" />
+        <phrase id="fldcaption" value="Screen Shots" />
       </field>
       <field id="cus_sup_date">
-        <phrase id="fldcaption" value="cus sup date" />
+        <phrase id="fldcaption" value="Date" />
       </field>
       <field id="cus_sup_status">
-        <phrase id="fldcaption" value="cus sup status" />
+        <phrase id="fldcaption" value="Status" />
         <phrase id="fldtagvalue1" value="Pending" />
         <phrase id="fldtagcaption1" value="Pending" />
         <phrase id="fldtagvalue2" value="In Progress" />
@@ -1172,112 +1188,109 @@
         <phrase id="fldtagcaption4" value="Cannot be Entertained" />
       </field>
       <field id="cus_sup_comments">
-        <phrase id="fldcaption" value="cus sup comments" />
+        <phrase id="fldcaption" value="Comments" />
       </field>
       <field id="cus_sup_resolved_on">
-        <phrase id="fldcaption" value="cus sup resolved on" />
+        <phrase id="fldcaption" value="Resolved On" />
       </field>
     </table>
     <table id="designation">
-      <phrase id="tblcaption" value="designation" />
+      <phrase id="tblcaption" value="Designation" />
       <field id="designation_id">
-        <phrase id="fldcaption" value="designation id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="designation_caption">
-        <phrase id="fldcaption" value="designation caption" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="designation_desc">
-        <phrase id="fldcaption" value="designation desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="district">
-      <phrase id="tblcaption" value="district" />
+      <phrase id="tblcaption" value="District" />
       <field id="district_id">
-        <phrase id="fldcaption" value="district id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="district_division_id">
-        <phrase id="fldcaption" value="district division id" />
+        <phrase id="fldcaption" value="Division" />
       </field>
       <field id="district_name">
-        <phrase id="fldcaption" value="district name" />
+        <phrase id="fldcaption" value="District Name" />
       </field>
     </table>
     <table id="division">
-      <phrase id="tblcaption" value="division" />
+      <phrase id="tblcaption" value="Division" />
       <field id="division_id">
-        <phrase id="fldcaption" value="division id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="division_state_id">
-        <phrase id="fldcaption" value="division state id" />
+        <phrase id="fldcaption" value="State" />
       </field>
       <field id="division_name">
-        <phrase id="fldcaption" value="division name" />
-      </field>
-      <field id="division_desc">
-        <phrase id="fldcaption" value="division desc" />
+        <phrase id="fldcaption" value="Division Name" />
       </field>
     </table>
     <table id="employees">
-      <phrase id="tblcaption" value="employees" />
+      <phrase id="tblcaption" value="Employees" />
       <field id="emp_id">
-        <phrase id="fldcaption" value="emp id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="emp_branch_id">
-        <phrase id="fldcaption" value="emp branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="emp_designation_id">
-        <phrase id="fldcaption" value="emp designation id" />
+        <phrase id="fldcaption" value="Designation" />
       </field>
       <field id="emp_city_id">
-        <phrase id="fldcaption" value="emp city id" />
+        <phrase id="fldcaption" value="City" />
       </field>
       <field id="emp_name">
-        <phrase id="fldcaption" value="emp name" />
+        <phrase id="fldcaption" value="Employee Name" />
       </field>
       <field id="emp_father">
-        <phrase id="fldcaption" value="emp father" />
+        <phrase id="fldcaption" value="Father Name" />
       </field>
       <field id="emp_cnic">
-        <phrase id="fldcaption" value="emp cnic" />
+        <phrase id="fldcaption" value="CNIC" />
       </field>
       <field id="emp_address">
-        <phrase id="fldcaption" value="emp address" />
+        <phrase id="fldcaption" value="Address" />
       </field>
       <field id="emp_contact">
-        <phrase id="fldcaption" value="emp contact" />
+        <phrase id="fldcaption" value="Contact #" />
       </field>
       <field id="emp_email">
-        <phrase id="fldcaption" value="emp email" />
+        <phrase id="fldcaption" value="Email" />
       </field>
       <field id="emp_photo">
-        <phrase id="fldcaption" value="emp photo" />
+        <phrase id="fldcaption" value="Photo" />
       </field>
     </table>
     <table id="followup">
-      <phrase id="tblcaption" value="followup" />
+      <phrase id="tblcaption" value="Followup" />
       <field id="followup_id">
-        <phrase id="fldcaption" value="followup id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="followup_branch_id">
-        <phrase id="fldcaption" value="followup branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="followup_business_id">
-        <phrase id="fldcaption" value="followup business id" />
+        <phrase id="fldcaption" value="Business" />
       </field>
       <field id="followup_by_emp_id">
-        <phrase id="fldcaption" value="followup by emp id" />
+        <phrase id="fldcaption" value="Employee" />
       </field>
       <field id="followup_no_id">
-        <phrase id="fldcaption" value="followup no id" />
+        <phrase id="fldcaption" value="Follow Up #" />
       </field>
       <field id="followup_date">
-        <phrase id="fldcaption" value="followup date" />
+        <phrase id="fldcaption" value="Date" />
       </field>
       <field id="followup_comments">
-        <phrase id="fldcaption" value="followup comments" />
+        <phrase id="fldcaption" value="Your Comments" />
       </field>
       <field id="followup_response">
-        <phrase id="fldcaption" value="followup response" />
+        <phrase id="fldcaption" value="Followup Response" />
         <phrase id="fldtagvalue1" value="+ve" />
         <phrase id="fldtagcaption1" value="+ve" />
         <phrase id="fldtagvalue2" value="-ve" />
@@ -1290,13 +1303,13 @@
         <phrase id="fldtagcaption5" value="Failed to Approach" />
       </field>
       <field id="nxt_fu_date">
-        <phrase id="fldcaption" value="nxt FU date" />
+        <phrase id="fldcaption" value="Next Followup" />
       </field>
       <field id="nxt_fu_plans">
-        <phrase id="fldcaption" value="nxt FU plans" />
+        <phrase id="fldcaption" value="Next Plans" />
       </field>
       <field id="current_fu_status">
-        <phrase id="fldcaption" value="current FU status" />
+        <phrase id="fldcaption" value="This Followup" />
         <phrase id="fldtagvalue1" value="Pending" />
         <phrase id="fldtagcaption1" value="Pending" />
         <phrase id="fldtagvalue2" value="Completed" />
@@ -1308,39 +1321,39 @@
       </field>
     </table>
     <table id="followup_no">
-      <phrase id="tblcaption" value="followup no" />
+      <phrase id="tblcaption" value="Followup #" />
       <field id="followup_no_id">
-        <phrase id="fldcaption" value="followup no id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="followup_no_caption">
-        <phrase id="fldcaption" value="followup no caption" />
+        <phrase id="fldcaption" value="Title" />
       </field>
     </table>
     <table id="invoices">
-      <phrase id="tblcaption" value="invoices" />
+      <phrase id="tblcaption" value="Invoices" />
       <field id="invoice_id">
-        <phrase id="fldcaption" value="invoice id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="invoice_branch_id">
-        <phrase id="fldcaption" value="invoice branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="invoice_business_id">
-        <phrase id="fldcaption" value="invoice business id" />
+        <phrase id="fldcaption" value="Business" />
       </field>
       <field id="invoice_service_id">
-        <phrase id="fldcaption" value="invoice service id" />
+        <phrase id="fldcaption" value="Service" />
       </field>
       <field id="invoice_amount">
-        <phrase id="fldcaption" value="invoice amount" />
+        <phrase id="fldcaption" value="Amount" />
       </field>
       <field id="invoice_issue_date">
-        <phrase id="fldcaption" value="invoice issue date" />
+        <phrase id="fldcaption" value="Issue Date" />
       </field>
       <field id="invoice_due_date">
-        <phrase id="fldcaption" value="invoice due date" />
+        <phrase id="fldcaption" value="Due Date" />
       </field>
       <field id="invoice_status">
-        <phrase id="fldcaption" value="invoice status" />
+        <phrase id="fldcaption" value="Status" />
         <phrase id="fldtagvalue1" value="Unpaid" />
         <phrase id="fldtagcaption1" value="Unpaid" />
         <phrase id="fldtagvalue2" value="Partially Paid" />
@@ -1349,166 +1362,169 @@
         <phrase id="fldtagcaption3" value="Paid" />
       </field>
       <field id="invoice_collected_amount">
-        <phrase id="fldcaption" value="invoice collected amount" />
+        <phrase id="fldcaption" value="Collected Amount" />
       </field>
       <field id="invoice_remaining_amount">
-        <phrase id="fldcaption" value="invoice remaining amount" />
+        <phrase id="fldcaption" value="Remaining Amount" />
       </field>
       <field id="invoice_collection_date">
-        <phrase id="fldcaption" value="invoice collection date" />
+        <phrase id="fldcaption" value="Amount Collected On" />
       </field>
       <field id="invoice_content">
-        <phrase id="fldcaption" value="invoice content" />
+        <phrase id="fldcaption" value="Invoice Content" />
       </field>
       <field id="invoice_comments">
-        <phrase id="fldcaption" value="invoice comments" />
+        <phrase id="fldcaption" value="Your Comments" />
       </field>
     </table>
     <table id="organization">
-      <phrase id="tblcaption" value="organization" />
+      <phrase id="tblcaption" value="Organization" />
       <field id="org_id">
-        <phrase id="fldcaption" value="org id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="org_city_id">
-        <phrase id="fldcaption" value="org city id" />
+        <phrase id="fldcaption" value="City" />
       </field>
       <field id="org_name">
-        <phrase id="fldcaption" value="org name" />
+        <phrase id="fldcaption" value="Name" />
       </field>
       <field id="org_head_office">
-        <phrase id="fldcaption" value="org head office" />
+        <phrase id="fldcaption" value="Head Office" />
       </field>
       <field id="org_owner">
-        <phrase id="fldcaption" value="org owner" />
+        <phrase id="fldcaption" value="Owner" />
       </field>
       <field id="org_contact_no">
-        <phrase id="fldcaption" value="org contact no" />
+        <phrase id="fldcaption" value="Contact #" />
       </field>
       <field id="org_logo">
-        <phrase id="fldcaption" value="org logo" />
+        <phrase id="fldcaption" value="Logo" />
       </field>
       <field id="org_bank_acc">
-        <phrase id="fldcaption" value="org bank acc" />
+        <phrase id="fldcaption" value="Bank Acc." />
       </field>
       <field id="org_ntn">
-        <phrase id="fldcaption" value="org ntn" />
+        <phrase id="fldcaption" value="NTN" />
       </field>
       <field id="org_email">
-        <phrase id="fldcaption" value="org email" />
+        <phrase id="fldcaption" value="Email" />
       </field>
       <field id="org_website">
-        <phrase id="fldcaption" value="org website" />
+        <phrase id="fldcaption" value="Website" />
       </field>
     </table>
     <table id="quotation">
-      <phrase id="tblcaption" value="quotation" />
+      <phrase id="tblcaption" value="Quotation" />
       <field id="quote_id">
-        <phrase id="fldcaption" value="quote id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="quote_branch_id">
-        <phrase id="fldcaption" value="quote branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="quote_business_id">
-        <phrase id="fldcaption" value="quote business id" />
+        <phrase id="fldcaption" value="Business" />
       </field>
       <field id="quote_service_id">
-        <phrase id="fldcaption" value="quote service id" />
+        <phrase id="fldcaption" value="Service" />
       </field>
       <field id="quote_issue_date">
-        <phrase id="fldcaption" value="quote issue date" />
+        <phrase id="fldcaption" value="Issue Date" />
       </field>
       <field id="quote_due_date">
-        <phrase id="fldcaption" value="quote due date" />
+        <phrase id="fldcaption" value="Due Date" />
       </field>
       <field id="quote_amount">
-        <phrase id="fldcaption" value="quote amount" />
+        <phrase id="fldcaption" value="Amount" />
       </field>
       <field id="quote_content">
-        <phrase id="fldcaption" value="quote content" />
+        <phrase id="fldcaption" value="Content" />
       </field>
       <field id="quote_comments">
-        <phrase id="fldcaption" value="quote comments" />
+        <phrase id="fldcaption" value="Your Comments" />
       </field>
     </table>
     <table id="reference_letter">
-      <phrase id="tblcaption" value="reference letter" />
+      <phrase id="tblcaption" value="Reference Letters" />
       <field id="ref_letter_id">
-        <phrase id="fldcaption" value="ref letter id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="ref_letter_branch_id">
-        <phrase id="fldcaption" value="ref letter branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="ref_letter_to_whom">
-        <phrase id="fldcaption" value="ref letter to whom" />
+        <phrase id="fldcaption" value="To" />
       </field>
       <field id="ref_letter_by_whom">
-        <phrase id="fldcaption" value="ref letter by whom" />
+        <phrase id="fldcaption" value="From" />
       </field>
       <field id="ref_letter_content">
-        <phrase id="fldcaption" value="ref letter content" />
+        <phrase id="fldcaption" value="Content" />
       </field>
       <field id="ref_letter_scanned">
-        <phrase id="fldcaption" value="ref letter scanned" />
+        <phrase id="fldcaption" value="Scanned Copy" />
       </field>
       <field id="ref_letter_date">
-        <phrase id="fldcaption" value="ref letter date" />
+        <phrase id="fldcaption" value="Date" />
       </field>
       <field id="ref_letter_comments">
-        <phrase id="fldcaption" value="ref letter comments" />
+        <phrase id="fldcaption" value="Your Comments" />
       </field>
     </table>
     <table id="referral">
-      <phrase id="tblcaption" value="referral" />
+      <phrase id="tblcaption" value="Referrals" />
       <field id="referral_id">
-        <phrase id="fldcaption" value="referral id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="referral_branch_id">
-        <phrase id="fldcaption" value="referral branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="referral_name">
-        <phrase id="fldcaption" value="referral name" />
+        <phrase id="fldcaption" value="Name" />
       </field>
       <field id="referral_desc">
-        <phrase id="fldcaption" value="referral desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
       <field id="referral_deal_signed">
-        <phrase id="fldcaption" value="referral deal signed" />
+        <phrase id="fldcaption" value="Deal Signed" />
+      </field>
+      <field id="referral_scanned">
+        <phrase id="fldcaption" value="Scanned Copy" />
       </field>
     </table>
     <table id="services">
-      <phrase id="tblcaption" value="services" />
+      <phrase id="tblcaption" value="Services" />
       <field id="service_id">
-        <phrase id="fldcaption" value="service id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="service_branch_id">
-        <phrase id="fldcaption" value="service branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="service_caption">
-        <phrase id="fldcaption" value="service caption" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="service_desc">
-        <phrase id="fldcaption" value="service desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
       <field id="service_logo">
-        <phrase id="fldcaption" value="service logo" />
+        <phrase id="fldcaption" value="Logo" />
       </field>
     </table>
     <table id="services_availed_by_customer">
-      <phrase id="tblcaption" value="services availed by customer" />
+      <phrase id="tblcaption" value="Service Activation" />
       <field id="sabc_id">
-        <phrase id="fldcaption" value="sabc id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="sabc_branch_id">
-        <phrase id="fldcaption" value="sabc branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="sabc_business_id">
-        <phrase id="fldcaption" value="sabc business id" />
+        <phrase id="fldcaption" value="Business" />
       </field>
       <field id="sabc_service_id">
-        <phrase id="fldcaption" value="sabc service id" />
+        <phrase id="fldcaption" value="Service" />
       </field>
       <field id="sabc_pkg">
-        <phrase id="fldcaption" value="sabc pkg" />
+        <phrase id="fldcaption" value="Package" />
         <phrase id="fldtagvalue1" value="Monthly" />
         <phrase id="fldtagcaption1" value="Monthly" />
         <phrase id="fldtagvalue2" value="Yearly" />
@@ -1519,166 +1535,166 @@
         <phrase id="fldtagcaption4" value="Installments" />
       </field>
       <field id="sabc_amount">
-        <phrase id="fldcaption" value="sabc amount" />
+        <phrase id="fldcaption" value="Amount" />
       </field>
       <field id="sabc_desc">
-        <phrase id="fldcaption" value="sabc desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
       <field id="sabc_signed_on">
-        <phrase id="fldcaption" value="sabc signed on" />
+        <phrase id="fldcaption" value="Signed On" />
       </field>
     </table>
     <table id="sms_api">
-      <phrase id="tblcaption" value="sms api" />
+      <phrase id="tblcaption" value="SMS APIs" />
       <field id="sms_api_id">
-        <phrase id="fldcaption" value="sms api id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="sms_api_user">
-        <phrase id="fldcaption" value="sms api user" />
+        <phrase id="fldcaption" value="Username" />
       </field>
       <field id="sms_api_pass">
-        <phrase id="fldcaption" value="sms api pass" />
+        <phrase id="fldcaption" value="Password" />
       </field>
       <field id="sms_api_url">
-        <phrase id="fldcaption" value="sms api url" />
+        <phrase id="fldcaption" value="URL" />
       </field>
       <field id="sms_api_mask">
-        <phrase id="fldcaption" value="sms api mask" />
+        <phrase id="fldcaption" value="Mask" />
       </field>
       <field id="sms_api_reg_date">
-        <phrase id="fldcaption" value="sms api reg date" />
+        <phrase id="fldcaption" value="Registration Date" />
       </field>
       <field id="sms_api_expiry_date">
-        <phrase id="fldcaption" value="sms api expiry date" />
+        <phrase id="fldcaption" value="Expiry Date" />
       </field>
       <field id="sms_api_total_sms">
-        <phrase id="fldcaption" value="sms api total sms" />
+        <phrase id="fldcaption" value="SMS API" />
       </field>
     </table>
     <table id="sms_log">
-      <phrase id="tblcaption" value="sms log" />
+      <phrase id="tblcaption" value="SMS Logs" />
       <field id="sms_log_id">
-        <phrase id="fldcaption" value="sms log id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="sms_log_branch_id">
-        <phrase id="fldcaption" value="sms log branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="sms_log_sms_api_id">
-        <phrase id="fldcaption" value="sms log sms api id" />
+        <phrase id="fldcaption" value="SMS API" />
       </field>
       <field id="sms_log_message">
-        <phrase id="fldcaption" value="sms log message" />
+        <phrase id="fldcaption" value="Message" />
       </field>
       <field id="sms_log_to">
-        <phrase id="fldcaption" value="sms log to" />
+        <phrase id="fldcaption" value="To" />
       </field>
       <field id="sms_log_date">
-        <phrase id="fldcaption" value="sms log date" />
+        <phrase id="fldcaption" value="Date" />
       </field>
     </table>
     <table id="sms_package">
-      <phrase id="tblcaption" value="sms package" />
+      <phrase id="tblcaption" value="SMS Packages" />
       <field id="sms_pkg_id">
-        <phrase id="fldcaption" value="sms pkg id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="sms_pkg_sms_api_id">
-        <phrase id="fldcaption" value="sms pkg sms api id" />
+        <phrase id="fldcaption" value="SMS API" />
       </field>
       <field id="sms_pkg_branch_id">
-        <phrase id="fldcaption" value="sms pkg branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="sms_pkg_total_allowed_sms">
-        <phrase id="fldcaption" value="sms pkg total allowed sms" />
+        <phrase id="fldcaption" value="SMS Allowed" />
       </field>
       <field id="sms_pkg_expiry_date">
-        <phrase id="fldcaption" value="sms pkg expiry date" />
+        <phrase id="fldcaption" value="Expiry Date" />
       </field>
       <field id="sms_pkg_per_sms_cost">
-        <phrase id="fldcaption" value="sms pkg per sms cost" />
+        <phrase id="fldcaption" value="Per SMS Cost" />
       </field>
       <field id="sms_pkg_deal_details">
-        <phrase id="fldcaption" value="sms pkg deal details" />
+        <phrase id="fldcaption" value="Your Comments" />
       </field>
     </table>
     <table id="sms_template">
-      <phrase id="tblcaption" value="sms template" />
+      <phrase id="tblcaption" value="SMS Templates" />
       <field id="sms_temp_id">
-        <phrase id="fldcaption" value="sms temp id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="sms_temp_branch_id">
-        <phrase id="fldcaption" value="sms temp branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="sms_temp_caption">
-        <phrase id="fldcaption" value="sms temp caption" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="sms_temp_msg">
-        <phrase id="fldcaption" value="sms temp msg" />
+        <phrase id="fldcaption" value="Message" />
       </field>
     </table>
     <table id="state">
-      <phrase id="tblcaption" value="state" />
+      <phrase id="tblcaption" value="State" />
       <field id="state_id">
-        <phrase id="fldcaption" value="state id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="state_country_id">
-        <phrase id="fldcaption" value="state country id" />
+        <phrase id="fldcaption" value="Country" />
       </field>
       <field id="state_name">
-        <phrase id="fldcaption" value="state name" />
+        <phrase id="fldcaption" value="State Name" />
       </field>
     </table>
     <table id="tehsil">
-      <phrase id="tblcaption" value="tehsil" />
+      <phrase id="tblcaption" value="Tehsil" />
       <field id="tehsil_id">
-        <phrase id="fldcaption" value="tehsil id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="tehsil_district_id">
-        <phrase id="fldcaption" value="tehsil district id" />
+        <phrase id="fldcaption" value="District" />
       </field>
       <field id="tehsil_name">
-        <phrase id="fldcaption" value="tehsil name" />
+        <phrase id="fldcaption" value="Tehsil Name" />
       </field>
     </table>
     <table id="user">
-      <phrase id="tblcaption" value="user" />
+      <phrase id="tblcaption" value="Users" />
       <field id="user_id">
-        <phrase id="fldcaption" value="user id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="user_branch_id">
-        <phrase id="fldcaption" value="user branch id" />
+        <phrase id="fldcaption" value="Branch" />
       </field>
       <field id="user_type_id">
-        <phrase id="fldcaption" value="user type id" />
+        <phrase id="fldcaption" value="User Type" />
       </field>
       <field id="user_name">
-        <phrase id="fldcaption" value="user name" />
+        <phrase id="fldcaption" value="Username" />
       </field>
       <field id="user_password">
-        <phrase id="fldcaption" value="user password" />
+        <phrase id="fldcaption" value="Password" />
       </field>
       <field id="user_email">
-        <phrase id="fldcaption" value="user email" />
+        <phrase id="fldcaption" value="Email" />
       </field>
       <field id="user_father">
-        <phrase id="fldcaption" value="user father" />
+        <phrase id="fldcaption" value="Father" />
       </field>
       <field id="user_photo">
-        <phrase id="fldcaption" value="user photo" />
+        <phrase id="fldcaption" value="Photo" />
       </field>
       <field id="user_cnic">
-        <phrase id="fldcaption" value="user cnic" />
+        <phrase id="fldcaption" value="CNIC" />
       </field>
     </table>
     <table id="user_type">
-      <phrase id="tblcaption" value="user type" />
+      <phrase id="tblcaption" value="User Type" />
       <field id="user_type_id">
-        <phrase id="fldcaption" value="user type id" />
+        <phrase id="fldcaption" value="ID" />
       </field>
       <field id="user_type_name">
-        <phrase id="fldcaption" value="user type name" />
+        <phrase id="fldcaption" value="Title" />
       </field>
       <field id="user_type_desc">
-        <phrase id="fldcaption" value="user type desc" />
+        <phrase id="fldcaption" value="Description" />
       </field>
     </table>
     <table id="userlevelpermissions">

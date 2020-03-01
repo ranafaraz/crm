@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $state_list = new state_list();
 $state_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $state_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$state_list->isExport() && !$state->CurrentAction) { ?>
 <form name="fstatelistsrch" id="fstatelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fstatelistsrch-search-panel" class="<?php echo $state_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $state_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $state_list->showPageHeader(); ?>
 <?php
 $state_list->showMessage();
 ?>
 <?php if ($state_list->TotalRecords > 0 || $state->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($state_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> state">
+<?php if (!$state_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$state_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $state_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $state_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fstatelist" id="fstatelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

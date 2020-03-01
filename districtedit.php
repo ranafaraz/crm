@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $district_edit = new district_edit();
 $district_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,9 +66,6 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $district_edit->district_division_id->caption(), $district_edit->district_division_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_district_division_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($district_edit->district_division_id->errorMessage()) ?>");
 			<?php if ($district_edit->district_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_district_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -101,6 +99,8 @@ loadjs.ready("head", function() {
 	fdistrictedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fdistrictedit.lists["x_district_division_id"] = <?php echo $district_edit->district_division_id->Lookup->toClientList($district_edit) ?>;
+	fdistrictedit.lists["x_district_division_id"].options = <?php echo JsonEncode($district_edit->district_division_id->lookupOptions()) ?>;
 	loadjs.done("fdistrictedit");
 });
 </script>
@@ -140,7 +140,15 @@ $district_edit->showMessage();
 		<label id="elh_district_district_division_id" for="x_district_division_id" class="<?php echo $district_edit->LeftColumnClass ?>"><?php echo $district_edit->district_division_id->caption() ?><?php echo $district_edit->district_division_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $district_edit->RightColumnClass ?>"><div <?php echo $district_edit->district_division_id->cellAttributes() ?>>
 <span id="el_district_district_division_id">
-<input type="text" data-table="district" data-field="x_district_division_id" name="x_district_division_id" id="x_district_division_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($district_edit->district_division_id->getPlaceHolder()) ?>" value="<?php echo $district_edit->district_division_id->EditValue ?>"<?php echo $district_edit->district_division_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_district_division_id"><?php echo EmptyValue(strval($district_edit->district_division_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $district_edit->district_division_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($district_edit->district_division_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($district_edit->district_division_id->ReadOnly || $district_edit->district_division_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_district_division_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_district_division_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $district_edit->district_division_id->caption() ?>" data-title="<?php echo $district_edit->district_division_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_district_division_id',url:'divisionaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $district_edit->district_division_id->Lookup->getParamTag($district_edit, "p_x_district_division_id") ?>
+<input type="hidden" data-table="district" data-field="x_district_division_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $district_edit->district_division_id->displayValueSeparatorAttribute() ?>" name="x_district_division_id" id="x_district_division_id" value="<?php echo $district_edit->district_division_id->CurrentValue ?>"<?php echo $district_edit->district_division_id->editAttributes() ?>>
 </span>
 <?php echo $district_edit->district_division_id->CustomMsg ?></div></div>
 	</div>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class business_nature_add extends business_nature
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'business_nature';
@@ -540,6 +540,8 @@ class business_nature_add extends business_nature
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class business_nature_add extends business_nature
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("business_naturelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -907,6 +921,7 @@ class business_nature_add extends business_nature
 
 			// b_nature_id
 			$this->b_nature_id->ViewValue = $this->b_nature_id->CurrentValue;
+			$this->b_nature_id->CssClass = "font-weight-bold";
 			$this->b_nature_id->ViewCustomAttributes = "";
 
 			// b_nature_caption
@@ -939,8 +954,6 @@ class business_nature_add extends business_nature
 			// b_nature_desc
 			$this->b_nature_desc->EditAttrs["class"] = "form-control";
 			$this->b_nature_desc->EditCustomAttributes = "";
-			if (!$this->b_nature_desc->Raw)
-				$this->b_nature_desc->CurrentValue = HtmlDecode($this->b_nature_desc->CurrentValue);
 			$this->b_nature_desc->EditValue = HtmlEncode($this->b_nature_desc->CurrentValue);
 			$this->b_nature_desc->PlaceHolder = RemoveHtml($this->b_nature_desc->caption());
 

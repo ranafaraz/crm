@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -71,10 +71,13 @@ class tehsil extends DbTable
 		$this->fields['tehsil_id'] = &$this->tehsil_id;
 
 		// tehsil_district_id
-		$this->tehsil_district_id = new DbField('tehsil', 'tehsil', 'x_tehsil_district_id', 'tehsil_district_id', '`tehsil_district_id`', '`tehsil_district_id`', 3, 12, -1, FALSE, '`tehsil_district_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->tehsil_district_id = new DbField('tehsil', 'tehsil', 'x_tehsil_district_id', 'tehsil_district_id', '`tehsil_district_id`', '`tehsil_district_id`', 3, 12, -1, FALSE, '`EV__tehsil_district_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->tehsil_district_id->Nullable = FALSE; // NOT NULL field
 		$this->tehsil_district_id->Required = TRUE; // Required field
 		$this->tehsil_district_id->Sortable = TRUE; // Allow sort
+		$this->tehsil_district_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->tehsil_district_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->tehsil_district_id->Lookup = new Lookup('tehsil_district_id', 'district', FALSE, 'district_id', ["district_name","","",""], [], [], [], [], [], [], '', '');
 		$this->tehsil_district_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['tehsil_district_id'] = &$this->tehsil_district_id;
 
@@ -117,9 +120,21 @@ class tehsil extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -146,6 +161,22 @@ class tehsil extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `district_name` FROM `district` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`district_id` = `tehsil`.`tehsil_district_id` LIMIT 1) AS `EV__tehsil_district_id` FROM `tehsil`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -301,8 +332,13 @@ class tehsil extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -310,8 +346,26 @@ class tehsil extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->tehsil_district_id->AdvancedSearch->SearchValue != "" ||
+			$this->tehsil_district_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->tehsil_district_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->tehsil_district_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -339,7 +393,10 @@ class tehsil extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -690,11 +747,33 @@ class tehsil extends DbTable
 		// tehsil_id
 
 		$this->tehsil_id->ViewValue = $this->tehsil_id->CurrentValue;
+		$this->tehsil_id->CssClass = "font-weight-bold";
 		$this->tehsil_id->ViewCustomAttributes = "";
 
 		// tehsil_district_id
-		$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->CurrentValue;
-		$this->tehsil_district_id->ViewValue = FormatNumber($this->tehsil_district_id->ViewValue, 0, -2, -2, -2);
+		if ($this->tehsil_district_id->VirtualValue != "") {
+			$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->VirtualValue;
+		} else {
+			$curVal = strval($this->tehsil_district_id->CurrentValue);
+			if ($curVal != "") {
+				$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->lookupCacheOption($curVal);
+				if ($this->tehsil_district_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`district_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->tehsil_district_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->tehsil_district_id->ViewValue = NULL;
+			}
+		}
 		$this->tehsil_district_id->ViewCustomAttributes = "";
 
 		// tehsil_name
@@ -735,13 +814,12 @@ class tehsil extends DbTable
 		$this->tehsil_id->EditAttrs["class"] = "form-control";
 		$this->tehsil_id->EditCustomAttributes = "";
 		$this->tehsil_id->EditValue = $this->tehsil_id->CurrentValue;
+		$this->tehsil_id->CssClass = "font-weight-bold";
 		$this->tehsil_id->ViewCustomAttributes = "";
 
 		// tehsil_district_id
 		$this->tehsil_district_id->EditAttrs["class"] = "form-control";
 		$this->tehsil_district_id->EditCustomAttributes = "";
-		$this->tehsil_district_id->EditValue = $this->tehsil_district_id->CurrentValue;
-		$this->tehsil_district_id->PlaceHolder = RemoveHtml($this->tehsil_district_id->caption());
 
 		// tehsil_name
 		$this->tehsil_name->EditAttrs["class"] = "form-control";

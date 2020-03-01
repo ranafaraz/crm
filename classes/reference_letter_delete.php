@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class reference_letter_delete extends reference_letter
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'reference_letter';
@@ -539,6 +539,18 @@ class reference_letter_delete extends reference_letter
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("reference_letterlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->ref_letter_id->setVisibility();
@@ -570,8 +582,9 @@ class reference_letter_delete extends reference_letter
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->ref_letter_branch_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -638,7 +651,7 @@ class reference_letter_delete extends reference_letter
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -689,10 +702,16 @@ class reference_letter_delete extends reference_letter
 			return;
 		$this->ref_letter_id->setDbValue($row['ref_letter_id']);
 		$this->ref_letter_branch_id->setDbValue($row['ref_letter_branch_id']);
+		if (array_key_exists('EV__ref_letter_branch_id', $rs->fields)) {
+			$this->ref_letter_branch_id->VirtualValue = $rs->fields('EV__ref_letter_branch_id'); // Set up virtual field value
+		} else {
+			$this->ref_letter_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->ref_letter_to_whom->setDbValue($row['ref_letter_to_whom']);
 		$this->ref_letter_by_whom->setDbValue($row['ref_letter_by_whom']);
 		$this->ref_letter_content->setDbValue($row['ref_letter_content']);
-		$this->ref_letter_scanned->setDbValue($row['ref_letter_scanned']);
+		$this->ref_letter_scanned->Upload->DbValue = $row['ref_letter_scanned'];
+		$this->ref_letter_scanned->setDbValue($this->ref_letter_scanned->Upload->DbValue);
 		$this->ref_letter_date->setDbValue($row['ref_letter_date']);
 		$this->ref_letter_comments->setDbValue($row['ref_letter_comments']);
 	}
@@ -736,11 +755,33 @@ class reference_letter_delete extends reference_letter
 
 			// ref_letter_id
 			$this->ref_letter_id->ViewValue = $this->ref_letter_id->CurrentValue;
+			$this->ref_letter_id->CssClass = "font-weight-bold";
 			$this->ref_letter_id->ViewCustomAttributes = "";
 
 			// ref_letter_branch_id
-			$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->CurrentValue;
-			$this->ref_letter_branch_id->ViewValue = FormatNumber($this->ref_letter_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->ref_letter_branch_id->VirtualValue != "") {
+				$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->ref_letter_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->lookupCacheOption($curVal);
+					if ($this->ref_letter_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->ref_letter_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->ref_letter_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->ref_letter_branch_id->ViewCustomAttributes = "";
 
 			// ref_letter_to_whom
@@ -752,12 +793,19 @@ class reference_letter_delete extends reference_letter
 			$this->ref_letter_by_whom->ViewCustomAttributes = "";
 
 			// ref_letter_scanned
-			$this->ref_letter_scanned->ViewValue = $this->ref_letter_scanned->CurrentValue;
+			if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
+				$this->ref_letter_scanned->ImageWidth = 200;
+				$this->ref_letter_scanned->ImageHeight = 0;
+				$this->ref_letter_scanned->ImageAlt = $this->ref_letter_scanned->alt();
+				$this->ref_letter_scanned->ViewValue = $this->ref_letter_scanned->Upload->DbValue;
+			} else {
+				$this->ref_letter_scanned->ViewValue = "";
+			}
 			$this->ref_letter_scanned->ViewCustomAttributes = "";
 
 			// ref_letter_date
 			$this->ref_letter_date->ViewValue = $this->ref_letter_date->CurrentValue;
-			$this->ref_letter_date->ViewValue = FormatDateTime($this->ref_letter_date->ViewValue, 0);
+			$this->ref_letter_date->ViewValue = FormatDateTime($this->ref_letter_date->ViewValue, 2);
 			$this->ref_letter_date->ViewCustomAttributes = "";
 
 			// ref_letter_id
@@ -782,8 +830,22 @@ class reference_letter_delete extends reference_letter
 
 			// ref_letter_scanned
 			$this->ref_letter_scanned->LinkCustomAttributes = "";
-			$this->ref_letter_scanned->HrefValue = "";
+			if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
+				$this->ref_letter_scanned->HrefValue = GetFileUploadUrl($this->ref_letter_scanned, $this->ref_letter_scanned->htmlDecode($this->ref_letter_scanned->Upload->DbValue)); // Add prefix/suffix
+				$this->ref_letter_scanned->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->ref_letter_scanned->HrefValue = FullUrl($this->ref_letter_scanned->HrefValue, "href");
+			} else {
+				$this->ref_letter_scanned->HrefValue = "";
+			}
+			$this->ref_letter_scanned->ExportHrefValue = $this->ref_letter_scanned->UploadPath . $this->ref_letter_scanned->Upload->DbValue;
 			$this->ref_letter_scanned->TooltipValue = "";
+			if ($this->ref_letter_scanned->UseColorbox) {
+				if (EmptyValue($this->ref_letter_scanned->TooltipValue))
+					$this->ref_letter_scanned->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->ref_letter_scanned->LinkAttrs["data-rel"] = "reference_letter_x_ref_letter_scanned";
+				$this->ref_letter_scanned->LinkAttrs->appendClass("ew-lightbox");
+			}
 
 			// ref_letter_date
 			$this->ref_letter_date->LinkCustomAttributes = "";
@@ -907,6 +969,8 @@ class reference_letter_delete extends reference_letter
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_ref_letter_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -927,6 +991,8 @@ class reference_letter_delete extends reference_letter
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_ref_letter_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

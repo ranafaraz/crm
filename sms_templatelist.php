@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $sms_template_list = new sms_template_list();
 $sms_template_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $sms_template_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$sms_template_list->isExport() && !$sms_template->CurrentAction) { ?>
 <form name="fsms_templatelistsrch" id="fsms_templatelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fsms_templatelistsrch-search-panel" class="<?php echo $sms_template_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $sms_template_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $sms_template_list->showPageHeader(); ?>
 <?php
 $sms_template_list->showMessage();
 ?>
 <?php if ($sms_template_list->TotalRecords > 0 || $sms_template->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($sms_template_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> sms_template">
+<?php if (!$sms_template_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$sms_template_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $sms_template_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $sms_template_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fsms_templatelist" id="fsms_templatelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

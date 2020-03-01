@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $services_availed_by_customer_list = new services_availed_by_customer_list();
 $services_availed_by_customer_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -73,6 +74,19 @@ $services_availed_by_customer_list->showMessage();
 ?>
 <?php if ($services_availed_by_customer_list->TotalRecords > 0 || $services_availed_by_customer->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($services_availed_by_customer_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> services_availed_by_customer">
+<?php if (!$services_availed_by_customer_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$services_availed_by_customer_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $services_availed_by_customer_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $services_availed_by_customer_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fservices_availed_by_customerlist" id="fservices_availed_by_customerlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

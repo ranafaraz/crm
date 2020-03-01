@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $services_list = new services_list();
 $services_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $services_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$services_list->isExport() && !$services->CurrentAction) { ?>
 <form name="fserviceslistsrch" id="fserviceslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fserviceslistsrch-search-panel" class="<?php echo $services_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $services_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $services_list->showPageHeader(); ?>
 <?php
 $services_list->showMessage();
 ?>
 <?php if ($services_list->TotalRecords > 0 || $services->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($services_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> services">
+<?php if (!$services_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$services_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $services_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $services_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fserviceslist" id="fserviceslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -263,7 +279,7 @@ $services_list->ListOptions->render("body", "left", $services_list->RowCount);
 	<?php if ($services_list->service_logo->Visible) { // service_logo ?>
 		<td data-name="service_logo" <?php echo $services_list->service_logo->cellAttributes() ?>>
 <span id="el<?php echo $services_list->RowCount ?>_services_service_logo">
-<span<?php echo $services_list->service_logo->viewAttributes() ?>><?php echo $services_list->service_logo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($services_list->service_logo, $services_list->service_logo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	<?php } ?>

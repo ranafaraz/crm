@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class referral_add extends referral
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'referral';
@@ -540,6 +540,8 @@ class referral_add extends referral
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class referral_add extends referral
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("referrallist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -640,6 +654,7 @@ class referral_add extends referral
 		$this->referral_name->setVisibility();
 		$this->referral_desc->setVisibility();
 		$this->referral_deal_signed->setVisibility();
+		$this->referral_scanned->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -661,8 +676,9 @@ class referral_add extends referral
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->referral_branch_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -766,6 +782,9 @@ class referral_add extends referral
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
+		$this->referral_scanned->Upload->Index = $CurrentForm->Index;
+		$this->referral_scanned->Upload->uploadFile();
+		$this->referral_scanned->CurrentValue = $this->referral_scanned->Upload->FileName;
 	}
 
 	// Load default values
@@ -781,6 +800,9 @@ class referral_add extends referral
 		$this->referral_desc->OldValue = $this->referral_desc->CurrentValue;
 		$this->referral_deal_signed->CurrentValue = NULL;
 		$this->referral_deal_signed->OldValue = $this->referral_deal_signed->CurrentValue;
+		$this->referral_scanned->Upload->DbValue = NULL;
+		$this->referral_scanned->OldValue = $this->referral_scanned->Upload->DbValue;
+		$this->referral_scanned->CurrentValue = NULL; // Clear file related field
 	}
 
 	// Load form values
@@ -789,6 +811,7 @@ class referral_add extends referral
 
 		// Load from form
 		global $CurrentForm;
+		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'referral_branch_id' first before field var 'x_referral_branch_id'
 		$val = $CurrentForm->hasValue("referral_branch_id") ? $CurrentForm->getValue("referral_branch_id") : $CurrentForm->getValue("x_referral_branch_id");
@@ -877,9 +900,16 @@ class referral_add extends referral
 			return;
 		$this->referral_id->setDbValue($row['referral_id']);
 		$this->referral_branch_id->setDbValue($row['referral_branch_id']);
+		if (array_key_exists('EV__referral_branch_id', $rs->fields)) {
+			$this->referral_branch_id->VirtualValue = $rs->fields('EV__referral_branch_id'); // Set up virtual field value
+		} else {
+			$this->referral_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->referral_name->setDbValue($row['referral_name']);
 		$this->referral_desc->setDbValue($row['referral_desc']);
 		$this->referral_deal_signed->setDbValue($row['referral_deal_signed']);
+		$this->referral_scanned->Upload->DbValue = $row['referral_scanned'];
+		$this->referral_scanned->setDbValue($this->referral_scanned->Upload->DbValue);
 	}
 
 	// Return a row with default values
@@ -892,6 +922,7 @@ class referral_add extends referral
 		$row['referral_name'] = $this->referral_name->CurrentValue;
 		$row['referral_desc'] = $this->referral_desc->CurrentValue;
 		$row['referral_deal_signed'] = $this->referral_deal_signed->CurrentValue;
+		$row['referral_scanned'] = $this->referral_scanned->Upload->DbValue;
 		return $row;
 	}
 
@@ -934,16 +965,39 @@ class referral_add extends referral
 		// referral_name
 		// referral_desc
 		// referral_deal_signed
+		// referral_scanned
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// referral_id
 			$this->referral_id->ViewValue = $this->referral_id->CurrentValue;
+			$this->referral_id->CssClass = "font-weight-bold";
 			$this->referral_id->ViewCustomAttributes = "";
 
 			// referral_branch_id
-			$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
-			$this->referral_branch_id->ViewValue = FormatNumber($this->referral_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->referral_branch_id->VirtualValue != "") {
+				$this->referral_branch_id->ViewValue = $this->referral_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->referral_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->referral_branch_id->ViewValue = $this->referral_branch_id->lookupCacheOption($curVal);
+					if ($this->referral_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->referral_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->referral_branch_id->ViewValue = $this->referral_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->referral_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->referral_branch_id->ViewCustomAttributes = "";
 
 			// referral_name
@@ -957,6 +1011,17 @@ class referral_add extends referral
 			// referral_deal_signed
 			$this->referral_deal_signed->ViewValue = $this->referral_deal_signed->CurrentValue;
 			$this->referral_deal_signed->ViewCustomAttributes = "";
+
+			// referral_scanned
+			if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+				$this->referral_scanned->ImageWidth = 200;
+				$this->referral_scanned->ImageHeight = 0;
+				$this->referral_scanned->ImageAlt = $this->referral_scanned->alt();
+				$this->referral_scanned->ViewValue = $this->referral_scanned->Upload->DbValue;
+			} else {
+				$this->referral_scanned->ViewValue = "";
+			}
+			$this->referral_scanned->ViewCustomAttributes = "";
 
 			// referral_branch_id
 			$this->referral_branch_id->LinkCustomAttributes = "";
@@ -977,13 +1042,58 @@ class referral_add extends referral
 			$this->referral_deal_signed->LinkCustomAttributes = "";
 			$this->referral_deal_signed->HrefValue = "";
 			$this->referral_deal_signed->TooltipValue = "";
+
+			// referral_scanned
+			$this->referral_scanned->LinkCustomAttributes = "";
+			if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+				$this->referral_scanned->HrefValue = GetFileUploadUrl($this->referral_scanned, $this->referral_scanned->htmlDecode($this->referral_scanned->Upload->DbValue)); // Add prefix/suffix
+				$this->referral_scanned->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->referral_scanned->HrefValue = FullUrl($this->referral_scanned->HrefValue, "href");
+			} else {
+				$this->referral_scanned->HrefValue = "";
+			}
+			$this->referral_scanned->ExportHrefValue = $this->referral_scanned->UploadPath . $this->referral_scanned->Upload->DbValue;
+			$this->referral_scanned->TooltipValue = "";
+			if ($this->referral_scanned->UseColorbox) {
+				if (EmptyValue($this->referral_scanned->TooltipValue))
+					$this->referral_scanned->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->referral_scanned->LinkAttrs["data-rel"] = "referral_x_referral_scanned";
+				$this->referral_scanned->LinkAttrs->appendClass("ew-lightbox");
+			}
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// referral_branch_id
-			$this->referral_branch_id->EditAttrs["class"] = "form-control";
 			$this->referral_branch_id->EditCustomAttributes = "";
-			$this->referral_branch_id->EditValue = HtmlEncode($this->referral_branch_id->CurrentValue);
-			$this->referral_branch_id->PlaceHolder = RemoveHtml($this->referral_branch_id->caption());
+			$curVal = trim(strval($this->referral_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->referral_branch_id->ViewValue = $this->referral_branch_id->lookupCacheOption($curVal);
+			else
+				$this->referral_branch_id->ViewValue = $this->referral_branch_id->Lookup !== NULL && is_array($this->referral_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->referral_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->referral_branch_id->EditValue = array_values($this->referral_branch_id->Lookup->Options);
+				if ($this->referral_branch_id->ViewValue == "")
+					$this->referral_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->referral_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->referral_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->referral_branch_id->ViewValue = $this->referral_branch_id->displayValue($arwrk);
+				} else {
+					$this->referral_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->referral_branch_id->EditValue = $arwrk;
+			}
 
 			// referral_name
 			$this->referral_name->EditAttrs["class"] = "form-control";
@@ -1007,6 +1117,22 @@ class referral_add extends referral
 			$this->referral_deal_signed->EditValue = HtmlEncode($this->referral_deal_signed->CurrentValue);
 			$this->referral_deal_signed->PlaceHolder = RemoveHtml($this->referral_deal_signed->caption());
 
+			// referral_scanned
+			$this->referral_scanned->EditAttrs["class"] = "form-control";
+			$this->referral_scanned->EditCustomAttributes = "";
+			if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+				$this->referral_scanned->ImageWidth = 200;
+				$this->referral_scanned->ImageHeight = 0;
+				$this->referral_scanned->ImageAlt = $this->referral_scanned->alt();
+				$this->referral_scanned->EditValue = $this->referral_scanned->Upload->DbValue;
+			} else {
+				$this->referral_scanned->EditValue = "";
+			}
+			if (!EmptyValue($this->referral_scanned->CurrentValue))
+					$this->referral_scanned->Upload->FileName = $this->referral_scanned->CurrentValue;
+			if ($this->isShow() || $this->isCopy())
+				RenderUploadField($this->referral_scanned);
+
 			// Add refer script
 			// referral_branch_id
 
@@ -1024,6 +1150,18 @@ class referral_add extends referral
 			// referral_deal_signed
 			$this->referral_deal_signed->LinkCustomAttributes = "";
 			$this->referral_deal_signed->HrefValue = "";
+
+			// referral_scanned
+			$this->referral_scanned->LinkCustomAttributes = "";
+			if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+				$this->referral_scanned->HrefValue = GetFileUploadUrl($this->referral_scanned, $this->referral_scanned->htmlDecode($this->referral_scanned->Upload->DbValue)); // Add prefix/suffix
+				$this->referral_scanned->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->referral_scanned->HrefValue = FullUrl($this->referral_scanned->HrefValue, "href");
+			} else {
+				$this->referral_scanned->HrefValue = "";
+			}
+			$this->referral_scanned->ExportHrefValue = $this->referral_scanned->UploadPath . $this->referral_scanned->Upload->DbValue;
 		}
 		if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) // Add/Edit/Search row
 			$this->setupFieldTitles();
@@ -1049,9 +1187,6 @@ class referral_add extends referral
 				AddMessage($FormError, str_replace("%s", $this->referral_branch_id->caption(), $this->referral_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->referral_branch_id->FormValue)) {
-			AddMessage($FormError, $this->referral_branch_id->errorMessage());
-		}
 		if ($this->referral_name->Required) {
 			if (!$this->referral_name->IsDetailKey && $this->referral_name->FormValue != NULL && $this->referral_name->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->referral_name->caption(), $this->referral_name->RequiredErrorMessage));
@@ -1065,6 +1200,11 @@ class referral_add extends referral
 		if ($this->referral_deal_signed->Required) {
 			if (!$this->referral_deal_signed->IsDetailKey && $this->referral_deal_signed->FormValue != NULL && $this->referral_deal_signed->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->referral_deal_signed->caption(), $this->referral_deal_signed->RequiredErrorMessage));
+			}
+		}
+		if ($this->referral_scanned->Required) {
+			if ($this->referral_scanned->Upload->FileName == "" && !$this->referral_scanned->Upload->KeepFile) {
+				AddMessage($FormError, str_replace("%s", $this->referral_scanned->caption(), $this->referral_scanned->RequiredErrorMessage));
 			}
 		}
 
@@ -1104,6 +1244,57 @@ class referral_add extends referral
 		// referral_deal_signed
 		$this->referral_deal_signed->setDbValueDef($rsnew, $this->referral_deal_signed->CurrentValue, "", FALSE);
 
+		// referral_scanned
+		if ($this->referral_scanned->Visible && !$this->referral_scanned->Upload->KeepFile) {
+			$this->referral_scanned->Upload->DbValue = ""; // No need to delete old file
+			if ($this->referral_scanned->Upload->FileName == "") {
+				$rsnew['referral_scanned'] = NULL;
+			} else {
+				$rsnew['referral_scanned'] = $this->referral_scanned->Upload->FileName;
+			}
+			$this->referral_scanned->ImageWidth = 1000; // Resize width
+			$this->referral_scanned->ImageHeight = 0; // Resize height
+		}
+		if ($this->referral_scanned->Visible && !$this->referral_scanned->Upload->KeepFile) {
+			$oldFiles = EmptyValue($this->referral_scanned->Upload->DbValue) ? [] : [$this->referral_scanned->htmlDecode($this->referral_scanned->Upload->DbValue)];
+			if (!EmptyValue($this->referral_scanned->Upload->FileName)) {
+				$newFiles = [$this->referral_scanned->Upload->FileName];
+				$NewFileCount = count($newFiles);
+				for ($i = 0; $i < $NewFileCount; $i++) {
+					if ($newFiles[$i] != "") {
+						$file = $newFiles[$i];
+						$tempPath = UploadTempPath($this->referral_scanned, $this->referral_scanned->Upload->Index);
+						if (file_exists($tempPath . $file)) {
+							if (Config("DELETE_UPLOADED_FILES")) {
+								$oldFileFound = FALSE;
+								$oldFileCount = count($oldFiles);
+								for ($j = 0; $j < $oldFileCount; $j++) {
+									$oldFile = $oldFiles[$j];
+									if ($oldFile == $file) { // Old file found, no need to delete anymore
+										unset($oldFiles[$j]);
+										$oldFileFound = TRUE;
+										break;
+									}
+								}
+								if ($oldFileFound) // No need to check if file exists further
+									continue;
+							}
+							$file1 = UniqueFilename($this->referral_scanned->physicalUploadPath(), $file); // Get new file name
+							if ($file1 != $file) { // Rename temp file
+								while (file_exists($tempPath . $file1) || file_exists($this->referral_scanned->physicalUploadPath() . $file1)) // Make sure no file name clash
+									$file1 = UniqueFilename($this->referral_scanned->physicalUploadPath(), $file1, TRUE); // Use indexed name
+								rename($tempPath . $file, $tempPath . $file1);
+								$newFiles[$i] = $file1;
+							}
+						}
+					}
+				}
+				$this->referral_scanned->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
+				$this->referral_scanned->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
+				$this->referral_scanned->setDbValueDef($rsnew, $this->referral_scanned->Upload->FileName, "", FALSE);
+			}
+		}
+
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
 		$insertRow = $this->Row_Inserting($rs, $rsnew);
@@ -1112,6 +1303,35 @@ class referral_add extends referral
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
+				if ($this->referral_scanned->Visible && !$this->referral_scanned->Upload->KeepFile) {
+					$oldFiles = EmptyValue($this->referral_scanned->Upload->DbValue) ? [] : [$this->referral_scanned->htmlDecode($this->referral_scanned->Upload->DbValue)];
+					if (!EmptyValue($this->referral_scanned->Upload->FileName)) {
+						$newFiles = [$this->referral_scanned->Upload->FileName];
+						$newFiles2 = [$this->referral_scanned->htmlDecode($rsnew['referral_scanned'])];
+						$newFileCount = count($newFiles);
+						for ($i = 0; $i < $newFileCount; $i++) {
+							if ($newFiles[$i] != "") {
+								$file = UploadTempPath($this->referral_scanned, $this->referral_scanned->Upload->Index) . $newFiles[$i];
+								if (file_exists($file)) {
+									if (@$newFiles2[$i] != "") // Use correct file name
+										$newFiles[$i] = $newFiles2[$i];
+									if (!$this->referral_scanned->Upload->ResizeAndSaveToFile($this->referral_scanned->ImageWidth, $this->referral_scanned->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
+										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
+										return FALSE;
+									}
+								}
+							}
+						}
+					} else {
+						$newFiles = [];
+					}
+					if (Config("DELETE_UPLOADED_FILES")) {
+						foreach ($oldFiles as $oldFile) {
+							if ($oldFile != "" && !in_array($oldFile, $newFiles))
+								@unlink($this->referral_scanned->oldPhysicalUploadPath() . $oldFile);
+						}
+					}
+				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1134,6 +1354,12 @@ class referral_add extends referral
 
 		// Clean upload path if any
 		if ($addRow) {
+
+			// referral_scanned
+			if ($this->referral_scanned->Upload->FileToken != "")
+				CleanUploadTempPath($this->referral_scanned->Upload->FileToken, $this->referral_scanned->Upload->Index);
+			else
+				CleanUploadTempPath($this->referral_scanned, $this->referral_scanned->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1169,6 +1395,8 @@ class referral_add extends referral
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_referral_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1189,6 +1417,8 @@ class referral_add extends referral
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_referral_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

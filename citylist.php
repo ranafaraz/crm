@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $city_list = new city_list();
 $city_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $city_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$city_list->isExport() && !$city->CurrentAction) { ?>
 <form name="fcitylistsrch" id="fcitylistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fcitylistsrch-search-panel" class="<?php echo $city_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $city_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $city_list->showPageHeader(); ?>
 <?php
 $city_list->showMessage();
 ?>
 <?php if ($city_list->TotalRecords > 0 || $city->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($city_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> city">
+<?php if (!$city_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$city_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $city_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $city_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fcitylist" id="fcitylist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

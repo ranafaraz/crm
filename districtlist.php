@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $district_list = new district_list();
 $district_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $district_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$district_list->isExport() && !$district->CurrentAction) { ?>
 <form name="fdistrictlistsrch" id="fdistrictlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fdistrictlistsrch-search-panel" class="<?php echo $district_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $district_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $district_list->showPageHeader(); ?>
 <?php
 $district_list->showMessage();
 ?>
 <?php if ($district_list->TotalRecords > 0 || $district->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($district_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> district">
+<?php if (!$district_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$district_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $district_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $district_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fdistrictlist" id="fdistrictlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -78,7 +78,7 @@ class business_nature extends DbTable
 		$this->fields['b_nature_caption'] = &$this->b_nature_caption;
 
 		// b_nature_desc
-		$this->b_nature_desc = new DbField('business_nature', 'business_nature', 'x_b_nature_desc', 'b_nature_desc', '`b_nature_desc`', '`b_nature_desc`', 200, 100, -1, FALSE, '`b_nature_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_nature_desc = new DbField('business_nature', 'business_nature', 'x_b_nature_desc', 'b_nature_desc', '`b_nature_desc`', '`b_nature_desc`', 200, 100, -1, FALSE, '`b_nature_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->b_nature_desc->Nullable = FALSE; // NOT NULL field
 		$this->b_nature_desc->Required = TRUE; // Required field
 		$this->b_nature_desc->Sortable = TRUE; // Allow sort
@@ -689,6 +689,7 @@ class business_nature extends DbTable
 		// b_nature_id
 
 		$this->b_nature_id->ViewValue = $this->b_nature_id->CurrentValue;
+		$this->b_nature_id->CssClass = "font-weight-bold";
 		$this->b_nature_id->ViewCustomAttributes = "";
 
 		// b_nature_caption
@@ -733,6 +734,7 @@ class business_nature extends DbTable
 		$this->b_nature_id->EditAttrs["class"] = "form-control";
 		$this->b_nature_id->EditCustomAttributes = "";
 		$this->b_nature_id->EditValue = $this->b_nature_id->CurrentValue;
+		$this->b_nature_id->CssClass = "font-weight-bold";
 		$this->b_nature_id->ViewCustomAttributes = "";
 
 		// b_nature_caption
@@ -746,8 +748,6 @@ class business_nature extends DbTable
 		// b_nature_desc
 		$this->b_nature_desc->EditAttrs["class"] = "form-control";
 		$this->b_nature_desc->EditCustomAttributes = "";
-		if (!$this->b_nature_desc->Raw)
-			$this->b_nature_desc->CurrentValue = HtmlDecode($this->b_nature_desc->CurrentValue);
 		$this->b_nature_desc->EditValue = $this->b_nature_desc->CurrentValue;
 		$this->b_nature_desc->PlaceHolder = RemoveHtml($this->b_nature_desc->caption());
 

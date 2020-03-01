@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_status_add = new business_status_add();
 $business_status_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -59,6 +60,11 @@ loadjs.ready("head", function() {
 				elm = this.getElements("x" + infix + "_business_status_caption");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_status_add->business_status_caption->caption(), $business_status_add->business_status_caption->RequiredErrorMessage)) ?>");
+			<?php } ?>
+			<?php if ($business_status_add->b_status_desc->Required) { ?>
+				elm = this.getElements("x" + infix + "_b_status_desc");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_status_add->b_status_desc->caption(), $business_status_add->b_status_desc->RequiredErrorMessage)) ?>");
 			<?php } ?>
 
 				// Call Form_CustomValidate event
@@ -119,6 +125,16 @@ $business_status_add->showMessage();
 <input type="text" data-table="business_status" data-field="x_business_status_caption" name="x_business_status_caption" id="x_business_status_caption" size="30" maxlength="30" placeholder="<?php echo HtmlEncode($business_status_add->business_status_caption->getPlaceHolder()) ?>" value="<?php echo $business_status_add->business_status_caption->EditValue ?>"<?php echo $business_status_add->business_status_caption->editAttributes() ?>>
 </span>
 <?php echo $business_status_add->business_status_caption->CustomMsg ?></div></div>
+	</div>
+<?php } ?>
+<?php if ($business_status_add->b_status_desc->Visible) { // b_status_desc ?>
+	<div id="r_b_status_desc" class="form-group row">
+		<label id="elh_business_status_b_status_desc" for="x_b_status_desc" class="<?php echo $business_status_add->LeftColumnClass ?>"><?php echo $business_status_add->b_status_desc->caption() ?><?php echo $business_status_add->b_status_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $business_status_add->RightColumnClass ?>"><div <?php echo $business_status_add->b_status_desc->cellAttributes() ?>>
+<span id="el_business_status_b_status_desc">
+<textarea data-table="business_status" data-field="x_b_status_desc" name="x_b_status_desc" id="x_b_status_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($business_status_add->b_status_desc->getPlaceHolder()) ?>"<?php echo $business_status_add->b_status_desc->editAttributes() ?>><?php echo $business_status_add->b_status_desc->EditValue ?></textarea>
+</span>
+<?php echo $business_status_add->b_status_desc->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 </div><!-- /page* -->

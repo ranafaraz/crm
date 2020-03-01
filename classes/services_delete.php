@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_delete extends services
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'services';
@@ -539,6 +539,18 @@ class services_delete extends services
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("serviceslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->service_id->setVisibility();
@@ -567,8 +579,9 @@ class services_delete extends services
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->service_branch_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -635,7 +648,7 @@ class services_delete extends services
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -686,9 +699,15 @@ class services_delete extends services
 			return;
 		$this->service_id->setDbValue($row['service_id']);
 		$this->service_branch_id->setDbValue($row['service_branch_id']);
+		if (array_key_exists('EV__service_branch_id', $rs->fields)) {
+			$this->service_branch_id->VirtualValue = $rs->fields('EV__service_branch_id'); // Set up virtual field value
+		} else {
+			$this->service_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->service_caption->setDbValue($row['service_caption']);
 		$this->service_desc->setDbValue($row['service_desc']);
-		$this->service_logo->setDbValue($row['service_logo']);
+		$this->service_logo->Upload->DbValue = $row['service_logo'];
+		$this->service_logo->setDbValue($this->service_logo->Upload->DbValue);
 	}
 
 	// Return a row with default values
@@ -724,11 +743,33 @@ class services_delete extends services
 
 			// service_id
 			$this->service_id->ViewValue = $this->service_id->CurrentValue;
+			$this->service_id->CssClass = "font-weight-bold";
 			$this->service_id->ViewCustomAttributes = "";
 
 			// service_branch_id
-			$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
-			$this->service_branch_id->ViewValue = FormatNumber($this->service_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->service_branch_id->VirtualValue != "") {
+				$this->service_branch_id->ViewValue = $this->service_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->service_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->service_branch_id->ViewValue = $this->service_branch_id->lookupCacheOption($curVal);
+					if ($this->service_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->service_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->service_branch_id->ViewValue = $this->service_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->service_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->service_branch_id->ViewCustomAttributes = "";
 
 			// service_caption
@@ -736,7 +777,14 @@ class services_delete extends services
 			$this->service_caption->ViewCustomAttributes = "";
 
 			// service_logo
-			$this->service_logo->ViewValue = $this->service_logo->CurrentValue;
+			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
+				$this->service_logo->ImageWidth = 200;
+				$this->service_logo->ImageHeight = 0;
+				$this->service_logo->ImageAlt = $this->service_logo->alt();
+				$this->service_logo->ViewValue = $this->service_logo->Upload->DbValue;
+			} else {
+				$this->service_logo->ViewValue = "";
+			}
 			$this->service_logo->ViewCustomAttributes = "";
 
 			// service_id
@@ -756,8 +804,22 @@ class services_delete extends services
 
 			// service_logo
 			$this->service_logo->LinkCustomAttributes = "";
-			$this->service_logo->HrefValue = "";
+			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
+				$this->service_logo->HrefValue = GetFileUploadUrl($this->service_logo, $this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)); // Add prefix/suffix
+				$this->service_logo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->service_logo->HrefValue = FullUrl($this->service_logo->HrefValue, "href");
+			} else {
+				$this->service_logo->HrefValue = "";
+			}
+			$this->service_logo->ExportHrefValue = $this->service_logo->UploadPath . $this->service_logo->Upload->DbValue;
 			$this->service_logo->TooltipValue = "";
+			if ($this->service_logo->UseColorbox) {
+				if (EmptyValue($this->service_logo->TooltipValue))
+					$this->service_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->service_logo->LinkAttrs["data-rel"] = "services_x_service_logo";
+				$this->service_logo->LinkAttrs->appendClass("ew-lightbox");
+			}
 		}
 
 		// Call Row Rendered event
@@ -876,6 +938,8 @@ class services_delete extends services
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_service_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -896,6 +960,8 @@ class services_delete extends services
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_service_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $employees_view = new employees_view();
 $employees_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -175,7 +176,7 @@ $employees_view->showMessage();
 		<td class="<?php echo $employees_view->TableLeftColumnClass ?>"><span id="elh_employees_emp_photo"><?php echo $employees_view->emp_photo->caption() ?></span></td>
 		<td data-name="emp_photo" <?php echo $employees_view->emp_photo->cellAttributes() ?>>
 <span id="el_employees_emp_photo">
-<span<?php echo $employees_view->emp_photo->viewAttributes() ?>><?php echo $employees_view->emp_photo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($employees_view->emp_photo, $employees_view->emp_photo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

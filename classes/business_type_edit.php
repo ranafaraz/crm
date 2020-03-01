@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class business_type_edit extends business_type
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'business_type';
@@ -540,6 +540,8 @@ class business_type_edit extends business_type
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class business_type_edit extends business_type
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("business_typelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -894,6 +908,7 @@ class business_type_edit extends business_type
 
 			// business_type_id
 			$this->business_type_id->ViewValue = $this->business_type_id->CurrentValue;
+			$this->business_type_id->CssClass = "font-weight-bold";
 			$this->business_type_id->ViewCustomAttributes = "";
 
 			// business_type_name
@@ -924,6 +939,7 @@ class business_type_edit extends business_type
 			$this->business_type_id->EditAttrs["class"] = "form-control";
 			$this->business_type_id->EditCustomAttributes = "";
 			$this->business_type_id->EditValue = $this->business_type_id->CurrentValue;
+			$this->business_type_id->CssClass = "font-weight-bold";
 			$this->business_type_id->ViewCustomAttributes = "";
 
 			// business_type_name

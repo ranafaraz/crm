@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class country_delete extends country
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'country';
@@ -539,6 +539,18 @@ class country_delete extends country
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("countrylist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->country_id->setVisibility();
@@ -712,6 +724,7 @@ class country_delete extends country
 
 			// country_id
 			$this->country_id->ViewValue = $this->country_id->CurrentValue;
+			$this->country_id->CssClass = "font-weight-bold";
 			$this->country_id->ViewCustomAttributes = "";
 
 			// country_name

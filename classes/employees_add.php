@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class employees_add extends employees
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'employees';
@@ -540,6 +540,8 @@ class employees_add extends employees
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class employees_add extends employees
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("employeeslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -667,8 +681,11 @@ class employees_add extends employees
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->emp_branch_id);
+		$this->setupLookupOptions($this->emp_designation_id);
+		$this->setupLookupOptions($this->emp_city_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -772,6 +789,9 @@ class employees_add extends employees
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
+		$this->emp_photo->Upload->Index = $CurrentForm->Index;
+		$this->emp_photo->Upload->uploadFile();
+		$this->emp_photo->CurrentValue = $this->emp_photo->Upload->FileName;
 	}
 
 	// Load default values
@@ -797,8 +817,9 @@ class employees_add extends employees
 		$this->emp_contact->OldValue = $this->emp_contact->CurrentValue;
 		$this->emp_email->CurrentValue = NULL;
 		$this->emp_email->OldValue = $this->emp_email->CurrentValue;
-		$this->emp_photo->CurrentValue = NULL;
-		$this->emp_photo->OldValue = $this->emp_photo->CurrentValue;
+		$this->emp_photo->Upload->DbValue = NULL;
+		$this->emp_photo->OldValue = $this->emp_photo->Upload->DbValue;
+		$this->emp_photo->CurrentValue = NULL; // Clear file related field
 	}
 
 	// Load form values
@@ -807,6 +828,7 @@ class employees_add extends employees
 
 		// Load from form
 		global $CurrentForm;
+		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'emp_branch_id' first before field var 'x_emp_branch_id'
 		$val = $CurrentForm->hasValue("emp_branch_id") ? $CurrentForm->getValue("emp_branch_id") : $CurrentForm->getValue("x_emp_branch_id");
@@ -889,15 +911,6 @@ class employees_add extends employees
 				$this->emp_email->setFormValue($val);
 		}
 
-		// Check field name 'emp_photo' first before field var 'x_emp_photo'
-		$val = $CurrentForm->hasValue("emp_photo") ? $CurrentForm->getValue("emp_photo") : $CurrentForm->getValue("x_emp_photo");
-		if (!$this->emp_photo->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->emp_photo->Visible = FALSE; // Disable update for API request
-			else
-				$this->emp_photo->setFormValue($val);
-		}
-
 		// Check field name 'emp_id' first before field var 'x_emp_id'
 		$val = $CurrentForm->hasValue("emp_id") ? $CurrentForm->getValue("emp_id") : $CurrentForm->getValue("x_emp_id");
 	}
@@ -915,7 +928,6 @@ class employees_add extends employees
 		$this->emp_address->CurrentValue = $this->emp_address->FormValue;
 		$this->emp_contact->CurrentValue = $this->emp_contact->FormValue;
 		$this->emp_email->CurrentValue = $this->emp_email->FormValue;
-		$this->emp_photo->CurrentValue = $this->emp_photo->FormValue;
 	}
 
 	// Load row based on key values
@@ -955,15 +967,31 @@ class employees_add extends employees
 			return;
 		$this->emp_id->setDbValue($row['emp_id']);
 		$this->emp_branch_id->setDbValue($row['emp_branch_id']);
+		if (array_key_exists('EV__emp_branch_id', $rs->fields)) {
+			$this->emp_branch_id->VirtualValue = $rs->fields('EV__emp_branch_id'); // Set up virtual field value
+		} else {
+			$this->emp_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->emp_designation_id->setDbValue($row['emp_designation_id']);
+		if (array_key_exists('EV__emp_designation_id', $rs->fields)) {
+			$this->emp_designation_id->VirtualValue = $rs->fields('EV__emp_designation_id'); // Set up virtual field value
+		} else {
+			$this->emp_designation_id->VirtualValue = ""; // Clear value
+		}
 		$this->emp_city_id->setDbValue($row['emp_city_id']);
+		if (array_key_exists('EV__emp_city_id', $rs->fields)) {
+			$this->emp_city_id->VirtualValue = $rs->fields('EV__emp_city_id'); // Set up virtual field value
+		} else {
+			$this->emp_city_id->VirtualValue = ""; // Clear value
+		}
 		$this->emp_name->setDbValue($row['emp_name']);
 		$this->emp_father->setDbValue($row['emp_father']);
 		$this->emp_cnic->setDbValue($row['emp_cnic']);
 		$this->emp_address->setDbValue($row['emp_address']);
 		$this->emp_contact->setDbValue($row['emp_contact']);
 		$this->emp_email->setDbValue($row['emp_email']);
-		$this->emp_photo->setDbValue($row['emp_photo']);
+		$this->emp_photo->Upload->DbValue = $row['emp_photo'];
+		$this->emp_photo->setDbValue($this->emp_photo->Upload->DbValue);
 	}
 
 	// Return a row with default values
@@ -981,7 +1009,7 @@ class employees_add extends employees
 		$row['emp_address'] = $this->emp_address->CurrentValue;
 		$row['emp_contact'] = $this->emp_contact->CurrentValue;
 		$row['emp_email'] = $this->emp_email->CurrentValue;
-		$row['emp_photo'] = $this->emp_photo->CurrentValue;
+		$row['emp_photo'] = $this->emp_photo->Upload->DbValue;
 		return $row;
 	}
 
@@ -1035,21 +1063,85 @@ class employees_add extends employees
 
 			// emp_id
 			$this->emp_id->ViewValue = $this->emp_id->CurrentValue;
+			$this->emp_id->CssClass = "font-weight-bold";
 			$this->emp_id->ViewCustomAttributes = "";
 
 			// emp_branch_id
-			$this->emp_branch_id->ViewValue = $this->emp_branch_id->CurrentValue;
-			$this->emp_branch_id->ViewValue = FormatNumber($this->emp_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->emp_branch_id->VirtualValue != "") {
+				$this->emp_branch_id->ViewValue = $this->emp_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->emp_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->emp_branch_id->ViewValue = $this->emp_branch_id->lookupCacheOption($curVal);
+					if ($this->emp_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->emp_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->emp_branch_id->ViewValue = $this->emp_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->emp_branch_id->ViewValue = $this->emp_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->emp_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->emp_branch_id->ViewCustomAttributes = "";
 
 			// emp_designation_id
-			$this->emp_designation_id->ViewValue = $this->emp_designation_id->CurrentValue;
-			$this->emp_designation_id->ViewValue = FormatNumber($this->emp_designation_id->ViewValue, 0, -2, -2, -2);
+			if ($this->emp_designation_id->VirtualValue != "") {
+				$this->emp_designation_id->ViewValue = $this->emp_designation_id->VirtualValue;
+			} else {
+				$curVal = strval($this->emp_designation_id->CurrentValue);
+				if ($curVal != "") {
+					$this->emp_designation_id->ViewValue = $this->emp_designation_id->lookupCacheOption($curVal);
+					if ($this->emp_designation_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`designation_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->emp_designation_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->emp_designation_id->ViewValue = $this->emp_designation_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->emp_designation_id->ViewValue = $this->emp_designation_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->emp_designation_id->ViewValue = NULL;
+				}
+			}
 			$this->emp_designation_id->ViewCustomAttributes = "";
 
 			// emp_city_id
-			$this->emp_city_id->ViewValue = $this->emp_city_id->CurrentValue;
-			$this->emp_city_id->ViewValue = FormatNumber($this->emp_city_id->ViewValue, 0, -2, -2, -2);
+			if ($this->emp_city_id->VirtualValue != "") {
+				$this->emp_city_id->ViewValue = $this->emp_city_id->VirtualValue;
+			} else {
+				$curVal = strval($this->emp_city_id->CurrentValue);
+				if ($curVal != "") {
+					$this->emp_city_id->ViewValue = $this->emp_city_id->lookupCacheOption($curVal);
+					if ($this->emp_city_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->emp_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->emp_city_id->ViewValue = $this->emp_city_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->emp_city_id->ViewValue = $this->emp_city_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->emp_city_id->ViewValue = NULL;
+				}
+			}
 			$this->emp_city_id->ViewCustomAttributes = "";
 
 			// emp_name
@@ -1077,7 +1169,14 @@ class employees_add extends employees
 			$this->emp_email->ViewCustomAttributes = "";
 
 			// emp_photo
-			$this->emp_photo->ViewValue = $this->emp_photo->CurrentValue;
+			if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
+				$this->emp_photo->ImageWidth = 200;
+				$this->emp_photo->ImageHeight = 0;
+				$this->emp_photo->ImageAlt = $this->emp_photo->alt();
+				$this->emp_photo->ViewValue = $this->emp_photo->Upload->DbValue;
+			} else {
+				$this->emp_photo->ViewValue = "";
+			}
 			$this->emp_photo->ViewCustomAttributes = "";
 
 			// emp_branch_id
@@ -1127,27 +1226,119 @@ class employees_add extends employees
 
 			// emp_photo
 			$this->emp_photo->LinkCustomAttributes = "";
-			$this->emp_photo->HrefValue = "";
+			if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
+				$this->emp_photo->HrefValue = GetFileUploadUrl($this->emp_photo, $this->emp_photo->htmlDecode($this->emp_photo->Upload->DbValue)); // Add prefix/suffix
+				$this->emp_photo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->emp_photo->HrefValue = FullUrl($this->emp_photo->HrefValue, "href");
+			} else {
+				$this->emp_photo->HrefValue = "";
+			}
+			$this->emp_photo->ExportHrefValue = $this->emp_photo->UploadPath . $this->emp_photo->Upload->DbValue;
 			$this->emp_photo->TooltipValue = "";
+			if ($this->emp_photo->UseColorbox) {
+				if (EmptyValue($this->emp_photo->TooltipValue))
+					$this->emp_photo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->emp_photo->LinkAttrs["data-rel"] = "employees_x_emp_photo";
+				$this->emp_photo->LinkAttrs->appendClass("ew-lightbox");
+			}
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// emp_branch_id
-			$this->emp_branch_id->EditAttrs["class"] = "form-control";
 			$this->emp_branch_id->EditCustomAttributes = "";
-			$this->emp_branch_id->EditValue = HtmlEncode($this->emp_branch_id->CurrentValue);
-			$this->emp_branch_id->PlaceHolder = RemoveHtml($this->emp_branch_id->caption());
+			$curVal = trim(strval($this->emp_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->emp_branch_id->ViewValue = $this->emp_branch_id->lookupCacheOption($curVal);
+			else
+				$this->emp_branch_id->ViewValue = $this->emp_branch_id->Lookup !== NULL && is_array($this->emp_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->emp_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->emp_branch_id->EditValue = array_values($this->emp_branch_id->Lookup->Options);
+				if ($this->emp_branch_id->ViewValue == "")
+					$this->emp_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->emp_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->emp_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->emp_branch_id->ViewValue = $this->emp_branch_id->displayValue($arwrk);
+				} else {
+					$this->emp_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->emp_branch_id->EditValue = $arwrk;
+			}
 
 			// emp_designation_id
-			$this->emp_designation_id->EditAttrs["class"] = "form-control";
 			$this->emp_designation_id->EditCustomAttributes = "";
-			$this->emp_designation_id->EditValue = HtmlEncode($this->emp_designation_id->CurrentValue);
-			$this->emp_designation_id->PlaceHolder = RemoveHtml($this->emp_designation_id->caption());
+			$curVal = trim(strval($this->emp_designation_id->CurrentValue));
+			if ($curVal != "")
+				$this->emp_designation_id->ViewValue = $this->emp_designation_id->lookupCacheOption($curVal);
+			else
+				$this->emp_designation_id->ViewValue = $this->emp_designation_id->Lookup !== NULL && is_array($this->emp_designation_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->emp_designation_id->ViewValue !== NULL) { // Load from cache
+				$this->emp_designation_id->EditValue = array_values($this->emp_designation_id->Lookup->Options);
+				if ($this->emp_designation_id->ViewValue == "")
+					$this->emp_designation_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`designation_id`" . SearchString("=", $this->emp_designation_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->emp_designation_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->emp_designation_id->ViewValue = $this->emp_designation_id->displayValue($arwrk);
+				} else {
+					$this->emp_designation_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->emp_designation_id->EditValue = $arwrk;
+			}
 
 			// emp_city_id
-			$this->emp_city_id->EditAttrs["class"] = "form-control";
 			$this->emp_city_id->EditCustomAttributes = "";
-			$this->emp_city_id->EditValue = HtmlEncode($this->emp_city_id->CurrentValue);
-			$this->emp_city_id->PlaceHolder = RemoveHtml($this->emp_city_id->caption());
+			$curVal = trim(strval($this->emp_city_id->CurrentValue));
+			if ($curVal != "")
+				$this->emp_city_id->ViewValue = $this->emp_city_id->lookupCacheOption($curVal);
+			else
+				$this->emp_city_id->ViewValue = $this->emp_city_id->Lookup !== NULL && is_array($this->emp_city_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->emp_city_id->ViewValue !== NULL) { // Load from cache
+				$this->emp_city_id->EditValue = array_values($this->emp_city_id->Lookup->Options);
+				if ($this->emp_city_id->ViewValue == "")
+					$this->emp_city_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`city_id`" . SearchString("=", $this->emp_city_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->emp_city_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->emp_city_id->ViewValue = $this->emp_city_id->displayValue($arwrk);
+				} else {
+					$this->emp_city_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->emp_city_id->EditValue = $arwrk;
+			}
 
 			// emp_name
 			$this->emp_name->EditAttrs["class"] = "form-control";
@@ -1200,10 +1391,18 @@ class employees_add extends employees
 			// emp_photo
 			$this->emp_photo->EditAttrs["class"] = "form-control";
 			$this->emp_photo->EditCustomAttributes = "";
-			if (!$this->emp_photo->Raw)
-				$this->emp_photo->CurrentValue = HtmlDecode($this->emp_photo->CurrentValue);
-			$this->emp_photo->EditValue = HtmlEncode($this->emp_photo->CurrentValue);
-			$this->emp_photo->PlaceHolder = RemoveHtml($this->emp_photo->caption());
+			if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
+				$this->emp_photo->ImageWidth = 200;
+				$this->emp_photo->ImageHeight = 0;
+				$this->emp_photo->ImageAlt = $this->emp_photo->alt();
+				$this->emp_photo->EditValue = $this->emp_photo->Upload->DbValue;
+			} else {
+				$this->emp_photo->EditValue = "";
+			}
+			if (!EmptyValue($this->emp_photo->CurrentValue))
+					$this->emp_photo->Upload->FileName = $this->emp_photo->CurrentValue;
+			if ($this->isShow() || $this->isCopy())
+				RenderUploadField($this->emp_photo);
 
 			// Add refer script
 			// emp_branch_id
@@ -1245,7 +1444,15 @@ class employees_add extends employees
 
 			// emp_photo
 			$this->emp_photo->LinkCustomAttributes = "";
-			$this->emp_photo->HrefValue = "";
+			if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
+				$this->emp_photo->HrefValue = GetFileUploadUrl($this->emp_photo, $this->emp_photo->htmlDecode($this->emp_photo->Upload->DbValue)); // Add prefix/suffix
+				$this->emp_photo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->emp_photo->HrefValue = FullUrl($this->emp_photo->HrefValue, "href");
+			} else {
+				$this->emp_photo->HrefValue = "";
+			}
+			$this->emp_photo->ExportHrefValue = $this->emp_photo->UploadPath . $this->emp_photo->Upload->DbValue;
 		}
 		if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) // Add/Edit/Search row
 			$this->setupFieldTitles();
@@ -1271,24 +1478,15 @@ class employees_add extends employees
 				AddMessage($FormError, str_replace("%s", $this->emp_branch_id->caption(), $this->emp_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->emp_branch_id->FormValue)) {
-			AddMessage($FormError, $this->emp_branch_id->errorMessage());
-		}
 		if ($this->emp_designation_id->Required) {
 			if (!$this->emp_designation_id->IsDetailKey && $this->emp_designation_id->FormValue != NULL && $this->emp_designation_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->emp_designation_id->caption(), $this->emp_designation_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->emp_designation_id->FormValue)) {
-			AddMessage($FormError, $this->emp_designation_id->errorMessage());
-		}
 		if ($this->emp_city_id->Required) {
 			if (!$this->emp_city_id->IsDetailKey && $this->emp_city_id->FormValue != NULL && $this->emp_city_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->emp_city_id->caption(), $this->emp_city_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->emp_city_id->FormValue)) {
-			AddMessage($FormError, $this->emp_city_id->errorMessage());
 		}
 		if ($this->emp_name->Required) {
 			if (!$this->emp_name->IsDetailKey && $this->emp_name->FormValue != NULL && $this->emp_name->FormValue == "") {
@@ -1321,7 +1519,7 @@ class employees_add extends employees
 			}
 		}
 		if ($this->emp_photo->Required) {
-			if (!$this->emp_photo->IsDetailKey && $this->emp_photo->FormValue != NULL && $this->emp_photo->FormValue == "") {
+			if ($this->emp_photo->Upload->FileName == "" && !$this->emp_photo->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->emp_photo->caption(), $this->emp_photo->RequiredErrorMessage));
 			}
 		}
@@ -1342,6 +1540,17 @@ class employees_add extends employees
 	protected function addRow($rsold = NULL)
 	{
 		global $Language, $Security;
+		if ($this->emp_cnic->CurrentValue != "") { // Check field with unique index
+			$filter = "(emp_cnic = '" . AdjustSql($this->emp_cnic->CurrentValue, $this->Dbid) . "')";
+			$rsChk = $this->loadRs($filter);
+			if ($rsChk && !$rsChk->EOF) {
+				$idxErrMsg = str_replace("%f", $this->emp_cnic->caption(), $Language->phrase("DupIndex"));
+				$idxErrMsg = str_replace("%v", $this->emp_cnic->CurrentValue, $idxErrMsg);
+				$this->setFailureMessage($idxErrMsg);
+				$rsChk->close();
+				return FALSE;
+			}
+		}
 		$conn = $this->getConnection();
 
 		// Load db values from rsold
@@ -1378,7 +1587,55 @@ class employees_add extends employees
 		$this->emp_email->setDbValueDef($rsnew, $this->emp_email->CurrentValue, "", FALSE);
 
 		// emp_photo
-		$this->emp_photo->setDbValueDef($rsnew, $this->emp_photo->CurrentValue, "", FALSE);
+		if ($this->emp_photo->Visible && !$this->emp_photo->Upload->KeepFile) {
+			$this->emp_photo->Upload->DbValue = ""; // No need to delete old file
+			if ($this->emp_photo->Upload->FileName == "") {
+				$rsnew['emp_photo'] = NULL;
+			} else {
+				$rsnew['emp_photo'] = $this->emp_photo->Upload->FileName;
+			}
+			$this->emp_photo->ImageWidth = 1000; // Resize width
+			$this->emp_photo->ImageHeight = 0; // Resize height
+		}
+		if ($this->emp_photo->Visible && !$this->emp_photo->Upload->KeepFile) {
+			$oldFiles = EmptyValue($this->emp_photo->Upload->DbValue) ? [] : [$this->emp_photo->htmlDecode($this->emp_photo->Upload->DbValue)];
+			if (!EmptyValue($this->emp_photo->Upload->FileName)) {
+				$newFiles = [$this->emp_photo->Upload->FileName];
+				$NewFileCount = count($newFiles);
+				for ($i = 0; $i < $NewFileCount; $i++) {
+					if ($newFiles[$i] != "") {
+						$file = $newFiles[$i];
+						$tempPath = UploadTempPath($this->emp_photo, $this->emp_photo->Upload->Index);
+						if (file_exists($tempPath . $file)) {
+							if (Config("DELETE_UPLOADED_FILES")) {
+								$oldFileFound = FALSE;
+								$oldFileCount = count($oldFiles);
+								for ($j = 0; $j < $oldFileCount; $j++) {
+									$oldFile = $oldFiles[$j];
+									if ($oldFile == $file) { // Old file found, no need to delete anymore
+										unset($oldFiles[$j]);
+										$oldFileFound = TRUE;
+										break;
+									}
+								}
+								if ($oldFileFound) // No need to check if file exists further
+									continue;
+							}
+							$file1 = UniqueFilename($this->emp_photo->physicalUploadPath(), $file); // Get new file name
+							if ($file1 != $file) { // Rename temp file
+								while (file_exists($tempPath . $file1) || file_exists($this->emp_photo->physicalUploadPath() . $file1)) // Make sure no file name clash
+									$file1 = UniqueFilename($this->emp_photo->physicalUploadPath(), $file1, TRUE); // Use indexed name
+								rename($tempPath . $file, $tempPath . $file1);
+								$newFiles[$i] = $file1;
+							}
+						}
+					}
+				}
+				$this->emp_photo->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
+				$this->emp_photo->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
+				$this->emp_photo->setDbValueDef($rsnew, $this->emp_photo->Upload->FileName, "", FALSE);
+			}
+		}
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1388,6 +1645,35 @@ class employees_add extends employees
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
+				if ($this->emp_photo->Visible && !$this->emp_photo->Upload->KeepFile) {
+					$oldFiles = EmptyValue($this->emp_photo->Upload->DbValue) ? [] : [$this->emp_photo->htmlDecode($this->emp_photo->Upload->DbValue)];
+					if (!EmptyValue($this->emp_photo->Upload->FileName)) {
+						$newFiles = [$this->emp_photo->Upload->FileName];
+						$newFiles2 = [$this->emp_photo->htmlDecode($rsnew['emp_photo'])];
+						$newFileCount = count($newFiles);
+						for ($i = 0; $i < $newFileCount; $i++) {
+							if ($newFiles[$i] != "") {
+								$file = UploadTempPath($this->emp_photo, $this->emp_photo->Upload->Index) . $newFiles[$i];
+								if (file_exists($file)) {
+									if (@$newFiles2[$i] != "") // Use correct file name
+										$newFiles[$i] = $newFiles2[$i];
+									if (!$this->emp_photo->Upload->ResizeAndSaveToFile($this->emp_photo->ImageWidth, $this->emp_photo->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
+										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
+										return FALSE;
+									}
+								}
+							}
+						}
+					} else {
+						$newFiles = [];
+					}
+					if (Config("DELETE_UPLOADED_FILES")) {
+						foreach ($oldFiles as $oldFile) {
+							if ($oldFile != "" && !in_array($oldFile, $newFiles))
+								@unlink($this->emp_photo->oldPhysicalUploadPath() . $oldFile);
+						}
+					}
+				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1410,6 +1696,12 @@ class employees_add extends employees
 
 		// Clean upload path if any
 		if ($addRow) {
+
+			// emp_photo
+			if ($this->emp_photo->Upload->FileToken != "")
+				CleanUploadTempPath($this->emp_photo->Upload->FileToken, $this->emp_photo->Upload->Index);
+			else
+				CleanUploadTempPath($this->emp_photo, $this->emp_photo->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1445,6 +1737,12 @@ class employees_add extends employees
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_emp_branch_id":
+					break;
+				case "x_emp_designation_id":
+					break;
+				case "x_emp_city_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1465,6 +1763,12 @@ class employees_add extends employees
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_emp_branch_id":
+							break;
+						case "x_emp_designation_id":
+							break;
+						case "x_emp_city_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

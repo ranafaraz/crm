@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $city_add = new city_add();
 $city_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -60,9 +61,6 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $city_add->city_tehsil_id->caption(), $city_add->city_tehsil_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_city_tehsil_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($city_add->city_tehsil_id->errorMessage()) ?>");
 			<?php if ($city_add->city_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_city_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -96,6 +94,8 @@ loadjs.ready("head", function() {
 	fcityadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fcityadd.lists["x_city_tehsil_id"] = <?php echo $city_add->city_tehsil_id->Lookup->toClientList($city_add) ?>;
+	fcityadd.lists["x_city_tehsil_id"].options = <?php echo JsonEncode($city_add->city_tehsil_id->lookupOptions()) ?>;
 	loadjs.done("fcityadd");
 });
 </script>
@@ -124,7 +124,15 @@ $city_add->showMessage();
 		<label id="elh_city_city_tehsil_id" for="x_city_tehsil_id" class="<?php echo $city_add->LeftColumnClass ?>"><?php echo $city_add->city_tehsil_id->caption() ?><?php echo $city_add->city_tehsil_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $city_add->RightColumnClass ?>"><div <?php echo $city_add->city_tehsil_id->cellAttributes() ?>>
 <span id="el_city_city_tehsil_id">
-<input type="text" data-table="city" data-field="x_city_tehsil_id" name="x_city_tehsil_id" id="x_city_tehsil_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($city_add->city_tehsil_id->getPlaceHolder()) ?>" value="<?php echo $city_add->city_tehsil_id->EditValue ?>"<?php echo $city_add->city_tehsil_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_city_tehsil_id"><?php echo EmptyValue(strval($city_add->city_tehsil_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $city_add->city_tehsil_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($city_add->city_tehsil_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($city_add->city_tehsil_id->ReadOnly || $city_add->city_tehsil_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_city_tehsil_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_city_tehsil_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $city_add->city_tehsil_id->caption() ?>" data-title="<?php echo $city_add->city_tehsil_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_city_tehsil_id',url:'tehsiladdopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $city_add->city_tehsil_id->Lookup->getParamTag($city_add, "p_x_city_tehsil_id") ?>
+<input type="hidden" data-table="city" data-field="x_city_tehsil_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $city_add->city_tehsil_id->displayValueSeparatorAttribute() ?>" name="x_city_tehsil_id" id="x_city_tehsil_id" value="<?php echo $city_add->city_tehsil_id->CurrentValue ?>"<?php echo $city_add->city_tehsil_id->editAttributes() ?>>
 </span>
 <?php echo $city_add->city_tehsil_id->CustomMsg ?></div></div>
 	</div>

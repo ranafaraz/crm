@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $followup_list = new followup_list();
 $followup_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -73,6 +74,19 @@ $followup_list->showMessage();
 ?>
 <?php if ($followup_list->TotalRecords > 0 || $followup->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($followup_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> followup">
+<?php if (!$followup_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$followup_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $followup_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $followup_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="ffollowuplist" id="ffollowuplist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

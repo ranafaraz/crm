@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $designation_list = new designation_list();
 $designation_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $designation_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$designation_list->isExport() && !$designation->CurrentAction) { ?>
 <form name="fdesignationlistsrch" id="fdesignationlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fdesignationlistsrch-search-panel" class="<?php echo $designation_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $designation_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $designation_list->showPageHeader(); ?>
 <?php
 $designation_list->showMessage();
 ?>
 <?php if ($designation_list->TotalRecords > 0 || $designation->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($designation_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> designation">
+<?php if (!$designation_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$designation_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $designation_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $designation_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fdesignationlist" id="fdesignationlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

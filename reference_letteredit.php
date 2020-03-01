@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $reference_letter_edit = new reference_letter_edit();
 $reference_letter_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,9 +66,6 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $reference_letter_edit->ref_letter_branch_id->caption(), $reference_letter_edit->ref_letter_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_ref_letter_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($reference_letter_edit->ref_letter_branch_id->errorMessage()) ?>");
 			<?php if ($reference_letter_edit->ref_letter_to_whom->Required) { ?>
 				elm = this.getElements("x" + infix + "_ref_letter_to_whom");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -84,9 +82,10 @@ loadjs.ready("head", function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $reference_letter_edit->ref_letter_content->caption(), $reference_letter_edit->ref_letter_content->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($reference_letter_edit->ref_letter_scanned->Required) { ?>
-				elm = this.getElements("x" + infix + "_ref_letter_scanned");
-				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $reference_letter_edit->ref_letter_scanned->caption(), $reference_letter_edit->ref_letter_scanned->RequiredErrorMessage)) ?>");
+				felm = this.getElements("x" + infix + "_ref_letter_scanned");
+				elm = this.getElements("fn_x" + infix + "_ref_letter_scanned");
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $reference_letter_edit->ref_letter_scanned->caption(), $reference_letter_edit->ref_letter_scanned->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($reference_letter_edit->ref_letter_date->Required) { ?>
 				elm = this.getElements("x" + infix + "_ref_letter_date");
@@ -129,6 +128,8 @@ loadjs.ready("head", function() {
 	freference_letteredit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	freference_letteredit.lists["x_ref_letter_branch_id"] = <?php echo $reference_letter_edit->ref_letter_branch_id->Lookup->toClientList($reference_letter_edit) ?>;
+	freference_letteredit.lists["x_ref_letter_branch_id"].options = <?php echo JsonEncode($reference_letter_edit->ref_letter_branch_id->lookupOptions()) ?>;
 	loadjs.done("freference_letteredit");
 });
 </script>
@@ -168,7 +169,23 @@ $reference_letter_edit->showMessage();
 		<label id="elh_reference_letter_ref_letter_branch_id" for="x_ref_letter_branch_id" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_branch_id->caption() ?><?php echo $reference_letter_edit->ref_letter_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $reference_letter_edit->RightColumnClass ?>"><div <?php echo $reference_letter_edit->ref_letter_branch_id->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_branch_id">
-<input type="text" data-table="reference_letter" data-field="x_ref_letter_branch_id" name="x_ref_letter_branch_id" id="x_ref_letter_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($reference_letter_edit->ref_letter_branch_id->getPlaceHolder()) ?>" value="<?php echo $reference_letter_edit->ref_letter_branch_id->EditValue ?>"<?php echo $reference_letter_edit->ref_letter_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($reference_letter_edit->ref_letter_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $reference_letter_edit->ref_letter_branch_id->ViewValue ?></button>
+		<div id="dsl_x_ref_letter_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $reference_letter_edit->ref_letter_branch_id->radioButtonListHtml(TRUE, "x_ref_letter_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_ref_letter_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="reference_letter" data-field="x_ref_letter_branch_id" data-value-separator="<?php echo $reference_letter_edit->ref_letter_branch_id->displayValueSeparatorAttribute() ?>" name="x_ref_letter_branch_id" id="x_ref_letter_branch_id" value="{value}"<?php echo $reference_letter_edit->ref_letter_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$reference_letter_edit->ref_letter_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $reference_letter_edit->ref_letter_branch_id->Lookup->getParamTag($reference_letter_edit, "p_x_ref_letter_branch_id") ?>
 </span>
 <?php echo $reference_letter_edit->ref_letter_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -195,20 +212,39 @@ $reference_letter_edit->showMessage();
 <?php } ?>
 <?php if ($reference_letter_edit->ref_letter_content->Visible) { // ref_letter_content ?>
 	<div id="r_ref_letter_content" class="form-group row">
-		<label id="elh_reference_letter_ref_letter_content" for="x_ref_letter_content" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_content->caption() ?><?php echo $reference_letter_edit->ref_letter_content->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_reference_letter_ref_letter_content" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_content->caption() ?><?php echo $reference_letter_edit->ref_letter_content->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $reference_letter_edit->RightColumnClass ?>"><div <?php echo $reference_letter_edit->ref_letter_content->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_content">
+<?php $reference_letter_edit->ref_letter_content->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="reference_letter" data-field="x_ref_letter_content" name="x_ref_letter_content" id="x_ref_letter_content" cols="35" rows="4" placeholder="<?php echo HtmlEncode($reference_letter_edit->ref_letter_content->getPlaceHolder()) ?>"<?php echo $reference_letter_edit->ref_letter_content->editAttributes() ?>><?php echo $reference_letter_edit->ref_letter_content->EditValue ?></textarea>
+<script>
+loadjs.ready(["freference_letteredit", "editor"], function() {
+	ew.createEditor("freference_letteredit", "x_ref_letter_content", 35, 4, <?php echo $reference_letter_edit->ref_letter_content->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $reference_letter_edit->ref_letter_content->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($reference_letter_edit->ref_letter_scanned->Visible) { // ref_letter_scanned ?>
 	<div id="r_ref_letter_scanned" class="form-group row">
-		<label id="elh_reference_letter_ref_letter_scanned" for="x_ref_letter_scanned" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_scanned->caption() ?><?php echo $reference_letter_edit->ref_letter_scanned->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_reference_letter_ref_letter_scanned" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_scanned->caption() ?><?php echo $reference_letter_edit->ref_letter_scanned->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $reference_letter_edit->RightColumnClass ?>"><div <?php echo $reference_letter_edit->ref_letter_scanned->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_scanned">
-<input type="text" data-table="reference_letter" data-field="x_ref_letter_scanned" name="x_ref_letter_scanned" id="x_ref_letter_scanned" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($reference_letter_edit->ref_letter_scanned->getPlaceHolder()) ?>" value="<?php echo $reference_letter_edit->ref_letter_scanned->EditValue ?>"<?php echo $reference_letter_edit->ref_letter_scanned->editAttributes() ?>>
+<div id="fd_x_ref_letter_scanned">
+<div class="input-group">
+	<div class="custom-file">
+		<input type="file" class="custom-file-input" title="<?php echo $reference_letter_edit->ref_letter_scanned->title() ?>" data-table="reference_letter" data-field="x_ref_letter_scanned" name="x_ref_letter_scanned" id="x_ref_letter_scanned" lang="<?php echo CurrentLanguageID() ?>"<?php echo $reference_letter_edit->ref_letter_scanned->editAttributes() ?><?php if ($reference_letter_edit->ref_letter_scanned->ReadOnly || $reference_letter_edit->ref_letter_scanned->Disabled) echo " disabled"; ?>>
+		<label class="custom-file-label ew-file-label" for="x_ref_letter_scanned"><?php echo $Language->phrase("ChooseFile") ?></label>
+	</div>
+</div>
+<input type="hidden" name="fn_x_ref_letter_scanned" id= "fn_x_ref_letter_scanned" value="<?php echo $reference_letter_edit->ref_letter_scanned->Upload->FileName ?>">
+<input type="hidden" name="fa_x_ref_letter_scanned" id= "fa_x_ref_letter_scanned" value="<?php echo (Post("fa_x_ref_letter_scanned") == "0") ? "0" : "1" ?>">
+<input type="hidden" name="fs_x_ref_letter_scanned" id= "fs_x_ref_letter_scanned" value="100">
+<input type="hidden" name="fx_x_ref_letter_scanned" id= "fx_x_ref_letter_scanned" value="<?php echo $reference_letter_edit->ref_letter_scanned->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_ref_letter_scanned" id= "fm_x_ref_letter_scanned" value="<?php echo $reference_letter_edit->ref_letter_scanned->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_ref_letter_scanned" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
 <?php echo $reference_letter_edit->ref_letter_scanned->CustomMsg ?></div></div>
 	</div>
@@ -218,11 +254,11 @@ $reference_letter_edit->showMessage();
 		<label id="elh_reference_letter_ref_letter_date" for="x_ref_letter_date" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_date->caption() ?><?php echo $reference_letter_edit->ref_letter_date->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $reference_letter_edit->RightColumnClass ?>"><div <?php echo $reference_letter_edit->ref_letter_date->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_date">
-<input type="text" data-table="reference_letter" data-field="x_ref_letter_date" name="x_ref_letter_date" id="x_ref_letter_date" maxlength="10" placeholder="<?php echo HtmlEncode($reference_letter_edit->ref_letter_date->getPlaceHolder()) ?>" value="<?php echo $reference_letter_edit->ref_letter_date->EditValue ?>"<?php echo $reference_letter_edit->ref_letter_date->editAttributes() ?>>
+<input type="text" data-table="reference_letter" data-field="x_ref_letter_date" data-format="2" name="x_ref_letter_date" id="x_ref_letter_date" maxlength="10" placeholder="<?php echo HtmlEncode($reference_letter_edit->ref_letter_date->getPlaceHolder()) ?>" value="<?php echo $reference_letter_edit->ref_letter_date->EditValue ?>"<?php echo $reference_letter_edit->ref_letter_date->editAttributes() ?>>
 <?php if (!$reference_letter_edit->ref_letter_date->ReadOnly && !$reference_letter_edit->ref_letter_date->Disabled && !isset($reference_letter_edit->ref_letter_date->EditAttrs["readonly"]) && !isset($reference_letter_edit->ref_letter_date->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["freference_letteredit", "datetimepicker"], function() {
-	ew.createDateTimePicker("freference_letteredit", "x_ref_letter_date", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+	ew.createDateTimePicker("freference_letteredit", "x_ref_letter_date", {"ignoreReadonly":true,"useCurrent":false,"format":2});
 });
 </script>
 <?php } ?>
@@ -232,10 +268,16 @@ loadjs.ready(["freference_letteredit", "datetimepicker"], function() {
 <?php } ?>
 <?php if ($reference_letter_edit->ref_letter_comments->Visible) { // ref_letter_comments ?>
 	<div id="r_ref_letter_comments" class="form-group row">
-		<label id="elh_reference_letter_ref_letter_comments" for="x_ref_letter_comments" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_comments->caption() ?><?php echo $reference_letter_edit->ref_letter_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_reference_letter_ref_letter_comments" class="<?php echo $reference_letter_edit->LeftColumnClass ?>"><?php echo $reference_letter_edit->ref_letter_comments->caption() ?><?php echo $reference_letter_edit->ref_letter_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $reference_letter_edit->RightColumnClass ?>"><div <?php echo $reference_letter_edit->ref_letter_comments->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_comments">
+<?php $reference_letter_edit->ref_letter_comments->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="reference_letter" data-field="x_ref_letter_comments" name="x_ref_letter_comments" id="x_ref_letter_comments" cols="35" rows="4" placeholder="<?php echo HtmlEncode($reference_letter_edit->ref_letter_comments->getPlaceHolder()) ?>"<?php echo $reference_letter_edit->ref_letter_comments->editAttributes() ?>><?php echo $reference_letter_edit->ref_letter_comments->EditValue ?></textarea>
+<script>
+loadjs.ready(["freference_letteredit", "editor"], function() {
+	ew.createEditor("freference_letteredit", "x_ref_letter_comments", 35, 4, <?php echo $reference_letter_edit->ref_letter_comments->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $reference_letter_edit->ref_letter_comments->CustomMsg ?></div></div>
 	</div>

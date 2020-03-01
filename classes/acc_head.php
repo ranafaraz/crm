@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -72,10 +72,13 @@ class acc_head extends DbTable
 		$this->fields['acc_head_id'] = &$this->acc_head_id;
 
 		// acc_head_acc_nature_id
-		$this->acc_head_acc_nature_id = new DbField('acc_head', 'acc_head', 'x_acc_head_acc_nature_id', 'acc_head_acc_nature_id', '`acc_head_acc_nature_id`', '`acc_head_acc_nature_id`', 3, 12, -1, FALSE, '`acc_head_acc_nature_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->acc_head_acc_nature_id = new DbField('acc_head', 'acc_head', 'x_acc_head_acc_nature_id', 'acc_head_acc_nature_id', '`acc_head_acc_nature_id`', '`acc_head_acc_nature_id`', 3, 12, -1, FALSE, '`EV__acc_head_acc_nature_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->acc_head_acc_nature_id->Nullable = FALSE; // NOT NULL field
 		$this->acc_head_acc_nature_id->Required = TRUE; // Required field
 		$this->acc_head_acc_nature_id->Sortable = TRUE; // Allow sort
+		$this->acc_head_acc_nature_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->acc_head_acc_nature_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->acc_head_acc_nature_id->Lookup = new Lookup('acc_head_acc_nature_id', 'acc_nature', FALSE, 'acc_nature_id', ["acc_nature_name","","",""], [], [], [], [], [], [], '', '');
 		$this->acc_head_acc_nature_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['acc_head_acc_nature_id'] = &$this->acc_head_acc_nature_id;
 
@@ -87,7 +90,7 @@ class acc_head extends DbTable
 		$this->fields['acc_head_caption'] = &$this->acc_head_caption;
 
 		// acc_head_desc
-		$this->acc_head_desc = new DbField('acc_head', 'acc_head', 'x_acc_head_desc', 'acc_head_desc', '`acc_head_desc`', '`acc_head_desc`', 200, 100, -1, FALSE, '`acc_head_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->acc_head_desc = new DbField('acc_head', 'acc_head', 'x_acc_head_desc', 'acc_head_desc', '`acc_head_desc`', '`acc_head_desc`', 200, 100, -1, FALSE, '`acc_head_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->acc_head_desc->Nullable = FALSE; // NOT NULL field
 		$this->acc_head_desc->Required = TRUE; // Required field
 		$this->acc_head_desc->Sortable = TRUE; // Allow sort
@@ -125,9 +128,21 @@ class acc_head extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -154,6 +169,22 @@ class acc_head extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `acc_nature_name` FROM `acc_nature` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`acc_nature_id` = `acc_head`.`acc_head_acc_nature_id` LIMIT 1) AS `EV__acc_head_acc_nature_id` FROM `acc_head`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -309,8 +340,13 @@ class acc_head extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -318,8 +354,26 @@ class acc_head extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->acc_head_acc_nature_id->AdvancedSearch->SearchValue != "" ||
+			$this->acc_head_acc_nature_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->acc_head_acc_nature_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->acc_head_acc_nature_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -347,7 +401,10 @@ class acc_head extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -701,11 +758,33 @@ class acc_head extends DbTable
 		// acc_head_id
 
 		$this->acc_head_id->ViewValue = $this->acc_head_id->CurrentValue;
+		$this->acc_head_id->CssClass = "font-weight-bold";
 		$this->acc_head_id->ViewCustomAttributes = "";
 
 		// acc_head_acc_nature_id
-		$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->CurrentValue;
-		$this->acc_head_acc_nature_id->ViewValue = FormatNumber($this->acc_head_acc_nature_id->ViewValue, 0, -2, -2, -2);
+		if ($this->acc_head_acc_nature_id->VirtualValue != "") {
+			$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->VirtualValue;
+		} else {
+			$curVal = strval($this->acc_head_acc_nature_id->CurrentValue);
+			if ($curVal != "") {
+				$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->lookupCacheOption($curVal);
+				if ($this->acc_head_acc_nature_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`acc_nature_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->acc_head_acc_nature_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->acc_head_acc_nature_id->ViewValue = NULL;
+			}
+		}
 		$this->acc_head_acc_nature_id->ViewCustomAttributes = "";
 
 		// acc_head_caption
@@ -755,13 +834,11 @@ class acc_head extends DbTable
 		$this->acc_head_id->EditAttrs["class"] = "form-control";
 		$this->acc_head_id->EditCustomAttributes = "";
 		$this->acc_head_id->EditValue = $this->acc_head_id->CurrentValue;
+		$this->acc_head_id->CssClass = "font-weight-bold";
 		$this->acc_head_id->ViewCustomAttributes = "";
 
 		// acc_head_acc_nature_id
-		$this->acc_head_acc_nature_id->EditAttrs["class"] = "form-control";
 		$this->acc_head_acc_nature_id->EditCustomAttributes = "";
-		$this->acc_head_acc_nature_id->EditValue = $this->acc_head_acc_nature_id->CurrentValue;
-		$this->acc_head_acc_nature_id->PlaceHolder = RemoveHtml($this->acc_head_acc_nature_id->caption());
 
 		// acc_head_caption
 		$this->acc_head_caption->EditAttrs["class"] = "form-control";
@@ -774,8 +851,6 @@ class acc_head extends DbTable
 		// acc_head_desc
 		$this->acc_head_desc->EditAttrs["class"] = "form-control";
 		$this->acc_head_desc->EditCustomAttributes = "";
-		if (!$this->acc_head_desc->Raw)
-			$this->acc_head_desc->CurrentValue = HtmlDecode($this->acc_head_desc->CurrentValue);
 		$this->acc_head_desc->EditValue = $this->acc_head_desc->CurrentValue;
 		$this->acc_head_desc->PlaceHolder = RemoveHtml($this->acc_head_desc->caption());
 

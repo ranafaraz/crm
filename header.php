@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,6 +10,7 @@
 <link rel="stylesheet" type="text/css" href="<?php echo $RELATIVE_PATH ?><?php echo CssFile(Config("PDF_STYLESHEET_FILENAME")) ?>">
 <?php } ?>
 <?php } ?>
+<?php if (!IsExport() || IsExport("print")) { ?>
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="stylesheet" type="text/css" href="<?php echo $RELATIVE_PATH ?>adminlte3/css/<?php echo CssFile("adminlte.css") ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo $RELATIVE_PATH ?>plugins/fontawesome-free/css/all.min.css">
@@ -32,6 +33,8 @@ Object.assign(ew, {
 	DATETIME_WITHOUT_SECONDS: <?php echo Config("DATETIME_WITHOUT_SECONDS") ? "true" : "false" ?>, // Date/Time without seconds
 	DECIMAL_POINT: "<?php echo $DECIMAL_POINT ?>",
 	THOUSANDS_SEP: "<?php echo $THOUSANDS_SEP ?>",
+	MIN_PASSWORD_STRENGTH: 60,
+	GENERATE_PASSWORD_LENGTH: 16,
 	SESSION_TIMEOUT: <?php echo Config("SESSION_TIMEOUT") > 0 ? SessionTimeoutTime() : 0 ?>, // Session timeout time (seconds)
 	SESSION_TIMEOUT_COUNTDOWN: <?php echo Config("SESSION_TIMEOUT_COUNTDOWN") ?>, // Count down time to session timeout (seconds)
 	SESSION_KEEP_ALIVE_INTERVAL: <?php echo Config("SESSION_KEEP_ALIVE_INTERVAL") ?>, // Keep alive interval (seconds)
@@ -40,7 +43,7 @@ Object.assign(ew, {
 	IS_SYS_ADMIN: <?php echo IsSysAdmin() ? "true" : "false" ?>, // Is sys admin
 	CURRENT_USER_NAME: "<?php echo JsEncode(CurrentUserName()) ?>", // Current user name
 	IS_AUTOLOGIN: <?php echo IsAutoLogin() ? "true" : "false" ?>, // Is logged in with option "Auto login until I logout explicitly"
-	TIMEOUT_URL: "<?php echo $RELATIVE_PATH ?>index.php", // Timeout URL // PHP
+	TIMEOUT_URL: "<?php echo $RELATIVE_PATH ?>logout.php", // Timeout URL // PHP
 	TOKEN_NAME: "<?php echo Config("TOKEN_NAME") ?>", // Token name
 	API_FILE_TOKEN_NAME: "<?php echo Config("API_FILE_TOKEN_NAME") ?>", // API file token name
 	API_URL: "<?php echo $RELATIVE_PATH ?><?php echo Config("API_URL") ?>", // API file name // PHP
@@ -120,8 +123,11 @@ var jqueryjs = [
 	"<?php echo $RELATIVE_PATH ?>jquery/jqueryfileupload.min.js",
 	"<?php echo $RELATIVE_PATH ?>jquery/typeahead.jquery.min.js"
 ];
+jqueryjs.push("<?php echo $RELATIVE_PATH ?>jquery/pStrength.jquery.min.js");
+jqueryjs.push("<?php echo $RELATIVE_PATH ?>jquery/pGenerator.jquery.min.js");
 jqueryjs.push("<?php echo $RELATIVE_PATH ?>colorbox/jquery.colorbox-min.js");
 jqueryjs.push("<?php echo $RELATIVE_PATH ?>js/pdfobject.min.js");
+jqueryjs.push("<?php echo $RELATIVE_PATH ?>jquery/jquery.ewjtable.min.js");
 ew.ready(["jquery", "widget", "scrollbars", "moment", "others"], [jqueryjs, "<?php echo $RELATIVE_PATH ?>js/ew.js"], "makerjs");
 ew.ready("makerjs", [cssjs, "<?php echo $RELATIVE_PATH ?>js/userfn.js"], "head");
 </script>
@@ -144,6 +150,9 @@ loadjs.ready("datetimepicker", function() {
 		}
 	});
 });
+</script>
+<script>
+ew.ready("head", ["<?php echo $RELATIVE_PATH ?>ckeditor/ckeditor.js", "<?php echo $RELATIVE_PATH ?>js/eweditor.js"], "editor");
 </script>
 <script>
 loadjs.ready("head", function() {
@@ -229,10 +238,47 @@ loadjs.ready("head", function() {
 <script type="text/html" class="ew-js-template" data-name="languages" data-seq="10" data-data="languages" data-method="<?php echo $Language->Method ?>" data-target="<?php echo HtmlEncode($Language->Target) ?>">
 <?php echo $Language->getTemplate() ?>
 </script>
+<script type="text/html" class="ew-js-template" data-name="login" data-seq="10" data-data="login" data-method="appendTo" data-target=".navbar-nav.ml-auto">
+{{if isLoggedIn}}
+<li class="nav-item dropdown text-body">
+	<a class="nav-link" data-toggle="dropdown" href="#">
+		<i class="fas fa-user"></i>
+	</a>
+	<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+		<div class="dropdown-item p-3"><i class="fas fa-user mr-2"></i>{{:currentUserName}}</div>
+		{{if (hasPersonalData || canChangePassword)}}
+		<div class="dropdown-divider"></div>
+		<div class="text-nowrap p-3">
+			{{if hasPersonalData}}
+			<a class="btn btn-default" href="#" onclick="{{:personalDataUrl}}">{{:personalDataText}}</a>
+			{{/if}}
+			{{if canChangePassword}}
+			<a class="btn btn-default" href="#" onclick="{{:changePasswordUrl}}">{{:changePasswordText}}</a>
+			{{/if}}
+		</div>
+		{{/if}}
+		{{if canLogout}}
+		<div class="dropdown-divider"></div>
+		<div class="dropdown-footer p-2 text-right">
+			<a class="btn btn-default" href="#" onclick="{{:logoutUrl}}">{{:logoutText}}</a>
+		</div>
+		{{/if}}
+	</div>
+<li>
+{{else}}
+	{{if canLogin}}
+<li class="nav-item"><a class="nav-link" href="#" onclick="{{:loginUrl}}">{{:loginText}}</a></li>
+	{{/if}}
+{{/if}}
+</script>
+<?php } ?>
+<link rel="shortcut icon" type="image/x-icon" href="<?php echo $RELATIVE_PATH ?>dexdevs 512x512.ico">
+<link rel="icon" type="image/x-icon" href="<?php echo $RELATIVE_PATH ?>dexdevs 512x512.ico">
 <meta name="generator" content="PHPMaker 2020">
 </head>
 <body class="<?php echo Config("BODY_CLASS") ?>" dir="<?php echo Config("CSS_FLIP") ? "rtl" : "ltr" ?>">
 <?php if (@!$SkipHeaderFooter) { ?>
+<?php if (!IsExport()) { ?>
 <div class="wrapper ew-layout">
 	<!-- Main Header -->
 	<!-- Navbar -->
@@ -243,7 +289,7 @@ loadjs.ready("head", function() {
 				<a class="nav-link" data-widget="pushmenu" href="#" onclick="return false;"><i class="fas fa-bars"></i></a>
 			</li>
 			<a class="navbar-brand d-none" href="#"  onclick="return false;">
-				<span class="brand-text">PHPMaker 2020</span>
+				<span class="brand-text">DEXDEVS</span>
 			</a>
 		</ul>
 		<!-- Right navbar links -->
@@ -254,7 +300,7 @@ loadjs.ready("head", function() {
 	<aside class="<?php echo Config("SIDEBAR_CLASS") ?>">
 		<!-- Brand Logo //** Note: Only licensed users are allowed to change the logo ** -->
 		<a href="#" class="brand-link">
-			<span class="brand-text">PHPMaker 2020</span>
+			<span class="brand-text">DEXDEVS</span>
 		</a>
 		<!-- Sidebar -->
 		<div class="sidebar">
@@ -285,4 +331,5 @@ loadjs.ready("head", function() {
 		<!-- Main content -->
 		<section class="content">
 		<div class="container-fluid">
+<?php } ?>
 <?php } ?>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $employees_edit = new employees_edit();
 $employees_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,25 +66,16 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $employees_edit->emp_branch_id->caption(), $employees_edit->emp_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_emp_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($employees_edit->emp_branch_id->errorMessage()) ?>");
 			<?php if ($employees_edit->emp_designation_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_emp_designation_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $employees_edit->emp_designation_id->caption(), $employees_edit->emp_designation_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_emp_designation_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($employees_edit->emp_designation_id->errorMessage()) ?>");
 			<?php if ($employees_edit->emp_city_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_emp_city_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $employees_edit->emp_city_id->caption(), $employees_edit->emp_city_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_emp_city_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($employees_edit->emp_city_id->errorMessage()) ?>");
 			<?php if ($employees_edit->emp_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_emp_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -115,9 +107,10 @@ loadjs.ready("head", function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $employees_edit->emp_email->caption(), $employees_edit->emp_email->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($employees_edit->emp_photo->Required) { ?>
-				elm = this.getElements("x" + infix + "_emp_photo");
-				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $employees_edit->emp_photo->caption(), $employees_edit->emp_photo->RequiredErrorMessage)) ?>");
+				felm = this.getElements("x" + infix + "_emp_photo");
+				elm = this.getElements("fn_x" + infix + "_emp_photo");
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $employees_edit->emp_photo->caption(), $employees_edit->emp_photo->RequiredErrorMessage)) ?>");
 			<?php } ?>
 
 				// Call Form_CustomValidate event
@@ -147,6 +140,12 @@ loadjs.ready("head", function() {
 	femployeesedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	femployeesedit.lists["x_emp_branch_id"] = <?php echo $employees_edit->emp_branch_id->Lookup->toClientList($employees_edit) ?>;
+	femployeesedit.lists["x_emp_branch_id"].options = <?php echo JsonEncode($employees_edit->emp_branch_id->lookupOptions()) ?>;
+	femployeesedit.lists["x_emp_designation_id"] = <?php echo $employees_edit->emp_designation_id->Lookup->toClientList($employees_edit) ?>;
+	femployeesedit.lists["x_emp_designation_id"].options = <?php echo JsonEncode($employees_edit->emp_designation_id->lookupOptions()) ?>;
+	femployeesedit.lists["x_emp_city_id"] = <?php echo $employees_edit->emp_city_id->Lookup->toClientList($employees_edit) ?>;
+	femployeesedit.lists["x_emp_city_id"].options = <?php echo JsonEncode($employees_edit->emp_city_id->lookupOptions()) ?>;
 	loadjs.done("femployeesedit");
 });
 </script>
@@ -186,7 +185,23 @@ $employees_edit->showMessage();
 		<label id="elh_employees_emp_branch_id" for="x_emp_branch_id" class="<?php echo $employees_edit->LeftColumnClass ?>"><?php echo $employees_edit->emp_branch_id->caption() ?><?php echo $employees_edit->emp_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $employees_edit->RightColumnClass ?>"><div <?php echo $employees_edit->emp_branch_id->cellAttributes() ?>>
 <span id="el_employees_emp_branch_id">
-<input type="text" data-table="employees" data-field="x_emp_branch_id" name="x_emp_branch_id" id="x_emp_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($employees_edit->emp_branch_id->getPlaceHolder()) ?>" value="<?php echo $employees_edit->emp_branch_id->EditValue ?>"<?php echo $employees_edit->emp_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($employees_edit->emp_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $employees_edit->emp_branch_id->ViewValue ?></button>
+		<div id="dsl_x_emp_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $employees_edit->emp_branch_id->radioButtonListHtml(TRUE, "x_emp_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_emp_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="employees" data-field="x_emp_branch_id" data-value-separator="<?php echo $employees_edit->emp_branch_id->displayValueSeparatorAttribute() ?>" name="x_emp_branch_id" id="x_emp_branch_id" value="{value}"<?php echo $employees_edit->emp_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$employees_edit->emp_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $employees_edit->emp_branch_id->Lookup->getParamTag($employees_edit, "p_x_emp_branch_id") ?>
 </span>
 <?php echo $employees_edit->emp_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -196,7 +211,14 @@ $employees_edit->showMessage();
 		<label id="elh_employees_emp_designation_id" for="x_emp_designation_id" class="<?php echo $employees_edit->LeftColumnClass ?>"><?php echo $employees_edit->emp_designation_id->caption() ?><?php echo $employees_edit->emp_designation_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $employees_edit->RightColumnClass ?>"><div <?php echo $employees_edit->emp_designation_id->cellAttributes() ?>>
 <span id="el_employees_emp_designation_id">
-<input type="text" data-table="employees" data-field="x_emp_designation_id" name="x_emp_designation_id" id="x_emp_designation_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($employees_edit->emp_designation_id->getPlaceHolder()) ?>" value="<?php echo $employees_edit->emp_designation_id->EditValue ?>"<?php echo $employees_edit->emp_designation_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_emp_designation_id"><?php echo EmptyValue(strval($employees_edit->emp_designation_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $employees_edit->emp_designation_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($employees_edit->emp_designation_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($employees_edit->emp_designation_id->ReadOnly || $employees_edit->emp_designation_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_emp_designation_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $employees_edit->emp_designation_id->Lookup->getParamTag($employees_edit, "p_x_emp_designation_id") ?>
+<input type="hidden" data-table="employees" data-field="x_emp_designation_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $employees_edit->emp_designation_id->displayValueSeparatorAttribute() ?>" name="x_emp_designation_id" id="x_emp_designation_id" value="<?php echo $employees_edit->emp_designation_id->CurrentValue ?>"<?php echo $employees_edit->emp_designation_id->editAttributes() ?>>
 </span>
 <?php echo $employees_edit->emp_designation_id->CustomMsg ?></div></div>
 	</div>
@@ -206,7 +228,15 @@ $employees_edit->showMessage();
 		<label id="elh_employees_emp_city_id" for="x_emp_city_id" class="<?php echo $employees_edit->LeftColumnClass ?>"><?php echo $employees_edit->emp_city_id->caption() ?><?php echo $employees_edit->emp_city_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $employees_edit->RightColumnClass ?>"><div <?php echo $employees_edit->emp_city_id->cellAttributes() ?>>
 <span id="el_employees_emp_city_id">
-<input type="text" data-table="employees" data-field="x_emp_city_id" name="x_emp_city_id" id="x_emp_city_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($employees_edit->emp_city_id->getPlaceHolder()) ?>" value="<?php echo $employees_edit->emp_city_id->EditValue ?>"<?php echo $employees_edit->emp_city_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_emp_city_id"><?php echo EmptyValue(strval($employees_edit->emp_city_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $employees_edit->emp_city_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($employees_edit->emp_city_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($employees_edit->emp_city_id->ReadOnly || $employees_edit->emp_city_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_emp_city_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_emp_city_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $employees_edit->emp_city_id->caption() ?>" data-title="<?php echo $employees_edit->emp_city_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_emp_city_id',url:'cityaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $employees_edit->emp_city_id->Lookup->getParamTag($employees_edit, "p_x_emp_city_id") ?>
+<input type="hidden" data-table="employees" data-field="x_emp_city_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $employees_edit->emp_city_id->displayValueSeparatorAttribute() ?>" name="x_emp_city_id" id="x_emp_city_id" value="<?php echo $employees_edit->emp_city_id->CurrentValue ?>"<?php echo $employees_edit->emp_city_id->editAttributes() ?>>
 </span>
 <?php echo $employees_edit->emp_city_id->CustomMsg ?></div></div>
 	</div>
@@ -273,10 +303,23 @@ $employees_edit->showMessage();
 <?php } ?>
 <?php if ($employees_edit->emp_photo->Visible) { // emp_photo ?>
 	<div id="r_emp_photo" class="form-group row">
-		<label id="elh_employees_emp_photo" for="x_emp_photo" class="<?php echo $employees_edit->LeftColumnClass ?>"><?php echo $employees_edit->emp_photo->caption() ?><?php echo $employees_edit->emp_photo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_employees_emp_photo" class="<?php echo $employees_edit->LeftColumnClass ?>"><?php echo $employees_edit->emp_photo->caption() ?><?php echo $employees_edit->emp_photo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $employees_edit->RightColumnClass ?>"><div <?php echo $employees_edit->emp_photo->cellAttributes() ?>>
 <span id="el_employees_emp_photo">
-<input type="text" data-table="employees" data-field="x_emp_photo" name="x_emp_photo" id="x_emp_photo" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($employees_edit->emp_photo->getPlaceHolder()) ?>" value="<?php echo $employees_edit->emp_photo->EditValue ?>"<?php echo $employees_edit->emp_photo->editAttributes() ?>>
+<div id="fd_x_emp_photo">
+<div class="input-group">
+	<div class="custom-file">
+		<input type="file" class="custom-file-input" title="<?php echo $employees_edit->emp_photo->title() ?>" data-table="employees" data-field="x_emp_photo" name="x_emp_photo" id="x_emp_photo" lang="<?php echo CurrentLanguageID() ?>"<?php echo $employees_edit->emp_photo->editAttributes() ?><?php if ($employees_edit->emp_photo->ReadOnly || $employees_edit->emp_photo->Disabled) echo " disabled"; ?>>
+		<label class="custom-file-label ew-file-label" for="x_emp_photo"><?php echo $Language->phrase("ChooseFile") ?></label>
+	</div>
+</div>
+<input type="hidden" name="fn_x_emp_photo" id= "fn_x_emp_photo" value="<?php echo $employees_edit->emp_photo->Upload->FileName ?>">
+<input type="hidden" name="fa_x_emp_photo" id= "fa_x_emp_photo" value="<?php echo (Post("fa_x_emp_photo") == "0") ? "0" : "1" ?>">
+<input type="hidden" name="fs_x_emp_photo" id= "fs_x_emp_photo" value="100">
+<input type="hidden" name="fx_x_emp_photo" id= "fx_x_emp_photo" value="<?php echo $employees_edit->emp_photo->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_emp_photo" id= "fm_x_emp_photo" value="<?php echo $employees_edit->emp_photo->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_emp_photo" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
 <?php echo $employees_edit->emp_photo->CustomMsg ?></div></div>
 	</div>

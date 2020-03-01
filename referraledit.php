@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $referral_edit = new referral_edit();
 $referral_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,9 +66,6 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $referral_edit->referral_branch_id->caption(), $referral_edit->referral_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_referral_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($referral_edit->referral_branch_id->errorMessage()) ?>");
 			<?php if ($referral_edit->referral_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_referral_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -82,6 +80,12 @@ loadjs.ready("head", function() {
 				elm = this.getElements("x" + infix + "_referral_deal_signed");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $referral_edit->referral_deal_signed->caption(), $referral_edit->referral_deal_signed->RequiredErrorMessage)) ?>");
+			<?php } ?>
+			<?php if ($referral_edit->referral_scanned->Required) { ?>
+				felm = this.getElements("x" + infix + "_referral_scanned");
+				elm = this.getElements("fn_x" + infix + "_referral_scanned");
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $referral_edit->referral_scanned->caption(), $referral_edit->referral_scanned->RequiredErrorMessage)) ?>");
 			<?php } ?>
 
 				// Call Form_CustomValidate event
@@ -111,6 +115,8 @@ loadjs.ready("head", function() {
 	freferraledit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	freferraledit.lists["x_referral_branch_id"] = <?php echo $referral_edit->referral_branch_id->Lookup->toClientList($referral_edit) ?>;
+	freferraledit.lists["x_referral_branch_id"].options = <?php echo JsonEncode($referral_edit->referral_branch_id->lookupOptions()) ?>;
 	loadjs.done("freferraledit");
 });
 </script>
@@ -150,7 +156,23 @@ $referral_edit->showMessage();
 		<label id="elh_referral_referral_branch_id" for="x_referral_branch_id" class="<?php echo $referral_edit->LeftColumnClass ?>"><?php echo $referral_edit->referral_branch_id->caption() ?><?php echo $referral_edit->referral_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $referral_edit->RightColumnClass ?>"><div <?php echo $referral_edit->referral_branch_id->cellAttributes() ?>>
 <span id="el_referral_referral_branch_id">
-<input type="text" data-table="referral" data-field="x_referral_branch_id" name="x_referral_branch_id" id="x_referral_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($referral_edit->referral_branch_id->getPlaceHolder()) ?>" value="<?php echo $referral_edit->referral_branch_id->EditValue ?>"<?php echo $referral_edit->referral_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($referral_edit->referral_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $referral_edit->referral_branch_id->ViewValue ?></button>
+		<div id="dsl_x_referral_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $referral_edit->referral_branch_id->radioButtonListHtml(TRUE, "x_referral_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_referral_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="referral" data-field="x_referral_branch_id" data-value-separator="<?php echo $referral_edit->referral_branch_id->displayValueSeparatorAttribute() ?>" name="x_referral_branch_id" id="x_referral_branch_id" value="{value}"<?php echo $referral_edit->referral_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$referral_edit->referral_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $referral_edit->referral_branch_id->Lookup->getParamTag($referral_edit, "p_x_referral_branch_id") ?>
 </span>
 <?php echo $referral_edit->referral_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -177,12 +199,41 @@ $referral_edit->showMessage();
 <?php } ?>
 <?php if ($referral_edit->referral_deal_signed->Visible) { // referral_deal_signed ?>
 	<div id="r_referral_deal_signed" class="form-group row">
-		<label id="elh_referral_referral_deal_signed" for="x_referral_deal_signed" class="<?php echo $referral_edit->LeftColumnClass ?>"><?php echo $referral_edit->referral_deal_signed->caption() ?><?php echo $referral_edit->referral_deal_signed->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_referral_referral_deal_signed" class="<?php echo $referral_edit->LeftColumnClass ?>"><?php echo $referral_edit->referral_deal_signed->caption() ?><?php echo $referral_edit->referral_deal_signed->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $referral_edit->RightColumnClass ?>"><div <?php echo $referral_edit->referral_deal_signed->cellAttributes() ?>>
 <span id="el_referral_referral_deal_signed">
+<?php $referral_edit->referral_deal_signed->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="referral" data-field="x_referral_deal_signed" name="x_referral_deal_signed" id="x_referral_deal_signed" cols="35" rows="4" placeholder="<?php echo HtmlEncode($referral_edit->referral_deal_signed->getPlaceHolder()) ?>"<?php echo $referral_edit->referral_deal_signed->editAttributes() ?>><?php echo $referral_edit->referral_deal_signed->EditValue ?></textarea>
+<script>
+loadjs.ready(["freferraledit", "editor"], function() {
+	ew.createEditor("freferraledit", "x_referral_deal_signed", 35, 4, <?php echo $referral_edit->referral_deal_signed->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $referral_edit->referral_deal_signed->CustomMsg ?></div></div>
+	</div>
+<?php } ?>
+<?php if ($referral_edit->referral_scanned->Visible) { // referral_scanned ?>
+	<div id="r_referral_scanned" class="form-group row">
+		<label id="elh_referral_referral_scanned" class="<?php echo $referral_edit->LeftColumnClass ?>"><?php echo $referral_edit->referral_scanned->caption() ?><?php echo $referral_edit->referral_scanned->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $referral_edit->RightColumnClass ?>"><div <?php echo $referral_edit->referral_scanned->cellAttributes() ?>>
+<span id="el_referral_referral_scanned">
+<div id="fd_x_referral_scanned">
+<div class="input-group">
+	<div class="custom-file">
+		<input type="file" class="custom-file-input" title="<?php echo $referral_edit->referral_scanned->title() ?>" data-table="referral" data-field="x_referral_scanned" name="x_referral_scanned" id="x_referral_scanned" lang="<?php echo CurrentLanguageID() ?>"<?php echo $referral_edit->referral_scanned->editAttributes() ?><?php if ($referral_edit->referral_scanned->ReadOnly || $referral_edit->referral_scanned->Disabled) echo " disabled"; ?>>
+		<label class="custom-file-label ew-file-label" for="x_referral_scanned"><?php echo $Language->phrase("ChooseFile") ?></label>
+	</div>
+</div>
+<input type="hidden" name="fn_x_referral_scanned" id= "fn_x_referral_scanned" value="<?php echo $referral_edit->referral_scanned->Upload->FileName ?>">
+<input type="hidden" name="fa_x_referral_scanned" id= "fa_x_referral_scanned" value="<?php echo (Post("fa_x_referral_scanned") == "0") ? "0" : "1" ?>">
+<input type="hidden" name="fs_x_referral_scanned" id= "fs_x_referral_scanned" value="500">
+<input type="hidden" name="fx_x_referral_scanned" id= "fx_x_referral_scanned" value="<?php echo $referral_edit->referral_scanned->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_referral_scanned" id= "fm_x_referral_scanned" value="<?php echo $referral_edit->referral_scanned->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_referral_scanned" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $referral_edit->referral_scanned->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 </div><!-- /page* -->

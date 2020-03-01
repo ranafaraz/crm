@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_list = new business_list();
 $business_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $business_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$business_list->isExport() && !$business->CurrentAction) { ?>
 <form name="fbusinesslistsrch" id="fbusinesslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fbusinesslistsrch-search-panel" class="<?php echo $business_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $business_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $business_list->showPageHeader(); ?>
 <?php
 $business_list->showMessage();
 ?>
 <?php if ($business_list->TotalRecords > 0 || $business->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($business_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> business">
+<?php if (!$business_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$business_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $business_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $business_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fbusinesslist" id="fbusinesslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -468,7 +484,7 @@ $business_list->ListOptions->render("body", "left", $business_list->RowCount);
 	<?php if ($business_list->b_logo->Visible) { // b_logo ?>
 		<td data-name="b_logo" <?php echo $business_list->b_logo->cellAttributes() ?>>
 <span id="el<?php echo $business_list->RowCount ?>_business_b_logo">
-<span<?php echo $business_list->b_logo->viewAttributes() ?>><?php echo $business_list->b_logo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($business_list->b_logo, $business_list->b_logo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	<?php } ?>

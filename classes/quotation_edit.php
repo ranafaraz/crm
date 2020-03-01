@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class quotation_edit extends quotation
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'quotation';
@@ -540,6 +540,8 @@ class quotation_edit extends quotation
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class quotation_edit extends quotation
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("quotationlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -661,8 +675,11 @@ class quotation_edit extends quotation
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->quote_branch_id);
+		$this->setupLookupOptions($this->quote_business_id);
+		$this->setupLookupOptions($this->quote_service_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -814,7 +831,7 @@ class quotation_edit extends quotation
 				$this->quote_issue_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->quote_issue_date->setFormValue($val);
-			$this->quote_issue_date->CurrentValue = UnFormatDateTime($this->quote_issue_date->CurrentValue, 0);
+			$this->quote_issue_date->CurrentValue = UnFormatDateTime($this->quote_issue_date->CurrentValue, 2);
 		}
 
 		// Check field name 'quote_due_date' first before field var 'x_quote_due_date'
@@ -824,7 +841,7 @@ class quotation_edit extends quotation
 				$this->quote_due_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->quote_due_date->setFormValue($val);
-			$this->quote_due_date->CurrentValue = UnFormatDateTime($this->quote_due_date->CurrentValue, 0);
+			$this->quote_due_date->CurrentValue = UnFormatDateTime($this->quote_due_date->CurrentValue, 2);
 		}
 
 		// Check field name 'quote_amount' first before field var 'x_quote_amount'
@@ -864,9 +881,9 @@ class quotation_edit extends quotation
 		$this->quote_business_id->CurrentValue = $this->quote_business_id->FormValue;
 		$this->quote_service_id->CurrentValue = $this->quote_service_id->FormValue;
 		$this->quote_issue_date->CurrentValue = $this->quote_issue_date->FormValue;
-		$this->quote_issue_date->CurrentValue = UnFormatDateTime($this->quote_issue_date->CurrentValue, 0);
+		$this->quote_issue_date->CurrentValue = UnFormatDateTime($this->quote_issue_date->CurrentValue, 2);
 		$this->quote_due_date->CurrentValue = $this->quote_due_date->FormValue;
-		$this->quote_due_date->CurrentValue = UnFormatDateTime($this->quote_due_date->CurrentValue, 0);
+		$this->quote_due_date->CurrentValue = UnFormatDateTime($this->quote_due_date->CurrentValue, 2);
 		$this->quote_amount->CurrentValue = $this->quote_amount->FormValue;
 		$this->quote_content->CurrentValue = $this->quote_content->FormValue;
 		$this->quote_comments->CurrentValue = $this->quote_comments->FormValue;
@@ -909,8 +926,23 @@ class quotation_edit extends quotation
 			return;
 		$this->quote_id->setDbValue($row['quote_id']);
 		$this->quote_branch_id->setDbValue($row['quote_branch_id']);
+		if (array_key_exists('EV__quote_branch_id', $rs->fields)) {
+			$this->quote_branch_id->VirtualValue = $rs->fields('EV__quote_branch_id'); // Set up virtual field value
+		} else {
+			$this->quote_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->quote_business_id->setDbValue($row['quote_business_id']);
+		if (array_key_exists('EV__quote_business_id', $rs->fields)) {
+			$this->quote_business_id->VirtualValue = $rs->fields('EV__quote_business_id'); // Set up virtual field value
+		} else {
+			$this->quote_business_id->VirtualValue = ""; // Clear value
+		}
 		$this->quote_service_id->setDbValue($row['quote_service_id']);
+		if (array_key_exists('EV__quote_service_id', $rs->fields)) {
+			$this->quote_service_id->VirtualValue = $rs->fields('EV__quote_service_id'); // Set up virtual field value
+		} else {
+			$this->quote_service_id->VirtualValue = ""; // Clear value
+		}
 		$this->quote_issue_date->setDbValue($row['quote_issue_date']);
 		$this->quote_due_date->setDbValue($row['quote_due_date']);
 		$this->quote_amount->setDbValue($row['quote_amount']);
@@ -982,31 +1014,95 @@ class quotation_edit extends quotation
 
 			// quote_id
 			$this->quote_id->ViewValue = $this->quote_id->CurrentValue;
+			$this->quote_id->CssClass = "font-weight-bold";
 			$this->quote_id->ViewCustomAttributes = "";
 
 			// quote_branch_id
-			$this->quote_branch_id->ViewValue = $this->quote_branch_id->CurrentValue;
-			$this->quote_branch_id->ViewValue = FormatNumber($this->quote_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->quote_branch_id->VirtualValue != "") {
+				$this->quote_branch_id->ViewValue = $this->quote_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->quote_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->quote_branch_id->ViewValue = $this->quote_branch_id->lookupCacheOption($curVal);
+					if ($this->quote_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->quote_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->quote_branch_id->ViewValue = $this->quote_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->quote_branch_id->ViewValue = $this->quote_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->quote_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->quote_branch_id->ViewCustomAttributes = "";
 
 			// quote_business_id
-			$this->quote_business_id->ViewValue = $this->quote_business_id->CurrentValue;
-			$this->quote_business_id->ViewValue = FormatNumber($this->quote_business_id->ViewValue, 0, -2, -2, -2);
+			if ($this->quote_business_id->VirtualValue != "") {
+				$this->quote_business_id->ViewValue = $this->quote_business_id->VirtualValue;
+			} else {
+				$curVal = strval($this->quote_business_id->CurrentValue);
+				if ($curVal != "") {
+					$this->quote_business_id->ViewValue = $this->quote_business_id->lookupCacheOption($curVal);
+					if ($this->quote_business_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->quote_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->quote_business_id->ViewValue = $this->quote_business_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->quote_business_id->ViewValue = $this->quote_business_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->quote_business_id->ViewValue = NULL;
+				}
+			}
 			$this->quote_business_id->ViewCustomAttributes = "";
 
 			// quote_service_id
-			$this->quote_service_id->ViewValue = $this->quote_service_id->CurrentValue;
-			$this->quote_service_id->ViewValue = FormatNumber($this->quote_service_id->ViewValue, 0, -2, -2, -2);
+			if ($this->quote_service_id->VirtualValue != "") {
+				$this->quote_service_id->ViewValue = $this->quote_service_id->VirtualValue;
+			} else {
+				$curVal = strval($this->quote_service_id->CurrentValue);
+				if ($curVal != "") {
+					$this->quote_service_id->ViewValue = $this->quote_service_id->lookupCacheOption($curVal);
+					if ($this->quote_service_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->quote_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->quote_service_id->ViewValue = $this->quote_service_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->quote_service_id->ViewValue = $this->quote_service_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->quote_service_id->ViewValue = NULL;
+				}
+			}
 			$this->quote_service_id->ViewCustomAttributes = "";
 
 			// quote_issue_date
 			$this->quote_issue_date->ViewValue = $this->quote_issue_date->CurrentValue;
-			$this->quote_issue_date->ViewValue = FormatDateTime($this->quote_issue_date->ViewValue, 0);
+			$this->quote_issue_date->ViewValue = FormatDateTime($this->quote_issue_date->ViewValue, 2);
 			$this->quote_issue_date->ViewCustomAttributes = "";
 
 			// quote_due_date
 			$this->quote_due_date->ViewValue = $this->quote_due_date->CurrentValue;
-			$this->quote_due_date->ViewValue = FormatDateTime($this->quote_due_date->ViewValue, 0);
+			$this->quote_due_date->ViewValue = FormatDateTime($this->quote_due_date->ViewValue, 2);
 			$this->quote_due_date->ViewCustomAttributes = "";
 
 			// quote_amount
@@ -1072,36 +1168,115 @@ class quotation_edit extends quotation
 			$this->quote_id->EditAttrs["class"] = "form-control";
 			$this->quote_id->EditCustomAttributes = "";
 			$this->quote_id->EditValue = $this->quote_id->CurrentValue;
+			$this->quote_id->CssClass = "font-weight-bold";
 			$this->quote_id->ViewCustomAttributes = "";
 
 			// quote_branch_id
-			$this->quote_branch_id->EditAttrs["class"] = "form-control";
 			$this->quote_branch_id->EditCustomAttributes = "";
-			$this->quote_branch_id->EditValue = HtmlEncode($this->quote_branch_id->CurrentValue);
-			$this->quote_branch_id->PlaceHolder = RemoveHtml($this->quote_branch_id->caption());
+			$curVal = trim(strval($this->quote_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->quote_branch_id->ViewValue = $this->quote_branch_id->lookupCacheOption($curVal);
+			else
+				$this->quote_branch_id->ViewValue = $this->quote_branch_id->Lookup !== NULL && is_array($this->quote_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->quote_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->quote_branch_id->EditValue = array_values($this->quote_branch_id->Lookup->Options);
+				if ($this->quote_branch_id->ViewValue == "")
+					$this->quote_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->quote_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->quote_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->quote_branch_id->ViewValue = $this->quote_branch_id->displayValue($arwrk);
+				} else {
+					$this->quote_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->quote_branch_id->EditValue = $arwrk;
+			}
 
 			// quote_business_id
-			$this->quote_business_id->EditAttrs["class"] = "form-control";
 			$this->quote_business_id->EditCustomAttributes = "";
-			$this->quote_business_id->EditValue = HtmlEncode($this->quote_business_id->CurrentValue);
-			$this->quote_business_id->PlaceHolder = RemoveHtml($this->quote_business_id->caption());
+			$curVal = trim(strval($this->quote_business_id->CurrentValue));
+			if ($curVal != "")
+				$this->quote_business_id->ViewValue = $this->quote_business_id->lookupCacheOption($curVal);
+			else
+				$this->quote_business_id->ViewValue = $this->quote_business_id->Lookup !== NULL && is_array($this->quote_business_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->quote_business_id->ViewValue !== NULL) { // Load from cache
+				$this->quote_business_id->EditValue = array_values($this->quote_business_id->Lookup->Options);
+				if ($this->quote_business_id->ViewValue == "")
+					$this->quote_business_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`b_id`" . SearchString("=", $this->quote_business_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->quote_business_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->quote_business_id->ViewValue = $this->quote_business_id->displayValue($arwrk);
+				} else {
+					$this->quote_business_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->quote_business_id->EditValue = $arwrk;
+			}
 
 			// quote_service_id
-			$this->quote_service_id->EditAttrs["class"] = "form-control";
 			$this->quote_service_id->EditCustomAttributes = "";
-			$this->quote_service_id->EditValue = HtmlEncode($this->quote_service_id->CurrentValue);
-			$this->quote_service_id->PlaceHolder = RemoveHtml($this->quote_service_id->caption());
+			$curVal = trim(strval($this->quote_service_id->CurrentValue));
+			if ($curVal != "")
+				$this->quote_service_id->ViewValue = $this->quote_service_id->lookupCacheOption($curVal);
+			else
+				$this->quote_service_id->ViewValue = $this->quote_service_id->Lookup !== NULL && is_array($this->quote_service_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->quote_service_id->ViewValue !== NULL) { // Load from cache
+				$this->quote_service_id->EditValue = array_values($this->quote_service_id->Lookup->Options);
+				if ($this->quote_service_id->ViewValue == "")
+					$this->quote_service_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`service_id`" . SearchString("=", $this->quote_service_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->quote_service_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->quote_service_id->ViewValue = $this->quote_service_id->displayValue($arwrk);
+				} else {
+					$this->quote_service_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->quote_service_id->EditValue = $arwrk;
+			}
 
 			// quote_issue_date
 			$this->quote_issue_date->EditAttrs["class"] = "form-control";
 			$this->quote_issue_date->EditCustomAttributes = "";
-			$this->quote_issue_date->EditValue = HtmlEncode(FormatDateTime($this->quote_issue_date->CurrentValue, 8));
+			$this->quote_issue_date->EditValue = HtmlEncode(FormatDateTime($this->quote_issue_date->CurrentValue, 2));
 			$this->quote_issue_date->PlaceHolder = RemoveHtml($this->quote_issue_date->caption());
 
 			// quote_due_date
 			$this->quote_due_date->EditAttrs["class"] = "form-control";
 			$this->quote_due_date->EditCustomAttributes = "";
-			$this->quote_due_date->EditValue = HtmlEncode(FormatDateTime($this->quote_due_date->CurrentValue, 8));
+			$this->quote_due_date->EditValue = HtmlEncode(FormatDateTime($this->quote_due_date->CurrentValue, 2));
 			$this->quote_due_date->PlaceHolder = RemoveHtml($this->quote_due_date->caption());
 
 			// quote_amount
@@ -1189,24 +1364,15 @@ class quotation_edit extends quotation
 				AddMessage($FormError, str_replace("%s", $this->quote_branch_id->caption(), $this->quote_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->quote_branch_id->FormValue)) {
-			AddMessage($FormError, $this->quote_branch_id->errorMessage());
-		}
 		if ($this->quote_business_id->Required) {
 			if (!$this->quote_business_id->IsDetailKey && $this->quote_business_id->FormValue != NULL && $this->quote_business_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->quote_business_id->caption(), $this->quote_business_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->quote_business_id->FormValue)) {
-			AddMessage($FormError, $this->quote_business_id->errorMessage());
-		}
 		if ($this->quote_service_id->Required) {
 			if (!$this->quote_service_id->IsDetailKey && $this->quote_service_id->FormValue != NULL && $this->quote_service_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->quote_service_id->caption(), $this->quote_service_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->quote_service_id->FormValue)) {
-			AddMessage($FormError, $this->quote_service_id->errorMessage());
 		}
 		if ($this->quote_issue_date->Required) {
 			if (!$this->quote_issue_date->IsDetailKey && $this->quote_issue_date->FormValue != NULL && $this->quote_issue_date->FormValue == "") {
@@ -1289,10 +1455,10 @@ class quotation_edit extends quotation
 			$this->quote_service_id->setDbValueDef($rsnew, $this->quote_service_id->CurrentValue, 0, $this->quote_service_id->ReadOnly);
 
 			// quote_issue_date
-			$this->quote_issue_date->setDbValueDef($rsnew, UnFormatDateTime($this->quote_issue_date->CurrentValue, 0), CurrentDate(), $this->quote_issue_date->ReadOnly);
+			$this->quote_issue_date->setDbValueDef($rsnew, UnFormatDateTime($this->quote_issue_date->CurrentValue, 2), CurrentDate(), $this->quote_issue_date->ReadOnly);
 
 			// quote_due_date
-			$this->quote_due_date->setDbValueDef($rsnew, UnFormatDateTime($this->quote_due_date->CurrentValue, 0), CurrentDate(), $this->quote_due_date->ReadOnly);
+			$this->quote_due_date->setDbValueDef($rsnew, UnFormatDateTime($this->quote_due_date->CurrentValue, 2), CurrentDate(), $this->quote_due_date->ReadOnly);
 
 			// quote_amount
 			$this->quote_amount->setDbValueDef($rsnew, $this->quote_amount->CurrentValue, 0, $this->quote_amount->ReadOnly);
@@ -1384,6 +1550,12 @@ class quotation_edit extends quotation
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_quote_branch_id":
+					break;
+				case "x_quote_business_id":
+					break;
+				case "x_quote_service_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1404,6 +1576,12 @@ class quotation_edit extends quotation
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_quote_branch_id":
+							break;
+						case "x_quote_business_id":
+							break;
+						case "x_quote_service_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

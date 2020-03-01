@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $referral_view = new referral_view();
 $referral_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -116,6 +117,16 @@ $referral_view->showMessage();
 		<td data-name="referral_deal_signed" <?php echo $referral_view->referral_deal_signed->cellAttributes() ?>>
 <span id="el_referral_referral_deal_signed">
 <span<?php echo $referral_view->referral_deal_signed->viewAttributes() ?>><?php echo $referral_view->referral_deal_signed->getViewValue() ?></span>
+</span>
+</td>
+	</tr>
+<?php } ?>
+<?php if ($referral_view->referral_scanned->Visible) { // referral_scanned ?>
+	<tr id="r_referral_scanned">
+		<td class="<?php echo $referral_view->TableLeftColumnClass ?>"><span id="elh_referral_referral_scanned"><?php echo $referral_view->referral_scanned->caption() ?></span></td>
+		<td data-name="referral_scanned" <?php echo $referral_view->referral_scanned->cellAttributes() ?>>
+<span id="el_referral_referral_scanned">
+<span><?php echo GetFileViewTag($referral_view->referral_scanned, $referral_view->referral_scanned->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

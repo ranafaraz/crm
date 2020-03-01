@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $reference_letter_view = new reference_letter_view();
 $reference_letter_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -125,7 +126,7 @@ $reference_letter_view->showMessage();
 		<td class="<?php echo $reference_letter_view->TableLeftColumnClass ?>"><span id="elh_reference_letter_ref_letter_scanned"><?php echo $reference_letter_view->ref_letter_scanned->caption() ?></span></td>
 		<td data-name="ref_letter_scanned" <?php echo $reference_letter_view->ref_letter_scanned->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_scanned">
-<span<?php echo $reference_letter_view->ref_letter_scanned->viewAttributes() ?>><?php echo $reference_letter_view->ref_letter_scanned->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($reference_letter_view->ref_letter_scanned, $reference_letter_view->ref_letter_scanned->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

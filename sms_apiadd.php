@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $sms_api_add = new sms_api_add();
 $sms_api_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -195,11 +196,11 @@ $sms_api_add->showMessage();
 		<label id="elh_sms_api_sms_api_reg_date" for="x_sms_api_reg_date" class="<?php echo $sms_api_add->LeftColumnClass ?>"><?php echo $sms_api_add->sms_api_reg_date->caption() ?><?php echo $sms_api_add->sms_api_reg_date->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_api_add->RightColumnClass ?>"><div <?php echo $sms_api_add->sms_api_reg_date->cellAttributes() ?>>
 <span id="el_sms_api_sms_api_reg_date">
-<input type="text" data-table="sms_api" data-field="x_sms_api_reg_date" name="x_sms_api_reg_date" id="x_sms_api_reg_date" maxlength="10" placeholder="<?php echo HtmlEncode($sms_api_add->sms_api_reg_date->getPlaceHolder()) ?>" value="<?php echo $sms_api_add->sms_api_reg_date->EditValue ?>"<?php echo $sms_api_add->sms_api_reg_date->editAttributes() ?>>
+<input type="text" data-table="sms_api" data-field="x_sms_api_reg_date" data-format="2" name="x_sms_api_reg_date" id="x_sms_api_reg_date" maxlength="10" placeholder="<?php echo HtmlEncode($sms_api_add->sms_api_reg_date->getPlaceHolder()) ?>" value="<?php echo $sms_api_add->sms_api_reg_date->EditValue ?>"<?php echo $sms_api_add->sms_api_reg_date->editAttributes() ?>>
 <?php if (!$sms_api_add->sms_api_reg_date->ReadOnly && !$sms_api_add->sms_api_reg_date->Disabled && !isset($sms_api_add->sms_api_reg_date->EditAttrs["readonly"]) && !isset($sms_api_add->sms_api_reg_date->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["fsms_apiadd", "datetimepicker"], function() {
-	ew.createDateTimePicker("fsms_apiadd", "x_sms_api_reg_date", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+	ew.createDateTimePicker("fsms_apiadd", "x_sms_api_reg_date", {"ignoreReadonly":true,"useCurrent":false,"format":2});
 });
 </script>
 <?php } ?>
@@ -212,11 +213,11 @@ loadjs.ready(["fsms_apiadd", "datetimepicker"], function() {
 		<label id="elh_sms_api_sms_api_expiry_date" for="x_sms_api_expiry_date" class="<?php echo $sms_api_add->LeftColumnClass ?>"><?php echo $sms_api_add->sms_api_expiry_date->caption() ?><?php echo $sms_api_add->sms_api_expiry_date->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_api_add->RightColumnClass ?>"><div <?php echo $sms_api_add->sms_api_expiry_date->cellAttributes() ?>>
 <span id="el_sms_api_sms_api_expiry_date">
-<input type="text" data-table="sms_api" data-field="x_sms_api_expiry_date" name="x_sms_api_expiry_date" id="x_sms_api_expiry_date" maxlength="10" placeholder="<?php echo HtmlEncode($sms_api_add->sms_api_expiry_date->getPlaceHolder()) ?>" value="<?php echo $sms_api_add->sms_api_expiry_date->EditValue ?>"<?php echo $sms_api_add->sms_api_expiry_date->editAttributes() ?>>
+<input type="text" data-table="sms_api" data-field="x_sms_api_expiry_date" data-format="2" name="x_sms_api_expiry_date" id="x_sms_api_expiry_date" maxlength="10" placeholder="<?php echo HtmlEncode($sms_api_add->sms_api_expiry_date->getPlaceHolder()) ?>" value="<?php echo $sms_api_add->sms_api_expiry_date->EditValue ?>"<?php echo $sms_api_add->sms_api_expiry_date->editAttributes() ?>>
 <?php if (!$sms_api_add->sms_api_expiry_date->ReadOnly && !$sms_api_add->sms_api_expiry_date->Disabled && !isset($sms_api_add->sms_api_expiry_date->EditAttrs["readonly"]) && !isset($sms_api_add->sms_api_expiry_date->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["fsms_apiadd", "datetimepicker"], function() {
-	ew.createDateTimePicker("fsms_apiadd", "x_sms_api_expiry_date", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+	ew.createDateTimePicker("fsms_apiadd", "x_sms_api_expiry_date", {"ignoreReadonly":true,"useCurrent":false,"format":2});
 });
 </script>
 <?php } ?>

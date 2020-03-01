@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class city_delete extends city
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'city';
@@ -539,6 +539,18 @@ class city_delete extends city
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("citylist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->city_id->setVisibility();
@@ -565,8 +577,9 @@ class city_delete extends city
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->city_tehsil_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -633,7 +646,7 @@ class city_delete extends city
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -684,6 +697,11 @@ class city_delete extends city
 			return;
 		$this->city_id->setDbValue($row['city_id']);
 		$this->city_tehsil_id->setDbValue($row['city_tehsil_id']);
+		if (array_key_exists('EV__city_tehsil_id', $rs->fields)) {
+			$this->city_tehsil_id->VirtualValue = $rs->fields('EV__city_tehsil_id'); // Set up virtual field value
+		} else {
+			$this->city_tehsil_id->VirtualValue = ""; // Clear value
+		}
 		$this->city_name->setDbValue($row['city_name']);
 	}
 
@@ -716,11 +734,33 @@ class city_delete extends city
 
 			// city_id
 			$this->city_id->ViewValue = $this->city_id->CurrentValue;
+			$this->city_id->CssClass = "font-weight-bold";
 			$this->city_id->ViewCustomAttributes = "";
 
 			// city_tehsil_id
-			$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->CurrentValue;
-			$this->city_tehsil_id->ViewValue = FormatNumber($this->city_tehsil_id->ViewValue, 0, -2, -2, -2);
+			if ($this->city_tehsil_id->VirtualValue != "") {
+				$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->VirtualValue;
+			} else {
+				$curVal = strval($this->city_tehsil_id->CurrentValue);
+				if ($curVal != "") {
+					$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->lookupCacheOption($curVal);
+					if ($this->city_tehsil_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`tehsil_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->city_tehsil_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->city_tehsil_id->ViewValue = NULL;
+				}
+			}
 			$this->city_tehsil_id->ViewCustomAttributes = "";
 
 			// city_name
@@ -859,6 +899,8 @@ class city_delete extends city
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_city_tehsil_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -879,6 +921,8 @@ class city_delete extends city
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_city_tehsil_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

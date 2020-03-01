@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_status_view = new business_status_view();
 $business_status_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,6 +87,16 @@ $business_status_view->showMessage();
 		<td data-name="business_status_caption" <?php echo $business_status_view->business_status_caption->cellAttributes() ?>>
 <span id="el_business_status_business_status_caption">
 <span<?php echo $business_status_view->business_status_caption->viewAttributes() ?>><?php echo $business_status_view->business_status_caption->getViewValue() ?></span>
+</span>
+</td>
+	</tr>
+<?php } ?>
+<?php if ($business_status_view->b_status_desc->Visible) { // b_status_desc ?>
+	<tr id="r_b_status_desc">
+		<td class="<?php echo $business_status_view->TableLeftColumnClass ?>"><span id="elh_business_status_b_status_desc"><?php echo $business_status_view->b_status_desc->caption() ?></span></td>
+		<td data-name="b_status_desc" <?php echo $business_status_view->b_status_desc->cellAttributes() ?>>
+<span id="el_business_status_b_status_desc">
+<span<?php echo $business_status_view->b_status_desc->viewAttributes() ?>><?php echo $business_status_view->b_status_desc->getViewValue() ?></span>
 </span>
 </td>
 	</tr>

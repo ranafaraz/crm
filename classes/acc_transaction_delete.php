@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class acc_transaction_delete extends acc_transaction
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'acc_transaction';
@@ -539,6 +539,18 @@ class acc_transaction_delete extends acc_transaction
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("acc_transactionlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->acc_trans_id->setVisibility();
@@ -568,8 +580,10 @@ class acc_transaction_delete extends acc_transaction
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->acc_trans_branch_id);
+		$this->setupLookupOptions($this->acc_trans_acc_head_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -636,7 +650,7 @@ class acc_transaction_delete extends acc_transaction
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -687,7 +701,17 @@ class acc_transaction_delete extends acc_transaction
 			return;
 		$this->acc_trans_id->setDbValue($row['acc_trans_id']);
 		$this->acc_trans_branch_id->setDbValue($row['acc_trans_branch_id']);
+		if (array_key_exists('EV__acc_trans_branch_id', $rs->fields)) {
+			$this->acc_trans_branch_id->VirtualValue = $rs->fields('EV__acc_trans_branch_id'); // Set up virtual field value
+		} else {
+			$this->acc_trans_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->acc_trans_acc_head_id->setDbValue($row['acc_trans_acc_head_id']);
+		if (array_key_exists('EV__acc_trans_acc_head_id', $rs->fields)) {
+			$this->acc_trans_acc_head_id->VirtualValue = $rs->fields('EV__acc_trans_acc_head_id'); // Set up virtual field value
+		} else {
+			$this->acc_trans_acc_head_id->VirtualValue = ""; // Clear value
+		}
 		$this->acc_trans_narration->setDbValue($row['acc_trans_narration']);
 		$this->acc_trans_amount->setDbValue($row['acc_trans_amount']);
 		$this->acc_trans_date->setDbValue($row['acc_trans_date']);
@@ -728,16 +752,59 @@ class acc_transaction_delete extends acc_transaction
 
 			// acc_trans_id
 			$this->acc_trans_id->ViewValue = $this->acc_trans_id->CurrentValue;
+			$this->acc_trans_id->CssClass = "font-weight-bold";
 			$this->acc_trans_id->ViewCustomAttributes = "";
 
 			// acc_trans_branch_id
-			$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->CurrentValue;
-			$this->acc_trans_branch_id->ViewValue = FormatNumber($this->acc_trans_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->acc_trans_branch_id->VirtualValue != "") {
+				$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->acc_trans_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->lookupCacheOption($curVal);
+					if ($this->acc_trans_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->acc_trans_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->acc_trans_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->acc_trans_branch_id->ViewCustomAttributes = "";
 
 			// acc_trans_acc_head_id
-			$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->CurrentValue;
-			$this->acc_trans_acc_head_id->ViewValue = FormatNumber($this->acc_trans_acc_head_id->ViewValue, 0, -2, -2, -2);
+			if ($this->acc_trans_acc_head_id->VirtualValue != "") {
+				$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->VirtualValue;
+			} else {
+				$curVal = strval($this->acc_trans_acc_head_id->CurrentValue);
+				if ($curVal != "") {
+					$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->lookupCacheOption($curVal);
+					if ($this->acc_trans_acc_head_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`acc_head_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->acc_trans_acc_head_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->acc_trans_acc_head_id->ViewValue = NULL;
+				}
+			}
 			$this->acc_trans_acc_head_id->ViewCustomAttributes = "";
 
 			// acc_trans_amount
@@ -892,6 +959,10 @@ class acc_transaction_delete extends acc_transaction
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_acc_trans_branch_id":
+					break;
+				case "x_acc_trans_acc_head_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -912,6 +983,10 @@ class acc_transaction_delete extends acc_transaction
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_acc_trans_branch_id":
+							break;
+						case "x_acc_trans_acc_head_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

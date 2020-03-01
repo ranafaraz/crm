@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -76,10 +76,13 @@ class reference_letter extends DbTable
 		$this->fields['ref_letter_id'] = &$this->ref_letter_id;
 
 		// ref_letter_branch_id
-		$this->ref_letter_branch_id = new DbField('reference_letter', 'reference_letter', 'x_ref_letter_branch_id', 'ref_letter_branch_id', '`ref_letter_branch_id`', '`ref_letter_branch_id`', 3, 12, -1, FALSE, '`ref_letter_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->ref_letter_branch_id = new DbField('reference_letter', 'reference_letter', 'x_ref_letter_branch_id', 'ref_letter_branch_id', '`ref_letter_branch_id`', '`ref_letter_branch_id`', 3, 12, -1, FALSE, '`EV__ref_letter_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->ref_letter_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->ref_letter_branch_id->Required = TRUE; // Required field
 		$this->ref_letter_branch_id->Sortable = TRUE; // Allow sort
+		$this->ref_letter_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->ref_letter_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->ref_letter_branch_id->Lookup = new Lookup('ref_letter_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->ref_letter_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['ref_letter_branch_id'] = &$this->ref_letter_branch_id;
 
@@ -105,14 +108,15 @@ class reference_letter extends DbTable
 		$this->fields['ref_letter_content'] = &$this->ref_letter_content;
 
 		// ref_letter_scanned
-		$this->ref_letter_scanned = new DbField('reference_letter', 'reference_letter', 'x_ref_letter_scanned', 'ref_letter_scanned', '`ref_letter_scanned`', '`ref_letter_scanned`', 200, 100, -1, FALSE, '`ref_letter_scanned`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->ref_letter_scanned = new DbField('reference_letter', 'reference_letter', 'x_ref_letter_scanned', 'ref_letter_scanned', '`ref_letter_scanned`', '`ref_letter_scanned`', 200, 100, -1, TRUE, '`ref_letter_scanned`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
 		$this->ref_letter_scanned->Nullable = FALSE; // NOT NULL field
 		$this->ref_letter_scanned->Required = TRUE; // Required field
 		$this->ref_letter_scanned->Sortable = TRUE; // Allow sort
+		$this->ref_letter_scanned->ImageResize = TRUE;
 		$this->fields['ref_letter_scanned'] = &$this->ref_letter_scanned;
 
 		// ref_letter_date
-		$this->ref_letter_date = new DbField('reference_letter', 'reference_letter', 'x_ref_letter_date', 'ref_letter_date', '`ref_letter_date`', CastDateFieldForLike("`ref_letter_date`", 0, "DB"), 133, 10, 0, FALSE, '`ref_letter_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->ref_letter_date = new DbField('reference_letter', 'reference_letter', 'x_ref_letter_date', 'ref_letter_date', '`ref_letter_date`', CastDateFieldForLike("`ref_letter_date`", 2, "DB"), 133, 10, 2, FALSE, '`ref_letter_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->ref_letter_date->Nullable = FALSE; // NOT NULL field
 		$this->ref_letter_date->Required = TRUE; // Required field
 		$this->ref_letter_date->Sortable = TRUE; // Allow sort
@@ -158,9 +162,21 @@ class reference_letter extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -187,6 +203,22 @@ class reference_letter extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `reference_letter`.`ref_letter_branch_id` LIMIT 1) AS `EV__ref_letter_branch_id` FROM `reference_letter`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -342,8 +374,13 @@ class reference_letter extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -351,8 +388,26 @@ class reference_letter extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->ref_letter_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->ref_letter_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->ref_letter_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->ref_letter_branch_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -380,7 +435,10 @@ class reference_letter extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -483,7 +541,7 @@ class reference_letter extends DbTable
 		$this->ref_letter_to_whom->DbValue = $row['ref_letter_to_whom'];
 		$this->ref_letter_by_whom->DbValue = $row['ref_letter_by_whom'];
 		$this->ref_letter_content->DbValue = $row['ref_letter_content'];
-		$this->ref_letter_scanned->DbValue = $row['ref_letter_scanned'];
+		$this->ref_letter_scanned->Upload->DbValue = $row['ref_letter_scanned'];
 		$this->ref_letter_date->DbValue = $row['ref_letter_date'];
 		$this->ref_letter_comments->DbValue = $row['ref_letter_comments'];
 	}
@@ -492,6 +550,11 @@ class reference_letter extends DbTable
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
+		$oldFiles = EmptyValue($row['ref_letter_scanned']) ? [] : [$row['ref_letter_scanned']];
+		foreach ($oldFiles as $oldFile) {
+			if (file_exists($this->ref_letter_scanned->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->ref_letter_scanned->oldPhysicalUploadPath() . $oldFile);
+		}
 	}
 
 	// Record filter WHERE clause
@@ -721,7 +784,7 @@ class reference_letter extends DbTable
 		$this->ref_letter_to_whom->setDbValue($rs->fields('ref_letter_to_whom'));
 		$this->ref_letter_by_whom->setDbValue($rs->fields('ref_letter_by_whom'));
 		$this->ref_letter_content->setDbValue($rs->fields('ref_letter_content'));
-		$this->ref_letter_scanned->setDbValue($rs->fields('ref_letter_scanned'));
+		$this->ref_letter_scanned->Upload->DbValue = $rs->fields('ref_letter_scanned');
 		$this->ref_letter_date->setDbValue($rs->fields('ref_letter_date'));
 		$this->ref_letter_comments->setDbValue($rs->fields('ref_letter_comments'));
 	}
@@ -746,11 +809,33 @@ class reference_letter extends DbTable
 		// ref_letter_id
 
 		$this->ref_letter_id->ViewValue = $this->ref_letter_id->CurrentValue;
+		$this->ref_letter_id->CssClass = "font-weight-bold";
 		$this->ref_letter_id->ViewCustomAttributes = "";
 
 		// ref_letter_branch_id
-		$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->CurrentValue;
-		$this->ref_letter_branch_id->ViewValue = FormatNumber($this->ref_letter_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->ref_letter_branch_id->VirtualValue != "") {
+			$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->ref_letter_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->lookupCacheOption($curVal);
+				if ($this->ref_letter_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->ref_letter_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->ref_letter_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->ref_letter_branch_id->ViewCustomAttributes = "";
 
 		// ref_letter_to_whom
@@ -766,12 +851,19 @@ class reference_letter extends DbTable
 		$this->ref_letter_content->ViewCustomAttributes = "";
 
 		// ref_letter_scanned
-		$this->ref_letter_scanned->ViewValue = $this->ref_letter_scanned->CurrentValue;
+		if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
+			$this->ref_letter_scanned->ImageWidth = 200;
+			$this->ref_letter_scanned->ImageHeight = 0;
+			$this->ref_letter_scanned->ImageAlt = $this->ref_letter_scanned->alt();
+			$this->ref_letter_scanned->ViewValue = $this->ref_letter_scanned->Upload->DbValue;
+		} else {
+			$this->ref_letter_scanned->ViewValue = "";
+		}
 		$this->ref_letter_scanned->ViewCustomAttributes = "";
 
 		// ref_letter_date
 		$this->ref_letter_date->ViewValue = $this->ref_letter_date->CurrentValue;
-		$this->ref_letter_date->ViewValue = FormatDateTime($this->ref_letter_date->ViewValue, 0);
+		$this->ref_letter_date->ViewValue = FormatDateTime($this->ref_letter_date->ViewValue, 2);
 		$this->ref_letter_date->ViewCustomAttributes = "";
 
 		// ref_letter_comments
@@ -805,8 +897,22 @@ class reference_letter extends DbTable
 
 		// ref_letter_scanned
 		$this->ref_letter_scanned->LinkCustomAttributes = "";
-		$this->ref_letter_scanned->HrefValue = "";
+		if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
+			$this->ref_letter_scanned->HrefValue = GetFileUploadUrl($this->ref_letter_scanned, $this->ref_letter_scanned->htmlDecode($this->ref_letter_scanned->Upload->DbValue)); // Add prefix/suffix
+			$this->ref_letter_scanned->LinkAttrs["target"] = ""; // Add target
+			if ($this->isExport())
+				$this->ref_letter_scanned->HrefValue = FullUrl($this->ref_letter_scanned->HrefValue, "href");
+		} else {
+			$this->ref_letter_scanned->HrefValue = "";
+		}
+		$this->ref_letter_scanned->ExportHrefValue = $this->ref_letter_scanned->UploadPath . $this->ref_letter_scanned->Upload->DbValue;
 		$this->ref_letter_scanned->TooltipValue = "";
+		if ($this->ref_letter_scanned->UseColorbox) {
+			if (EmptyValue($this->ref_letter_scanned->TooltipValue))
+				$this->ref_letter_scanned->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+			$this->ref_letter_scanned->LinkAttrs["data-rel"] = "reference_letter_x_ref_letter_scanned";
+			$this->ref_letter_scanned->LinkAttrs->appendClass("ew-lightbox");
+		}
 
 		// ref_letter_date
 		$this->ref_letter_date->LinkCustomAttributes = "";
@@ -837,13 +943,11 @@ class reference_letter extends DbTable
 		$this->ref_letter_id->EditAttrs["class"] = "form-control";
 		$this->ref_letter_id->EditCustomAttributes = "";
 		$this->ref_letter_id->EditValue = $this->ref_letter_id->CurrentValue;
+		$this->ref_letter_id->CssClass = "font-weight-bold";
 		$this->ref_letter_id->ViewCustomAttributes = "";
 
 		// ref_letter_branch_id
-		$this->ref_letter_branch_id->EditAttrs["class"] = "form-control";
 		$this->ref_letter_branch_id->EditCustomAttributes = "";
-		$this->ref_letter_branch_id->EditValue = $this->ref_letter_branch_id->CurrentValue;
-		$this->ref_letter_branch_id->PlaceHolder = RemoveHtml($this->ref_letter_branch_id->caption());
 
 		// ref_letter_to_whom
 		$this->ref_letter_to_whom->EditAttrs["class"] = "form-control";
@@ -870,15 +974,21 @@ class reference_letter extends DbTable
 		// ref_letter_scanned
 		$this->ref_letter_scanned->EditAttrs["class"] = "form-control";
 		$this->ref_letter_scanned->EditCustomAttributes = "";
-		if (!$this->ref_letter_scanned->Raw)
-			$this->ref_letter_scanned->CurrentValue = HtmlDecode($this->ref_letter_scanned->CurrentValue);
-		$this->ref_letter_scanned->EditValue = $this->ref_letter_scanned->CurrentValue;
-		$this->ref_letter_scanned->PlaceHolder = RemoveHtml($this->ref_letter_scanned->caption());
+		if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
+			$this->ref_letter_scanned->ImageWidth = 200;
+			$this->ref_letter_scanned->ImageHeight = 0;
+			$this->ref_letter_scanned->ImageAlt = $this->ref_letter_scanned->alt();
+			$this->ref_letter_scanned->EditValue = $this->ref_letter_scanned->Upload->DbValue;
+		} else {
+			$this->ref_letter_scanned->EditValue = "";
+		}
+		if (!EmptyValue($this->ref_letter_scanned->CurrentValue))
+				$this->ref_letter_scanned->Upload->FileName = $this->ref_letter_scanned->CurrentValue;
 
 		// ref_letter_date
 		$this->ref_letter_date->EditAttrs["class"] = "form-control";
 		$this->ref_letter_date->EditCustomAttributes = "";
-		$this->ref_letter_date->EditValue = FormatDateTime($this->ref_letter_date->CurrentValue, 8);
+		$this->ref_letter_date->EditValue = FormatDateTime($this->ref_letter_date->CurrentValue, 2);
 		$this->ref_letter_date->PlaceHolder = RemoveHtml($this->ref_letter_date->caption());
 
 		// ref_letter_comments
@@ -995,8 +1105,98 @@ class reference_letter extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
+		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
+		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// No binary fields
+		// Set up field name / file name field / file type field
+		$fldName = "";
+		$fileNameFld = "";
+		$fileTypeFld = "";
+		if ($fldparm == 'ref_letter_scanned') {
+			$fldName = "ref_letter_scanned";
+			$fileNameFld = "ref_letter_scanned";
+		} else {
+			return FALSE; // Incorrect field
+		}
+
+		// Set up key values
+		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
+		if (count($ar) == 1) {
+			$this->ref_letter_id->CurrentValue = $ar[0];
+		} else {
+			return FALSE; // Incorrect key
+		}
+
+		// Set up filter (WHERE Clause)
+		$filter = $this->getRecordFilter();
+		$this->CurrentFilter = $filter;
+		$sql = $this->getCurrentSql();
+		$conn = $this->getConnection();
+		$dbtype = GetConnectionType($this->Dbid);
+		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
+			$val = $rs->fields($fldName);
+			if (!EmptyValue($val)) {
+				$fld = $this->fields[$fldName];
+
+				// Binary data
+				if ($fld->DataType == DATATYPE_BLOB) {
+					if ($dbtype != "MYSQL") {
+						if (is_array($val) || is_object($val)) // Byte array
+							$val = BytesToString($val);
+					}
+					if ($resize)
+						ResizeBinary($val, $width, $height);
+
+					// Write file type
+					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
+						AddHeader("Content-type", $rs->fields($fileTypeFld));
+					} else {
+						AddHeader("Content-type", ContentType($val));
+					}
+
+					// Write file name
+					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
+						$fileName = $rs->fields($fileNameFld);
+						$pathinfo = pathinfo($fileName);
+						$ext = strtolower(@$pathinfo["extension"]);
+						$isPdf = SameText($ext, "pdf");
+						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
+							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
+					}
+
+					// Write file data
+					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
+						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
+						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
+							$val .= "\0\0\0\0";
+					}
+
+					// Clear any debug message
+					if (ob_get_length())
+						ob_end_clean();
+
+					// Write binary data
+					Write($val);
+
+				// Upload to folder
+				} else {
+					if ($fld->UploadMultiple)
+						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
+					else
+						$files = [$val];
+					$data = [];
+					$ar = [];
+					foreach ($files as $file) {
+						if (!EmptyValue($file))
+							$ar[$file] = FullUrl($fld->hrefPath() . $file);
+					}
+					$data[$fld->Param] = $ar;
+					WriteJson($data);
+				}
+			}
+			$rs->close();
+			return TRUE;
+		}
 		return FALSE;
 	}
 

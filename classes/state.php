@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -71,10 +71,13 @@ class state extends DbTable
 		$this->fields['state_id'] = &$this->state_id;
 
 		// state_country_id
-		$this->state_country_id = new DbField('state', 'state', 'x_state_country_id', 'state_country_id', '`state_country_id`', '`state_country_id`', 3, 12, -1, FALSE, '`state_country_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->state_country_id = new DbField('state', 'state', 'x_state_country_id', 'state_country_id', '`state_country_id`', '`state_country_id`', 3, 12, -1, FALSE, '`EV__state_country_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->state_country_id->Nullable = FALSE; // NOT NULL field
 		$this->state_country_id->Required = TRUE; // Required field
 		$this->state_country_id->Sortable = TRUE; // Allow sort
+		$this->state_country_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->state_country_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->state_country_id->Lookup = new Lookup('state_country_id', 'country', FALSE, 'country_id', ["country_name","","",""], [], [], [], [], [], [], '', '');
 		$this->state_country_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['state_country_id'] = &$this->state_country_id;
 
@@ -117,9 +120,21 @@ class state extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -146,6 +161,22 @@ class state extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `country_name` FROM `country` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`country_id` = `state`.`state_country_id` LIMIT 1) AS `EV__state_country_id` FROM `state`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -301,8 +332,13 @@ class state extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -310,8 +346,26 @@ class state extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->state_country_id->AdvancedSearch->SearchValue != "" ||
+			$this->state_country_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->state_country_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->state_country_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -339,7 +393,10 @@ class state extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -690,11 +747,33 @@ class state extends DbTable
 		// state_id
 
 		$this->state_id->ViewValue = $this->state_id->CurrentValue;
+		$this->state_id->CssClass = "font-weight-bold";
 		$this->state_id->ViewCustomAttributes = "";
 
 		// state_country_id
-		$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
-		$this->state_country_id->ViewValue = FormatNumber($this->state_country_id->ViewValue, 0, -2, -2, -2);
+		if ($this->state_country_id->VirtualValue != "") {
+			$this->state_country_id->ViewValue = $this->state_country_id->VirtualValue;
+		} else {
+			$curVal = strval($this->state_country_id->CurrentValue);
+			if ($curVal != "") {
+				$this->state_country_id->ViewValue = $this->state_country_id->lookupCacheOption($curVal);
+				if ($this->state_country_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`country_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->state_country_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->state_country_id->ViewValue = $this->state_country_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->state_country_id->ViewValue = NULL;
+			}
+		}
 		$this->state_country_id->ViewCustomAttributes = "";
 
 		// state_name
@@ -735,13 +814,12 @@ class state extends DbTable
 		$this->state_id->EditAttrs["class"] = "form-control";
 		$this->state_id->EditCustomAttributes = "";
 		$this->state_id->EditValue = $this->state_id->CurrentValue;
+		$this->state_id->CssClass = "font-weight-bold";
 		$this->state_id->ViewCustomAttributes = "";
 
 		// state_country_id
 		$this->state_country_id->EditAttrs["class"] = "form-control";
 		$this->state_country_id->EditCustomAttributes = "";
-		$this->state_country_id->EditValue = $this->state_country_id->CurrentValue;
-		$this->state_country_id->PlaceHolder = RemoveHtml($this->state_country_id->caption());
 
 		// state_name
 		$this->state_name->EditAttrs["class"] = "form-control";

@@ -4,7 +4,7 @@
  * PHPMaker Common classes and functions
  * (C) 2002-2020 e.World Technology Limited. All rights reserved.
 */
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Config data
 $CONFIG_DATA = new \Dflydev\DotAccessData\Data($CONFIG);
@@ -6242,6 +6242,13 @@ class HttpUpload
 		// Language object
 		if (!isset($Language))
 			$Language = new Language();
+
+		// Check if valid API request
+		global $Security;
+		if ($name == "") {
+			if (!ValidApiRequest() || !$Security->isLoggedIn())
+				return FALSE;
+		}
 		$res = TRUE;
 		$req = $Request->getUploadedFiles();
 		$files = [];
@@ -6916,6 +6923,8 @@ class AdvancedSecurity
 			$pwd = @$_SESSION[PROJECT_NAME . "_Password"];
 			$autologin = $this->validateUser($usr, $pwd, TRUE);
 		}
+		if ($autologin)
+			WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, $GLOBALS["Language"]->phrase("AuditTrailAutoLogin"), CurrentUserIP(), "", "", "", "");
 		return $autologin;
 	}
 
@@ -6999,6 +7008,34 @@ class AdvancedSecurity
 			//$_SESSION[SESSION_STATUS] = "login"; // To be setup below
 			$this->setCurrentUserName($usr); // Load user name
 		}
+
+		// Check hard coded admin first
+		if (!$valid) {
+			$adminUserName = Config("ADMIN_USER_NAME");
+			$adminPassword = Config("ADMIN_PASSWORD");
+			if (Config("ENCRYPTION_ENABLED")) {
+				try {
+					$adminUserName = PhpDecrypt(Config("ADMIN_USER_NAME"), Config("ENCRYPTION_KEY"));
+					$adminPassword = PhpDecrypt(Config("ADMIN_PASSWORD"), Config("ENCRYPTION_KEY"));
+				} catch (\Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException $e) {
+					$adminUserName = Config("ADMIN_USER_NAME");
+					$adminPassword = Config("ADMIN_PASSWORD");
+				}
+			}
+			if (Config("CASE_SENSITIVE_PASSWORD")) {
+				$valid = (!$customValid && $adminUserName === $usr && $adminPassword === $pwd) ||
+					($customValid && $adminUserName === $usr);
+			} else {
+				$valid = (!$customValid && SameText($adminUserName, $usr) && SameText($adminPassword, $pwd)) ||
+					($customValid && SameText($adminUserName, $usr));
+			}
+			if ($valid) {
+				$this->_isLoggedIn = TRUE;
+				$_SESSION[SESSION_STATUS] = "login";
+				$_SESSION[SESSION_SYS_ADMIN] = 1; // System Administrator
+				$this->setCurrentUserName($Language->phrase("UserAdministrator")); // Load user name
+			}
+		}
 		if ($customValid) {
 			$rs = NULL;
 			$customValid = $this->User_Validated($rs) !== FALSE;
@@ -7013,8 +7050,21 @@ class AdvancedSecurity
 		return $valid;
 	}
 
-	// No User Level security
-	public function setupUserLevel() {}
+	// User Level security (Anonymous)
+	public function setupUserLevel()
+	{
+
+		// Load user level from user level settings
+		global $USER_LEVELS, $USER_LEVEL_PRIVS;
+		$this->UserLevel = $USER_LEVELS;
+		$this->UserLevelPriv = $USER_LEVEL_PRIVS;
+
+		// Check permissions
+		$this->checkPermissions();
+
+		// Save the User Level to Session variable
+		$this->saveUserLevel();
+	}
 
 	// Check import/lookup permissions
 	protected function checkPermissions()

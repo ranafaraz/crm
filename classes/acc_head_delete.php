@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class acc_head_delete extends acc_head
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'acc_head';
@@ -539,6 +539,18 @@ class acc_head_delete extends acc_head
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("acc_headlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->acc_head_id->setVisibility();
@@ -566,8 +578,9 @@ class acc_head_delete extends acc_head
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->acc_head_acc_nature_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -634,7 +647,7 @@ class acc_head_delete extends acc_head
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -685,6 +698,11 @@ class acc_head_delete extends acc_head
 			return;
 		$this->acc_head_id->setDbValue($row['acc_head_id']);
 		$this->acc_head_acc_nature_id->setDbValue($row['acc_head_acc_nature_id']);
+		if (array_key_exists('EV__acc_head_acc_nature_id', $rs->fields)) {
+			$this->acc_head_acc_nature_id->VirtualValue = $rs->fields('EV__acc_head_acc_nature_id'); // Set up virtual field value
+		} else {
+			$this->acc_head_acc_nature_id->VirtualValue = ""; // Clear value
+		}
 		$this->acc_head_caption->setDbValue($row['acc_head_caption']);
 		$this->acc_head_desc->setDbValue($row['acc_head_desc']);
 	}
@@ -720,11 +738,33 @@ class acc_head_delete extends acc_head
 
 			// acc_head_id
 			$this->acc_head_id->ViewValue = $this->acc_head_id->CurrentValue;
+			$this->acc_head_id->CssClass = "font-weight-bold";
 			$this->acc_head_id->ViewCustomAttributes = "";
 
 			// acc_head_acc_nature_id
-			$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->CurrentValue;
-			$this->acc_head_acc_nature_id->ViewValue = FormatNumber($this->acc_head_acc_nature_id->ViewValue, 0, -2, -2, -2);
+			if ($this->acc_head_acc_nature_id->VirtualValue != "") {
+				$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->VirtualValue;
+			} else {
+				$curVal = strval($this->acc_head_acc_nature_id->CurrentValue);
+				if ($curVal != "") {
+					$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->lookupCacheOption($curVal);
+					if ($this->acc_head_acc_nature_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`acc_nature_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->acc_head_acc_nature_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->acc_head_acc_nature_id->ViewValue = NULL;
+				}
+			}
 			$this->acc_head_acc_nature_id->ViewCustomAttributes = "";
 
 			// acc_head_caption
@@ -872,6 +912,8 @@ class acc_head_delete extends acc_head
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_acc_head_acc_nature_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -892,6 +934,8 @@ class acc_head_delete extends acc_head
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_acc_head_acc_nature_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

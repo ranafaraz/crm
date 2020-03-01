@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class designation_edit extends designation
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'designation';
@@ -540,6 +540,8 @@ class designation_edit extends designation
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class designation_edit extends designation
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("designationlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -894,6 +908,7 @@ class designation_edit extends designation
 
 			// designation_id
 			$this->designation_id->ViewValue = $this->designation_id->CurrentValue;
+			$this->designation_id->CssClass = "font-weight-bold";
 			$this->designation_id->ViewCustomAttributes = "";
 
 			// designation_caption
@@ -924,6 +939,7 @@ class designation_edit extends designation
 			$this->designation_id->EditAttrs["class"] = "form-control";
 			$this->designation_id->EditCustomAttributes = "";
 			$this->designation_id->EditValue = $this->designation_id->CurrentValue;
+			$this->designation_id->CssClass = "font-weight-bold";
 			$this->designation_id->ViewCustomAttributes = "";
 
 			// designation_caption
@@ -937,8 +953,6 @@ class designation_edit extends designation
 			// designation_desc
 			$this->designation_desc->EditAttrs["class"] = "form-control";
 			$this->designation_desc->EditCustomAttributes = "";
-			if (!$this->designation_desc->Raw)
-				$this->designation_desc->CurrentValue = HtmlDecode($this->designation_desc->CurrentValue);
 			$this->designation_desc->EditValue = HtmlEncode($this->designation_desc->CurrentValue);
 			$this->designation_desc->PlaceHolder = RemoveHtml($this->designation_desc->caption());
 

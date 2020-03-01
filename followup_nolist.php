@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $followup_no_list = new followup_no_list();
 $followup_no_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $followup_no_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$followup_no_list->isExport() && !$followup_no->CurrentAction) { ?>
 <form name="ffollowup_nolistsrch" id="ffollowup_nolistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="ffollowup_nolistsrch-search-panel" class="<?php echo $followup_no_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $followup_no_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $followup_no_list->showPageHeader(); ?>
 <?php
 $followup_no_list->showMessage();
 ?>
 <?php if ($followup_no_list->TotalRecords > 0 || $followup_no->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($followup_no_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> followup_no">
+<?php if (!$followup_no_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$followup_no_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $followup_no_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $followup_no_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="ffollowup_nolist" id="ffollowup_nolist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

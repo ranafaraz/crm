@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_status_list = new business_status_list();
 $business_status_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $business_status_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$business_status_list->isExport() && !$business_status->CurrentAction) { ?>
 <form name="fbusiness_statuslistsrch" id="fbusiness_statuslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fbusiness_statuslistsrch-search-panel" class="<?php echo $business_status_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $business_status_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $business_status_list->showPageHeader(); ?>
 <?php
 $business_status_list->showMessage();
 ?>
 <?php if ($business_status_list->TotalRecords > 0 || $business_status->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($business_status_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> business_status">
+<?php if (!$business_status_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$business_status_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $business_status_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $business_status_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fbusiness_statuslist" id="fbusiness_statuslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -153,6 +169,15 @@ $business_status_list->ListOptions->render("header", "left");
 	<?php } else { ?>
 		<th data-name="business_status_caption" class="<?php echo $business_status_list->business_status_caption->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $business_status_list->SortUrl($business_status_list->business_status_caption) ?>', 1);"><div id="elh_business_status_business_status_caption" class="business_status_business_status_caption">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $business_status_list->business_status_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($business_status_list->business_status_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($business_status_list->business_status_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($business_status_list->b_status_desc->Visible) { // b_status_desc ?>
+	<?php if ($business_status_list->SortUrl($business_status_list->b_status_desc) == "") { ?>
+		<th data-name="b_status_desc" class="<?php echo $business_status_list->b_status_desc->headerCellClass() ?>"><div id="elh_business_status_b_status_desc" class="business_status_b_status_desc"><div class="ew-table-header-caption"><?php echo $business_status_list->b_status_desc->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="b_status_desc" class="<?php echo $business_status_list->b_status_desc->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $business_status_list->SortUrl($business_status_list->b_status_desc) ?>', 1);"><div id="elh_business_status_b_status_desc" class="business_status_b_status_desc">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $business_status_list->b_status_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($business_status_list->b_status_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($business_status_list->b_status_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
@@ -232,6 +257,13 @@ $business_status_list->ListOptions->render("body", "left", $business_status_list
 		<td data-name="business_status_caption" <?php echo $business_status_list->business_status_caption->cellAttributes() ?>>
 <span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_caption">
 <span<?php echo $business_status_list->business_status_caption->viewAttributes() ?>><?php echo $business_status_list->business_status_caption->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($business_status_list->b_status_desc->Visible) { // b_status_desc ?>
+		<td data-name="b_status_desc" <?php echo $business_status_list->b_status_desc->cellAttributes() ?>>
+<span id="el<?php echo $business_status_list->RowCount ?>_business_status_b_status_desc">
+<span<?php echo $business_status_list->b_status_desc->viewAttributes() ?>><?php echo $business_status_list->b_status_desc->getViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>

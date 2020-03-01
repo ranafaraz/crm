@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -79,39 +79,51 @@ class followup extends DbTable
 		$this->fields['followup_id'] = &$this->followup_id;
 
 		// followup_branch_id
-		$this->followup_branch_id = new DbField('followup', 'followup', 'x_followup_branch_id', 'followup_branch_id', '`followup_branch_id`', '`followup_branch_id`', 3, 12, -1, FALSE, '`followup_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->followup_branch_id = new DbField('followup', 'followup', 'x_followup_branch_id', 'followup_branch_id', '`followup_branch_id`', '`followup_branch_id`', 3, 12, -1, FALSE, '`EV__followup_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->followup_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->followup_branch_id->Required = TRUE; // Required field
 		$this->followup_branch_id->Sortable = TRUE; // Allow sort
+		$this->followup_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->followup_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->followup_branch_id->Lookup = new Lookup('followup_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->followup_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['followup_branch_id'] = &$this->followup_branch_id;
 
 		// followup_business_id
-		$this->followup_business_id = new DbField('followup', 'followup', 'x_followup_business_id', 'followup_business_id', '`followup_business_id`', '`followup_business_id`', 3, 12, -1, FALSE, '`followup_business_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->followup_business_id = new DbField('followup', 'followup', 'x_followup_business_id', 'followup_business_id', '`followup_business_id`', '`followup_business_id`', 3, 12, -1, FALSE, '`EV__followup_business_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->followup_business_id->Nullable = FALSE; // NOT NULL field
 		$this->followup_business_id->Required = TRUE; // Required field
 		$this->followup_business_id->Sortable = TRUE; // Allow sort
+		$this->followup_business_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->followup_business_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->followup_business_id->Lookup = new Lookup('followup_business_id', 'business', FALSE, 'b_id', ["b_name","","",""], [], [], [], [], [], [], '', '');
 		$this->followup_business_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['followup_business_id'] = &$this->followup_business_id;
 
 		// followup_by_emp_id
-		$this->followup_by_emp_id = new DbField('followup', 'followup', 'x_followup_by_emp_id', 'followup_by_emp_id', '`followup_by_emp_id`', '`followup_by_emp_id`', 3, 12, -1, FALSE, '`followup_by_emp_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->followup_by_emp_id = new DbField('followup', 'followup', 'x_followup_by_emp_id', 'followup_by_emp_id', '`followup_by_emp_id`', '`followup_by_emp_id`', 3, 12, -1, FALSE, '`EV__followup_by_emp_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->followup_by_emp_id->Nullable = FALSE; // NOT NULL field
 		$this->followup_by_emp_id->Required = TRUE; // Required field
 		$this->followup_by_emp_id->Sortable = TRUE; // Allow sort
+		$this->followup_by_emp_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->followup_by_emp_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->followup_by_emp_id->Lookup = new Lookup('followup_by_emp_id', 'employees', FALSE, 'emp_id', ["emp_name","","",""], [], [], [], [], [], [], '', '');
 		$this->followup_by_emp_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['followup_by_emp_id'] = &$this->followup_by_emp_id;
 
 		// followup_no_id
-		$this->followup_no_id = new DbField('followup', 'followup', 'x_followup_no_id', 'followup_no_id', '`followup_no_id`', '`followup_no_id`', 3, 12, -1, FALSE, '`followup_no_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->followup_no_id = new DbField('followup', 'followup', 'x_followup_no_id', 'followup_no_id', '`followup_no_id`', '`followup_no_id`', 3, 12, -1, FALSE, '`EV__followup_no_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->followup_no_id->Nullable = FALSE; // NOT NULL field
 		$this->followup_no_id->Required = TRUE; // Required field
 		$this->followup_no_id->Sortable = TRUE; // Allow sort
+		$this->followup_no_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->followup_no_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->followup_no_id->Lookup = new Lookup('followup_no_id', 'followup_no', FALSE, 'followup_no_id', ["followup_no_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->followup_no_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['followup_no_id'] = &$this->followup_no_id;
 
 		// followup_date
-		$this->followup_date = new DbField('followup', 'followup', 'x_followup_date', 'followup_date', '`followup_date`', CastDateFieldForLike("`followup_date`", 0, "DB"), 135, 19, 0, FALSE, '`followup_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->followup_date = new DbField('followup', 'followup', 'x_followup_date', 'followup_date', '`followup_date`', CastDateFieldForLike("`followup_date`", 1, "DB"), 135, 19, 1, FALSE, '`followup_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->followup_date->Nullable = FALSE; // NOT NULL field
 		$this->followup_date->Required = TRUE; // Required field
 		$this->followup_date->Sortable = TRUE; // Allow sort
@@ -135,7 +147,7 @@ class followup extends DbTable
 		$this->fields['followup_response'] = &$this->followup_response;
 
 		// nxt_FU_date
-		$this->nxt_FU_date = new DbField('followup', 'followup', 'x_nxt_FU_date', 'nxt_FU_date', '`nxt_FU_date`', CastDateFieldForLike("`nxt_FU_date`", 0, "DB"), 135, 19, 0, FALSE, '`nxt_FU_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->nxt_FU_date = new DbField('followup', 'followup', 'x_nxt_FU_date', 'nxt_FU_date', '`nxt_FU_date`', CastDateFieldForLike("`nxt_FU_date`", 1, "DB"), 135, 19, 1, FALSE, '`nxt_FU_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->nxt_FU_date->Nullable = FALSE; // NOT NULL field
 		$this->nxt_FU_date->Required = TRUE; // Required field
 		$this->nxt_FU_date->Sortable = TRUE; // Allow sort
@@ -190,9 +202,21 @@ class followup extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -219,6 +243,22 @@ class followup extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `followup`.`followup_branch_id` LIMIT 1) AS `EV__followup_branch_id`, (SELECT `b_name` FROM `business` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`b_id` = `followup`.`followup_business_id` LIMIT 1) AS `EV__followup_business_id`, (SELECT `emp_name` FROM `employees` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`emp_id` = `followup`.`followup_by_emp_id` LIMIT 1) AS `EV__followup_by_emp_id`, (SELECT `followup_no_caption` FROM `followup_no` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`followup_no_id` = `followup`.`followup_no_id` LIMIT 1) AS `EV__followup_no_id` FROM `followup`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -374,8 +414,13 @@ class followup extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -383,8 +428,44 @@ class followup extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->followup_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->followup_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->followup_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->followup_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->followup_business_id->AdvancedSearch->SearchValue != "" ||
+			$this->followup_business_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->followup_business_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->followup_business_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->followup_by_emp_id->AdvancedSearch->SearchValue != "" ||
+			$this->followup_by_emp_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->followup_by_emp_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->followup_by_emp_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->followup_no_id->AdvancedSearch->SearchValue != "" ||
+			$this->followup_no_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->followup_no_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->followup_no_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -412,7 +493,10 @@ class followup extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -787,31 +871,116 @@ class followup extends DbTable
 		// followup_id
 
 		$this->followup_id->ViewValue = $this->followup_id->CurrentValue;
+		$this->followup_id->CssClass = "font-weight-bold";
 		$this->followup_id->ViewCustomAttributes = "";
 
 		// followup_branch_id
-		$this->followup_branch_id->ViewValue = $this->followup_branch_id->CurrentValue;
-		$this->followup_branch_id->ViewValue = FormatNumber($this->followup_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->followup_branch_id->VirtualValue != "") {
+			$this->followup_branch_id->ViewValue = $this->followup_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->followup_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->followup_branch_id->ViewValue = $this->followup_branch_id->lookupCacheOption($curVal);
+				if ($this->followup_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->followup_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->followup_branch_id->ViewValue = $this->followup_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->followup_branch_id->ViewValue = $this->followup_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->followup_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->followup_branch_id->ViewCustomAttributes = "";
 
 		// followup_business_id
-		$this->followup_business_id->ViewValue = $this->followup_business_id->CurrentValue;
-		$this->followup_business_id->ViewValue = FormatNumber($this->followup_business_id->ViewValue, 0, -2, -2, -2);
+		if ($this->followup_business_id->VirtualValue != "") {
+			$this->followup_business_id->ViewValue = $this->followup_business_id->VirtualValue;
+		} else {
+			$curVal = strval($this->followup_business_id->CurrentValue);
+			if ($curVal != "") {
+				$this->followup_business_id->ViewValue = $this->followup_business_id->lookupCacheOption($curVal);
+				if ($this->followup_business_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->followup_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->followup_business_id->ViewValue = $this->followup_business_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->followup_business_id->ViewValue = $this->followup_business_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->followup_business_id->ViewValue = NULL;
+			}
+		}
 		$this->followup_business_id->ViewCustomAttributes = "";
 
 		// followup_by_emp_id
-		$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->CurrentValue;
-		$this->followup_by_emp_id->ViewValue = FormatNumber($this->followup_by_emp_id->ViewValue, 0, -2, -2, -2);
+		if ($this->followup_by_emp_id->VirtualValue != "") {
+			$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->VirtualValue;
+		} else {
+			$curVal = strval($this->followup_by_emp_id->CurrentValue);
+			if ($curVal != "") {
+				$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->lookupCacheOption($curVal);
+				if ($this->followup_by_emp_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`emp_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->followup_by_emp_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->followup_by_emp_id->ViewValue = NULL;
+			}
+		}
 		$this->followup_by_emp_id->ViewCustomAttributes = "";
 
 		// followup_no_id
-		$this->followup_no_id->ViewValue = $this->followup_no_id->CurrentValue;
-		$this->followup_no_id->ViewValue = FormatNumber($this->followup_no_id->ViewValue, 0, -2, -2, -2);
+		if ($this->followup_no_id->VirtualValue != "") {
+			$this->followup_no_id->ViewValue = $this->followup_no_id->VirtualValue;
+		} else {
+			$curVal = strval($this->followup_no_id->CurrentValue);
+			if ($curVal != "") {
+				$this->followup_no_id->ViewValue = $this->followup_no_id->lookupCacheOption($curVal);
+				if ($this->followup_no_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`followup_no_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->followup_no_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->followup_no_id->ViewValue = $this->followup_no_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->followup_no_id->ViewValue = $this->followup_no_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->followup_no_id->ViewValue = NULL;
+			}
+		}
 		$this->followup_no_id->ViewCustomAttributes = "";
 
 		// followup_date
 		$this->followup_date->ViewValue = $this->followup_date->CurrentValue;
-		$this->followup_date->ViewValue = FormatDateTime($this->followup_date->ViewValue, 0);
+		$this->followup_date->ViewValue = FormatDateTime($this->followup_date->ViewValue, 1);
 		$this->followup_date->ViewCustomAttributes = "";
 
 		// followup_comments
@@ -828,7 +997,7 @@ class followup extends DbTable
 
 		// nxt_FU_date
 		$this->nxt_FU_date->ViewValue = $this->nxt_FU_date->CurrentValue;
-		$this->nxt_FU_date->ViewValue = FormatDateTime($this->nxt_FU_date->ViewValue, 0);
+		$this->nxt_FU_date->ViewValue = FormatDateTime($this->nxt_FU_date->ViewValue, 1);
 		$this->nxt_FU_date->ViewCustomAttributes = "";
 
 		// nxt_FU_plans
@@ -917,31 +1086,23 @@ class followup extends DbTable
 		$this->followup_id->EditAttrs["class"] = "form-control";
 		$this->followup_id->EditCustomAttributes = "";
 		$this->followup_id->EditValue = $this->followup_id->CurrentValue;
+		$this->followup_id->CssClass = "font-weight-bold";
 		$this->followup_id->ViewCustomAttributes = "";
 
 		// followup_branch_id
-		$this->followup_branch_id->EditAttrs["class"] = "form-control";
 		$this->followup_branch_id->EditCustomAttributes = "";
-		$this->followup_branch_id->EditValue = $this->followup_branch_id->CurrentValue;
-		$this->followup_branch_id->PlaceHolder = RemoveHtml($this->followup_branch_id->caption());
 
 		// followup_business_id
 		$this->followup_business_id->EditAttrs["class"] = "form-control";
 		$this->followup_business_id->EditCustomAttributes = "";
-		$this->followup_business_id->EditValue = $this->followup_business_id->CurrentValue;
-		$this->followup_business_id->PlaceHolder = RemoveHtml($this->followup_business_id->caption());
 
 		// followup_by_emp_id
 		$this->followup_by_emp_id->EditAttrs["class"] = "form-control";
 		$this->followup_by_emp_id->EditCustomAttributes = "";
-		$this->followup_by_emp_id->EditValue = $this->followup_by_emp_id->CurrentValue;
-		$this->followup_by_emp_id->PlaceHolder = RemoveHtml($this->followup_by_emp_id->caption());
 
 		// followup_no_id
 		$this->followup_no_id->EditAttrs["class"] = "form-control";
 		$this->followup_no_id->EditCustomAttributes = "";
-		$this->followup_no_id->EditValue = $this->followup_no_id->CurrentValue;
-		$this->followup_no_id->PlaceHolder = RemoveHtml($this->followup_no_id->caption());
 
 		// followup_date
 		$this->followup_date->EditAttrs["class"] = "form-control";

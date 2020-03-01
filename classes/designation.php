@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -78,7 +78,7 @@ class designation extends DbTable
 		$this->fields['designation_caption'] = &$this->designation_caption;
 
 		// designation_desc
-		$this->designation_desc = new DbField('designation', 'designation', 'x_designation_desc', 'designation_desc', '`designation_desc`', '`designation_desc`', 200, 100, -1, FALSE, '`designation_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->designation_desc = new DbField('designation', 'designation', 'x_designation_desc', 'designation_desc', '`designation_desc`', '`designation_desc`', 200, 100, -1, FALSE, '`designation_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->designation_desc->Nullable = FALSE; // NOT NULL field
 		$this->designation_desc->Required = TRUE; // Required field
 		$this->designation_desc->Sortable = TRUE; // Allow sort
@@ -689,6 +689,7 @@ class designation extends DbTable
 		// designation_id
 
 		$this->designation_id->ViewValue = $this->designation_id->CurrentValue;
+		$this->designation_id->CssClass = "font-weight-bold";
 		$this->designation_id->ViewCustomAttributes = "";
 
 		// designation_caption
@@ -733,6 +734,7 @@ class designation extends DbTable
 		$this->designation_id->EditAttrs["class"] = "form-control";
 		$this->designation_id->EditCustomAttributes = "";
 		$this->designation_id->EditValue = $this->designation_id->CurrentValue;
+		$this->designation_id->CssClass = "font-weight-bold";
 		$this->designation_id->ViewCustomAttributes = "";
 
 		// designation_caption
@@ -746,8 +748,6 @@ class designation extends DbTable
 		// designation_desc
 		$this->designation_desc->EditAttrs["class"] = "form-control";
 		$this->designation_desc->EditCustomAttributes = "";
-		if (!$this->designation_desc->Raw)
-			$this->designation_desc->CurrentValue = HtmlDecode($this->designation_desc->CurrentValue);
 		$this->designation_desc->EditValue = $this->designation_desc->CurrentValue;
 		$this->designation_desc->PlaceHolder = RemoveHtml($this->designation_desc->caption());
 

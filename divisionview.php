@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $division_view = new division_view();
 $division_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -96,16 +97,6 @@ $division_view->showMessage();
 		<td data-name="division_name" <?php echo $division_view->division_name->cellAttributes() ?>>
 <span id="el_division_division_name">
 <span<?php echo $division_view->division_name->viewAttributes() ?>><?php echo $division_view->division_name->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
-<?php if ($division_view->division_desc->Visible) { // division_desc ?>
-	<tr id="r_division_desc">
-		<td class="<?php echo $division_view->TableLeftColumnClass ?>"><span id="elh_division_division_desc"><?php echo $division_view->division_desc->caption() ?></span></td>
-		<td data-name="division_desc" <?php echo $division_view->division_desc->cellAttributes() ?>>
-<span id="el_division_division_desc">
-<span<?php echo $division_view->division_desc->viewAttributes() ?>><?php echo $division_view->division_desc->getViewValue() ?></span>
 </span>
 </td>
 	</tr>

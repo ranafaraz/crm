@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $employees_delete = new employees_delete();
 $employees_delete->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -196,7 +197,7 @@ while (!$employees_delete->Recordset->EOF) {
 <?php if ($employees_delete->emp_photo->Visible) { // emp_photo ?>
 		<td <?php echo $employees_delete->emp_photo->cellAttributes() ?>>
 <span id="el<?php echo $employees_delete->RowCount ?>_employees_emp_photo" class="employees_emp_photo">
-<span<?php echo $employees_delete->emp_photo->viewAttributes() ?>><?php echo $employees_delete->emp_photo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($employees_delete->emp_photo, $employees_delete->emp_photo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 <?php } ?>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $cus_support_view = new cus_support_view();
 $cus_support_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -115,7 +116,7 @@ $cus_support_view->showMessage();
 		<td class="<?php echo $cus_support_view->TableLeftColumnClass ?>"><span id="elh_cus_support_cus_sup_screen_shots"><?php echo $cus_support_view->cus_sup_screen_shots->caption() ?></span></td>
 		<td data-name="cus_sup_screen_shots" <?php echo $cus_support_view->cus_sup_screen_shots->cellAttributes() ?>>
 <span id="el_cus_support_cus_sup_screen_shots">
-<span<?php echo $cus_support_view->cus_sup_screen_shots->viewAttributes() ?>><?php echo $cus_support_view->cus_sup_screen_shots->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($cus_support_view->cus_sup_screen_shots, $cus_support_view->cus_sup_screen_shots->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

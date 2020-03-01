@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $services_availed_by_customer_add = new services_availed_by_customer_add();
 $services_availed_by_customer_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -60,25 +61,16 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $services_availed_by_customer_add->sabc_branch_id->caption(), $services_availed_by_customer_add->sabc_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_sabc_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($services_availed_by_customer_add->sabc_branch_id->errorMessage()) ?>");
 			<?php if ($services_availed_by_customer_add->sabc_business_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_sabc_business_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $services_availed_by_customer_add->sabc_business_id->caption(), $services_availed_by_customer_add->sabc_business_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_sabc_business_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($services_availed_by_customer_add->sabc_business_id->errorMessage()) ?>");
 			<?php if ($services_availed_by_customer_add->sabc_service_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_sabc_service_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $services_availed_by_customer_add->sabc_service_id->caption(), $services_availed_by_customer_add->sabc_service_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_sabc_service_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($services_availed_by_customer_add->sabc_service_id->errorMessage()) ?>");
 			<?php if ($services_availed_by_customer_add->sabc_pkg->Required) { ?>
 				elm = this.getElements("x" + infix + "_sabc_pkg");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -133,6 +125,12 @@ loadjs.ready("head", function() {
 	fservices_availed_by_customeradd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fservices_availed_by_customeradd.lists["x_sabc_branch_id"] = <?php echo $services_availed_by_customer_add->sabc_branch_id->Lookup->toClientList($services_availed_by_customer_add) ?>;
+	fservices_availed_by_customeradd.lists["x_sabc_branch_id"].options = <?php echo JsonEncode($services_availed_by_customer_add->sabc_branch_id->lookupOptions()) ?>;
+	fservices_availed_by_customeradd.lists["x_sabc_business_id"] = <?php echo $services_availed_by_customer_add->sabc_business_id->Lookup->toClientList($services_availed_by_customer_add) ?>;
+	fservices_availed_by_customeradd.lists["x_sabc_business_id"].options = <?php echo JsonEncode($services_availed_by_customer_add->sabc_business_id->lookupOptions()) ?>;
+	fservices_availed_by_customeradd.lists["x_sabc_service_id"] = <?php echo $services_availed_by_customer_add->sabc_service_id->Lookup->toClientList($services_availed_by_customer_add) ?>;
+	fservices_availed_by_customeradd.lists["x_sabc_service_id"].options = <?php echo JsonEncode($services_availed_by_customer_add->sabc_service_id->lookupOptions()) ?>;
 	fservices_availed_by_customeradd.lists["x_sabc_pkg"] = <?php echo $services_availed_by_customer_add->sabc_pkg->Lookup->toClientList($services_availed_by_customer_add) ?>;
 	fservices_availed_by_customeradd.lists["x_sabc_pkg"].options = <?php echo JsonEncode($services_availed_by_customer_add->sabc_pkg->options(FALSE, TRUE)) ?>;
 	loadjs.done("fservices_availed_by_customeradd");
@@ -163,7 +161,23 @@ $services_availed_by_customer_add->showMessage();
 		<label id="elh_services_availed_by_customer_sabc_branch_id" for="x_sabc_branch_id" class="<?php echo $services_availed_by_customer_add->LeftColumnClass ?>"><?php echo $services_availed_by_customer_add->sabc_branch_id->caption() ?><?php echo $services_availed_by_customer_add->sabc_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_availed_by_customer_add->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_add->sabc_branch_id->cellAttributes() ?>>
 <span id="el_services_availed_by_customer_sabc_branch_id">
-<input type="text" data-table="services_availed_by_customer" data-field="x_sabc_branch_id" name="x_sabc_branch_id" id="x_sabc_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($services_availed_by_customer_add->sabc_branch_id->getPlaceHolder()) ?>" value="<?php echo $services_availed_by_customer_add->sabc_branch_id->EditValue ?>"<?php echo $services_availed_by_customer_add->sabc_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($services_availed_by_customer_add->sabc_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $services_availed_by_customer_add->sabc_branch_id->ViewValue ?></button>
+		<div id="dsl_x_sabc_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $services_availed_by_customer_add->sabc_branch_id->radioButtonListHtml(TRUE, "x_sabc_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_sabc_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="services_availed_by_customer" data-field="x_sabc_branch_id" data-value-separator="<?php echo $services_availed_by_customer_add->sabc_branch_id->displayValueSeparatorAttribute() ?>" name="x_sabc_branch_id" id="x_sabc_branch_id" value="{value}"<?php echo $services_availed_by_customer_add->sabc_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$services_availed_by_customer_add->sabc_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $services_availed_by_customer_add->sabc_branch_id->Lookup->getParamTag($services_availed_by_customer_add, "p_x_sabc_branch_id") ?>
 </span>
 <?php echo $services_availed_by_customer_add->sabc_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -173,7 +187,15 @@ $services_availed_by_customer_add->showMessage();
 		<label id="elh_services_availed_by_customer_sabc_business_id" for="x_sabc_business_id" class="<?php echo $services_availed_by_customer_add->LeftColumnClass ?>"><?php echo $services_availed_by_customer_add->sabc_business_id->caption() ?><?php echo $services_availed_by_customer_add->sabc_business_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_availed_by_customer_add->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_add->sabc_business_id->cellAttributes() ?>>
 <span id="el_services_availed_by_customer_sabc_business_id">
-<input type="text" data-table="services_availed_by_customer" data-field="x_sabc_business_id" name="x_sabc_business_id" id="x_sabc_business_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($services_availed_by_customer_add->sabc_business_id->getPlaceHolder()) ?>" value="<?php echo $services_availed_by_customer_add->sabc_business_id->EditValue ?>"<?php echo $services_availed_by_customer_add->sabc_business_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_sabc_business_id"><?php echo EmptyValue(strval($services_availed_by_customer_add->sabc_business_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $services_availed_by_customer_add->sabc_business_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($services_availed_by_customer_add->sabc_business_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($services_availed_by_customer_add->sabc_business_id->ReadOnly || $services_availed_by_customer_add->sabc_business_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_sabc_business_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_sabc_business_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $services_availed_by_customer_add->sabc_business_id->caption() ?>" data-title="<?php echo $services_availed_by_customer_add->sabc_business_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_sabc_business_id',url:'businessaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $services_availed_by_customer_add->sabc_business_id->Lookup->getParamTag($services_availed_by_customer_add, "p_x_sabc_business_id") ?>
+<input type="hidden" data-table="services_availed_by_customer" data-field="x_sabc_business_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $services_availed_by_customer_add->sabc_business_id->displayValueSeparatorAttribute() ?>" name="x_sabc_business_id" id="x_sabc_business_id" value="<?php echo $services_availed_by_customer_add->sabc_business_id->CurrentValue ?>"<?php echo $services_availed_by_customer_add->sabc_business_id->editAttributes() ?>>
 </span>
 <?php echo $services_availed_by_customer_add->sabc_business_id->CustomMsg ?></div></div>
 	</div>
@@ -183,7 +205,14 @@ $services_availed_by_customer_add->showMessage();
 		<label id="elh_services_availed_by_customer_sabc_service_id" for="x_sabc_service_id" class="<?php echo $services_availed_by_customer_add->LeftColumnClass ?>"><?php echo $services_availed_by_customer_add->sabc_service_id->caption() ?><?php echo $services_availed_by_customer_add->sabc_service_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_availed_by_customer_add->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_add->sabc_service_id->cellAttributes() ?>>
 <span id="el_services_availed_by_customer_sabc_service_id">
-<input type="text" data-table="services_availed_by_customer" data-field="x_sabc_service_id" name="x_sabc_service_id" id="x_sabc_service_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($services_availed_by_customer_add->sabc_service_id->getPlaceHolder()) ?>" value="<?php echo $services_availed_by_customer_add->sabc_service_id->EditValue ?>"<?php echo $services_availed_by_customer_add->sabc_service_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_sabc_service_id"><?php echo EmptyValue(strval($services_availed_by_customer_add->sabc_service_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $services_availed_by_customer_add->sabc_service_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($services_availed_by_customer_add->sabc_service_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($services_availed_by_customer_add->sabc_service_id->ReadOnly || $services_availed_by_customer_add->sabc_service_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_sabc_service_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $services_availed_by_customer_add->sabc_service_id->Lookup->getParamTag($services_availed_by_customer_add, "p_x_sabc_service_id") ?>
+<input type="hidden" data-table="services_availed_by_customer" data-field="x_sabc_service_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $services_availed_by_customer_add->sabc_service_id->displayValueSeparatorAttribute() ?>" name="x_sabc_service_id" id="x_sabc_service_id" value="<?php echo $services_availed_by_customer_add->sabc_service_id->CurrentValue ?>"<?php echo $services_availed_by_customer_add->sabc_service_id->editAttributes() ?>>
 </span>
 <?php echo $services_availed_by_customer_add->sabc_service_id->CustomMsg ?></div></div>
 	</div>
@@ -213,10 +242,16 @@ $services_availed_by_customer_add->showMessage();
 <?php } ?>
 <?php if ($services_availed_by_customer_add->sabc_desc->Visible) { // sabc_desc ?>
 	<div id="r_sabc_desc" class="form-group row">
-		<label id="elh_services_availed_by_customer_sabc_desc" for="x_sabc_desc" class="<?php echo $services_availed_by_customer_add->LeftColumnClass ?>"><?php echo $services_availed_by_customer_add->sabc_desc->caption() ?><?php echo $services_availed_by_customer_add->sabc_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_services_availed_by_customer_sabc_desc" class="<?php echo $services_availed_by_customer_add->LeftColumnClass ?>"><?php echo $services_availed_by_customer_add->sabc_desc->caption() ?><?php echo $services_availed_by_customer_add->sabc_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_availed_by_customer_add->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_add->sabc_desc->cellAttributes() ?>>
 <span id="el_services_availed_by_customer_sabc_desc">
+<?php $services_availed_by_customer_add->sabc_desc->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="services_availed_by_customer" data-field="x_sabc_desc" name="x_sabc_desc" id="x_sabc_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($services_availed_by_customer_add->sabc_desc->getPlaceHolder()) ?>"<?php echo $services_availed_by_customer_add->sabc_desc->editAttributes() ?>><?php echo $services_availed_by_customer_add->sabc_desc->EditValue ?></textarea>
+<script>
+loadjs.ready(["fservices_availed_by_customeradd", "editor"], function() {
+	ew.createEditor("fservices_availed_by_customeradd", "x_sabc_desc", 35, 4, <?php echo $services_availed_by_customer_add->sabc_desc->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $services_availed_by_customer_add->sabc_desc->CustomMsg ?></div></div>
 	</div>
@@ -226,11 +261,11 @@ $services_availed_by_customer_add->showMessage();
 		<label id="elh_services_availed_by_customer_sabc_signed_on" for="x_sabc_signed_on" class="<?php echo $services_availed_by_customer_add->LeftColumnClass ?>"><?php echo $services_availed_by_customer_add->sabc_signed_on->caption() ?><?php echo $services_availed_by_customer_add->sabc_signed_on->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_availed_by_customer_add->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_add->sabc_signed_on->cellAttributes() ?>>
 <span id="el_services_availed_by_customer_sabc_signed_on">
-<input type="text" data-table="services_availed_by_customer" data-field="x_sabc_signed_on" name="x_sabc_signed_on" id="x_sabc_signed_on" maxlength="10" placeholder="<?php echo HtmlEncode($services_availed_by_customer_add->sabc_signed_on->getPlaceHolder()) ?>" value="<?php echo $services_availed_by_customer_add->sabc_signed_on->EditValue ?>"<?php echo $services_availed_by_customer_add->sabc_signed_on->editAttributes() ?>>
+<input type="text" data-table="services_availed_by_customer" data-field="x_sabc_signed_on" data-format="2" name="x_sabc_signed_on" id="x_sabc_signed_on" maxlength="10" placeholder="<?php echo HtmlEncode($services_availed_by_customer_add->sabc_signed_on->getPlaceHolder()) ?>" value="<?php echo $services_availed_by_customer_add->sabc_signed_on->EditValue ?>"<?php echo $services_availed_by_customer_add->sabc_signed_on->editAttributes() ?>>
 <?php if (!$services_availed_by_customer_add->sabc_signed_on->ReadOnly && !$services_availed_by_customer_add->sabc_signed_on->Disabled && !isset($services_availed_by_customer_add->sabc_signed_on->EditAttrs["readonly"]) && !isset($services_availed_by_customer_add->sabc_signed_on->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["fservices_availed_by_customeradd", "datetimepicker"], function() {
-	ew.createDateTimePicker("fservices_availed_by_customeradd", "x_sabc_signed_on", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+	ew.createDateTimePicker("fservices_availed_by_customeradd", "x_sabc_signed_on", {"ignoreReadonly":true,"useCurrent":false,"format":2});
 });
 </script>
 <?php } ?>

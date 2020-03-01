@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $tehsil_list = new tehsil_list();
 $tehsil_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $tehsil_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$tehsil_list->isExport() && !$tehsil->CurrentAction) { ?>
 <form name="ftehsillistsrch" id="ftehsillistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="ftehsillistsrch-search-panel" class="<?php echo $tehsil_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $tehsil_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $tehsil_list->showPageHeader(); ?>
 <?php
 $tehsil_list->showMessage();
 ?>
 <?php if ($tehsil_list->TotalRecords > 0 || $tehsil->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($tehsil_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> tehsil">
+<?php if (!$tehsil_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$tehsil_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $tehsil_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $tehsil_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="ftehsillist" id="ftehsillist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

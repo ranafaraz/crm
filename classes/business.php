@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -87,48 +87,67 @@ class business extends DbTable
 		$this->fields['b_id'] = &$this->b_id;
 
 		// b_branch_id
-		$this->b_branch_id = new DbField('business', 'business', 'x_b_branch_id', 'b_branch_id', '`b_branch_id`', '`b_branch_id`', 3, 12, -1, FALSE, '`b_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_branch_id = new DbField('business', 'business', 'x_b_branch_id', 'b_branch_id', '`b_branch_id`', '`b_branch_id`', 3, 12, -1, FALSE, '`EV__b_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->b_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->b_branch_id->Required = TRUE; // Required field
 		$this->b_branch_id->Sortable = TRUE; // Allow sort
+		$this->b_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->b_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->b_branch_id->Lookup = new Lookup('b_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->b_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['b_branch_id'] = &$this->b_branch_id;
 
 		// b_b_type_id
-		$this->b_b_type_id = new DbField('business', 'business', 'x_b_b_type_id', 'b_b_type_id', '`b_b_type_id`', '`b_b_type_id`', 3, 12, -1, FALSE, '`b_b_type_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_b_type_id = new DbField('business', 'business', 'x_b_b_type_id', 'b_b_type_id', '`b_b_type_id`', '`b_b_type_id`', 3, 12, -1, FALSE, '`EV__b_b_type_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->b_b_type_id->Nullable = FALSE; // NOT NULL field
 		$this->b_b_type_id->Required = TRUE; // Required field
 		$this->b_b_type_id->Sortable = TRUE; // Allow sort
+		$this->b_b_type_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->b_b_type_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->b_b_type_id->Lookup = new Lookup('b_b_type_id', 'business_type', FALSE, 'business_type_id', ["business_type_name","","",""], [], [], [], [], [], [], '', '');
 		$this->b_b_type_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['b_b_type_id'] = &$this->b_b_type_id;
 
 		// b_b_status_id
-		$this->b_b_status_id = new DbField('business', 'business', 'x_b_b_status_id', 'b_b_status_id', '`b_b_status_id`', '`b_b_status_id`', 3, 12, -1, FALSE, '`b_b_status_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_b_status_id = new DbField('business', 'business', 'x_b_b_status_id', 'b_b_status_id', '`b_b_status_id`', '`b_b_status_id`', 3, 12, -1, FALSE, '`EV__b_b_status_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->b_b_status_id->Nullable = FALSE; // NOT NULL field
 		$this->b_b_status_id->Required = TRUE; // Required field
 		$this->b_b_status_id->Sortable = TRUE; // Allow sort
+		$this->b_b_status_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->b_b_status_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->b_b_status_id->Lookup = new Lookup('b_b_status_id', 'business_status', FALSE, 'business_status_id', ["business_status_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->b_b_status_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['b_b_status_id'] = &$this->b_b_status_id;
 
 		// b_b_nature_id
-		$this->b_b_nature_id = new DbField('business', 'business', 'x_b_b_nature_id', 'b_b_nature_id', '`b_b_nature_id`', '`b_b_nature_id`', 3, 12, -1, FALSE, '`b_b_nature_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_b_nature_id = new DbField('business', 'business', 'x_b_b_nature_id', 'b_b_nature_id', '`b_b_nature_id`', '`b_b_nature_id`', 3, 12, -1, FALSE, '`EV__b_b_nature_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->b_b_nature_id->Nullable = FALSE; // NOT NULL field
 		$this->b_b_nature_id->Required = TRUE; // Required field
 		$this->b_b_nature_id->Sortable = TRUE; // Allow sort
+		$this->b_b_nature_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->b_b_nature_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->b_b_nature_id->Lookup = new Lookup('b_b_nature_id', 'business_nature', FALSE, 'b_nature_id', ["b_nature_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->b_b_nature_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['b_b_nature_id'] = &$this->b_b_nature_id;
 
 		// b_city_id
-		$this->b_city_id = new DbField('business', 'business', 'x_b_city_id', 'b_city_id', '`b_city_id`', '`b_city_id`', 3, 12, -1, FALSE, '`b_city_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_city_id = new DbField('business', 'business', 'x_b_city_id', 'b_city_id', '`b_city_id`', '`b_city_id`', 3, 12, -1, FALSE, '`EV__b_city_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->b_city_id->Nullable = FALSE; // NOT NULL field
 		$this->b_city_id->Required = TRUE; // Required field
 		$this->b_city_id->Sortable = TRUE; // Allow sort
+		$this->b_city_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->b_city_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->b_city_id->Lookup = new Lookup('b_city_id', 'city', FALSE, 'city_id', ["city_name","","",""], [], [], [], [], [], [], '', '');
 		$this->b_city_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['b_city_id'] = &$this->b_city_id;
 
 		// b_referral_id
-		$this->b_referral_id = new DbField('business', 'business', 'x_b_referral_id', 'b_referral_id', '`b_referral_id`', '`b_referral_id`', 3, 12, -1, FALSE, '`b_referral_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_referral_id = new DbField('business', 'business', 'x_b_referral_id', 'b_referral_id', '`b_referral_id`', '`b_referral_id`', 3, 12, -1, FALSE, '`EV__b_referral_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
+		$this->b_referral_id->Required = TRUE; // Required field
 		$this->b_referral_id->Sortable = TRUE; // Allow sort
+		$this->b_referral_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->b_referral_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->b_referral_id->Lookup = new Lookup('b_referral_id', 'referral', FALSE, 'referral_id', ["referral_name","","",""], [], [], [], [], [], [], '', '');
 		$this->b_referral_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['b_referral_id'] = &$this->b_referral_id;
 
@@ -154,7 +173,7 @@ class business extends DbTable
 		$this->fields['b_contact'] = &$this->b_contact;
 
 		// b_address
-		$this->b_address = new DbField('business', 'business', 'x_b_address', 'b_address', '`b_address`', '`b_address`', 200, 100, -1, FALSE, '`b_address`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_address = new DbField('business', 'business', 'x_b_address', 'b_address', '`b_address`', '`b_address`', 200, 100, -1, FALSE, '`b_address`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->b_address->Nullable = FALSE; // NOT NULL field
 		$this->b_address->Required = TRUE; // Required field
 		$this->b_address->Sortable = TRUE; // Allow sort
@@ -175,10 +194,11 @@ class business extends DbTable
 		$this->fields['b_ntn'] = &$this->b_ntn;
 
 		// b_logo
-		$this->b_logo = new DbField('business', 'business', 'x_b_logo', 'b_logo', '`b_logo`', '`b_logo`', 200, 100, -1, FALSE, '`b_logo`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_logo = new DbField('business', 'business', 'x_b_logo', 'b_logo', '`b_logo`', '`b_logo`', 200, 100, -1, TRUE, '`b_logo`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
 		$this->b_logo->Nullable = FALSE; // NOT NULL field
 		$this->b_logo->Required = TRUE; // Required field
 		$this->b_logo->Sortable = TRUE; // Allow sort
+		$this->b_logo->ImageResize = TRUE;
 		$this->fields['b_logo'] = &$this->b_logo;
 
 		// b_no_of_emp
@@ -205,12 +225,12 @@ class business extends DbTable
 		$this->fields['b_no_of_branches'] = &$this->b_no_of_branches;
 
 		// b_deal_with_referral
-		$this->b_deal_with_referral = new DbField('business', 'business', 'x_b_deal_with_referral', 'b_deal_with_referral', '`b_deal_with_referral`', '`b_deal_with_referral`', 200, 100, -1, FALSE, '`b_deal_with_referral`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_deal_with_referral = new DbField('business', 'business', 'x_b_deal_with_referral', 'b_deal_with_referral', '`b_deal_with_referral`', '`b_deal_with_referral`', 200, 100, -1, FALSE, '`b_deal_with_referral`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->b_deal_with_referral->Sortable = TRUE; // Allow sort
 		$this->fields['b_deal_with_referral'] = &$this->b_deal_with_referral;
 
 		// b_comments
-		$this->b_comments = new DbField('business', 'business', 'x_b_comments', 'b_comments', '`b_comments`', '`b_comments`', 200, 100, -1, FALSE, '`b_comments`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->b_comments = new DbField('business', 'business', 'x_b_comments', 'b_comments', '`b_comments`', '`b_comments`', 200, 100, -1, FALSE, '`b_comments`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->b_comments->Nullable = FALSE; // NOT NULL field
 		$this->b_comments->Required = TRUE; // Required field
 		$this->b_comments->Sortable = TRUE; // Allow sort
@@ -248,9 +268,21 @@ class business extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -277,6 +309,22 @@ class business extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `business`.`b_branch_id` LIMIT 1) AS `EV__b_branch_id`, (SELECT `business_type_name` FROM `business_type` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`business_type_id` = `business`.`b_b_type_id` LIMIT 1) AS `EV__b_b_type_id`, (SELECT `business_status_caption` FROM `business_status` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`business_status_id` = `business`.`b_b_status_id` LIMIT 1) AS `EV__b_b_status_id`, (SELECT `b_nature_caption` FROM `business_nature` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`b_nature_id` = `business`.`b_b_nature_id` LIMIT 1) AS `EV__b_b_nature_id`, (SELECT `city_name` FROM `city` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`city_id` = `business`.`b_city_id` LIMIT 1) AS `EV__b_city_id`, (SELECT `referral_name` FROM `referral` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`referral_id` = `business`.`b_referral_id` LIMIT 1) AS `EV__b_referral_id` FROM `business`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -432,8 +480,13 @@ class business extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -441,8 +494,56 @@ class business extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->b_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->b_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->b_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->b_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->b_b_type_id->AdvancedSearch->SearchValue != "" ||
+			$this->b_b_type_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->b_b_type_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->b_b_type_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->b_b_status_id->AdvancedSearch->SearchValue != "" ||
+			$this->b_b_status_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->b_b_status_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->b_b_status_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->b_b_nature_id->AdvancedSearch->SearchValue != "" ||
+			$this->b_b_nature_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->b_b_nature_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->b_b_nature_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->b_city_id->AdvancedSearch->SearchValue != "" ||
+			$this->b_city_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->b_city_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->b_city_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->b_referral_id->AdvancedSearch->SearchValue != "" ||
+			$this->b_referral_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->b_referral_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->b_referral_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -470,7 +571,10 @@ class business extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -581,7 +685,7 @@ class business extends DbTable
 		$this->b_address->DbValue = $row['b_address'];
 		$this->b_email->DbValue = $row['b_email'];
 		$this->b_ntn->DbValue = $row['b_ntn'];
-		$this->b_logo->DbValue = $row['b_logo'];
+		$this->b_logo->Upload->DbValue = $row['b_logo'];
 		$this->b_no_of_emp->DbValue = $row['b_no_of_emp'];
 		$this->b_since->DbValue = $row['b_since'];
 		$this->b_no_of_branches->DbValue = $row['b_no_of_branches'];
@@ -593,6 +697,11 @@ class business extends DbTable
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
+		$oldFiles = EmptyValue($row['b_logo']) ? [] : [$row['b_logo']];
+		foreach ($oldFiles as $oldFile) {
+			if (file_exists($this->b_logo->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->b_logo->oldPhysicalUploadPath() . $oldFile);
+		}
 	}
 
 	// Record filter WHERE clause
@@ -830,7 +939,7 @@ class business extends DbTable
 		$this->b_address->setDbValue($rs->fields('b_address'));
 		$this->b_email->setDbValue($rs->fields('b_email'));
 		$this->b_ntn->setDbValue($rs->fields('b_ntn'));
-		$this->b_logo->setDbValue($rs->fields('b_logo'));
+		$this->b_logo->Upload->DbValue = $rs->fields('b_logo');
 		$this->b_no_of_emp->setDbValue($rs->fields('b_no_of_emp'));
 		$this->b_since->setDbValue($rs->fields('b_since'));
 		$this->b_no_of_branches->setDbValue($rs->fields('b_no_of_branches'));
@@ -869,36 +978,163 @@ class business extends DbTable
 		// b_id
 
 		$this->b_id->ViewValue = $this->b_id->CurrentValue;
+		$this->b_id->CssClass = "font-weight-bold";
 		$this->b_id->ViewCustomAttributes = "";
 
 		// b_branch_id
-		$this->b_branch_id->ViewValue = $this->b_branch_id->CurrentValue;
-		$this->b_branch_id->ViewValue = FormatNumber($this->b_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->b_branch_id->VirtualValue != "") {
+			$this->b_branch_id->ViewValue = $this->b_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->b_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->b_branch_id->ViewValue = $this->b_branch_id->lookupCacheOption($curVal);
+				if ($this->b_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->b_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->b_branch_id->ViewValue = $this->b_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->b_branch_id->ViewValue = $this->b_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->b_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->b_branch_id->ViewCustomAttributes = "";
 
 		// b_b_type_id
-		$this->b_b_type_id->ViewValue = $this->b_b_type_id->CurrentValue;
-		$this->b_b_type_id->ViewValue = FormatNumber($this->b_b_type_id->ViewValue, 0, -2, -2, -2);
+		if ($this->b_b_type_id->VirtualValue != "") {
+			$this->b_b_type_id->ViewValue = $this->b_b_type_id->VirtualValue;
+		} else {
+			$curVal = strval($this->b_b_type_id->CurrentValue);
+			if ($curVal != "") {
+				$this->b_b_type_id->ViewValue = $this->b_b_type_id->lookupCacheOption($curVal);
+				if ($this->b_b_type_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`business_type_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->b_b_type_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->b_b_type_id->ViewValue = $this->b_b_type_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->b_b_type_id->ViewValue = $this->b_b_type_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->b_b_type_id->ViewValue = NULL;
+			}
+		}
 		$this->b_b_type_id->ViewCustomAttributes = "";
 
 		// b_b_status_id
-		$this->b_b_status_id->ViewValue = $this->b_b_status_id->CurrentValue;
-		$this->b_b_status_id->ViewValue = FormatNumber($this->b_b_status_id->ViewValue, 0, -2, -2, -2);
+		if ($this->b_b_status_id->VirtualValue != "") {
+			$this->b_b_status_id->ViewValue = $this->b_b_status_id->VirtualValue;
+		} else {
+			$curVal = strval($this->b_b_status_id->CurrentValue);
+			if ($curVal != "") {
+				$this->b_b_status_id->ViewValue = $this->b_b_status_id->lookupCacheOption($curVal);
+				if ($this->b_b_status_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`business_status_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->b_b_status_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->b_b_status_id->ViewValue = $this->b_b_status_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->b_b_status_id->ViewValue = $this->b_b_status_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->b_b_status_id->ViewValue = NULL;
+			}
+		}
 		$this->b_b_status_id->ViewCustomAttributes = "";
 
 		// b_b_nature_id
-		$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->CurrentValue;
-		$this->b_b_nature_id->ViewValue = FormatNumber($this->b_b_nature_id->ViewValue, 0, -2, -2, -2);
+		if ($this->b_b_nature_id->VirtualValue != "") {
+			$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->VirtualValue;
+		} else {
+			$curVal = strval($this->b_b_nature_id->CurrentValue);
+			if ($curVal != "") {
+				$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->lookupCacheOption($curVal);
+				if ($this->b_b_nature_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`b_nature_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->b_b_nature_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->b_b_nature_id->ViewValue = NULL;
+			}
+		}
 		$this->b_b_nature_id->ViewCustomAttributes = "";
 
 		// b_city_id
-		$this->b_city_id->ViewValue = $this->b_city_id->CurrentValue;
-		$this->b_city_id->ViewValue = FormatNumber($this->b_city_id->ViewValue, 0, -2, -2, -2);
+		if ($this->b_city_id->VirtualValue != "") {
+			$this->b_city_id->ViewValue = $this->b_city_id->VirtualValue;
+		} else {
+			$curVal = strval($this->b_city_id->CurrentValue);
+			if ($curVal != "") {
+				$this->b_city_id->ViewValue = $this->b_city_id->lookupCacheOption($curVal);
+				if ($this->b_city_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->b_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->b_city_id->ViewValue = $this->b_city_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->b_city_id->ViewValue = $this->b_city_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->b_city_id->ViewValue = NULL;
+			}
+		}
 		$this->b_city_id->ViewCustomAttributes = "";
 
 		// b_referral_id
-		$this->b_referral_id->ViewValue = $this->b_referral_id->CurrentValue;
-		$this->b_referral_id->ViewValue = FormatNumber($this->b_referral_id->ViewValue, 0, -2, -2, -2);
+		if ($this->b_referral_id->VirtualValue != "") {
+			$this->b_referral_id->ViewValue = $this->b_referral_id->VirtualValue;
+		} else {
+			$curVal = strval($this->b_referral_id->CurrentValue);
+			if ($curVal != "") {
+				$this->b_referral_id->ViewValue = $this->b_referral_id->lookupCacheOption($curVal);
+				if ($this->b_referral_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`referral_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->b_referral_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->b_referral_id->ViewValue = $this->b_referral_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->b_referral_id->ViewValue = $this->b_referral_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->b_referral_id->ViewValue = NULL;
+			}
+		}
 		$this->b_referral_id->ViewCustomAttributes = "";
 
 		// b_name
@@ -926,7 +1162,14 @@ class business extends DbTable
 		$this->b_ntn->ViewCustomAttributes = "";
 
 		// b_logo
-		$this->b_logo->ViewValue = $this->b_logo->CurrentValue;
+		if (!EmptyValue($this->b_logo->Upload->DbValue)) {
+			$this->b_logo->ImageWidth = 200;
+			$this->b_logo->ImageHeight = 0;
+			$this->b_logo->ImageAlt = $this->b_logo->alt();
+			$this->b_logo->ViewValue = $this->b_logo->Upload->DbValue;
+		} else {
+			$this->b_logo->ViewValue = "";
+		}
 		$this->b_logo->ViewCustomAttributes = "";
 
 		// b_no_of_emp
@@ -1018,8 +1261,22 @@ class business extends DbTable
 
 		// b_logo
 		$this->b_logo->LinkCustomAttributes = "";
-		$this->b_logo->HrefValue = "";
+		if (!EmptyValue($this->b_logo->Upload->DbValue)) {
+			$this->b_logo->HrefValue = GetFileUploadUrl($this->b_logo, $this->b_logo->htmlDecode($this->b_logo->Upload->DbValue)); // Add prefix/suffix
+			$this->b_logo->LinkAttrs["target"] = ""; // Add target
+			if ($this->isExport())
+				$this->b_logo->HrefValue = FullUrl($this->b_logo->HrefValue, "href");
+		} else {
+			$this->b_logo->HrefValue = "";
+		}
+		$this->b_logo->ExportHrefValue = $this->b_logo->UploadPath . $this->b_logo->Upload->DbValue;
 		$this->b_logo->TooltipValue = "";
+		if ($this->b_logo->UseColorbox) {
+			if (EmptyValue($this->b_logo->TooltipValue))
+				$this->b_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+			$this->b_logo->LinkAttrs["data-rel"] = "business_x_b_logo";
+			$this->b_logo->LinkAttrs->appendClass("ew-lightbox");
+		}
 
 		// b_no_of_emp
 		$this->b_no_of_emp->LinkCustomAttributes = "";
@@ -1065,43 +1322,31 @@ class business extends DbTable
 		$this->b_id->EditAttrs["class"] = "form-control";
 		$this->b_id->EditCustomAttributes = "";
 		$this->b_id->EditValue = $this->b_id->CurrentValue;
+		$this->b_id->CssClass = "font-weight-bold";
 		$this->b_id->ViewCustomAttributes = "";
 
 		// b_branch_id
-		$this->b_branch_id->EditAttrs["class"] = "form-control";
 		$this->b_branch_id->EditCustomAttributes = "";
-		$this->b_branch_id->EditValue = $this->b_branch_id->CurrentValue;
-		$this->b_branch_id->PlaceHolder = RemoveHtml($this->b_branch_id->caption());
 
 		// b_b_type_id
 		$this->b_b_type_id->EditAttrs["class"] = "form-control";
 		$this->b_b_type_id->EditCustomAttributes = "";
-		$this->b_b_type_id->EditValue = $this->b_b_type_id->CurrentValue;
-		$this->b_b_type_id->PlaceHolder = RemoveHtml($this->b_b_type_id->caption());
 
 		// b_b_status_id
 		$this->b_b_status_id->EditAttrs["class"] = "form-control";
 		$this->b_b_status_id->EditCustomAttributes = "";
-		$this->b_b_status_id->EditValue = $this->b_b_status_id->CurrentValue;
-		$this->b_b_status_id->PlaceHolder = RemoveHtml($this->b_b_status_id->caption());
 
 		// b_b_nature_id
 		$this->b_b_nature_id->EditAttrs["class"] = "form-control";
 		$this->b_b_nature_id->EditCustomAttributes = "";
-		$this->b_b_nature_id->EditValue = $this->b_b_nature_id->CurrentValue;
-		$this->b_b_nature_id->PlaceHolder = RemoveHtml($this->b_b_nature_id->caption());
 
 		// b_city_id
 		$this->b_city_id->EditAttrs["class"] = "form-control";
 		$this->b_city_id->EditCustomAttributes = "";
-		$this->b_city_id->EditValue = $this->b_city_id->CurrentValue;
-		$this->b_city_id->PlaceHolder = RemoveHtml($this->b_city_id->caption());
 
 		// b_referral_id
 		$this->b_referral_id->EditAttrs["class"] = "form-control";
 		$this->b_referral_id->EditCustomAttributes = "";
-		$this->b_referral_id->EditValue = $this->b_referral_id->CurrentValue;
-		$this->b_referral_id->PlaceHolder = RemoveHtml($this->b_referral_id->caption());
 
 		// b_name
 		$this->b_name->EditAttrs["class"] = "form-control";
@@ -1130,8 +1375,6 @@ class business extends DbTable
 		// b_address
 		$this->b_address->EditAttrs["class"] = "form-control";
 		$this->b_address->EditCustomAttributes = "";
-		if (!$this->b_address->Raw)
-			$this->b_address->CurrentValue = HtmlDecode($this->b_address->CurrentValue);
 		$this->b_address->EditValue = $this->b_address->CurrentValue;
 		$this->b_address->PlaceHolder = RemoveHtml($this->b_address->caption());
 
@@ -1154,10 +1397,16 @@ class business extends DbTable
 		// b_logo
 		$this->b_logo->EditAttrs["class"] = "form-control";
 		$this->b_logo->EditCustomAttributes = "";
-		if (!$this->b_logo->Raw)
-			$this->b_logo->CurrentValue = HtmlDecode($this->b_logo->CurrentValue);
-		$this->b_logo->EditValue = $this->b_logo->CurrentValue;
-		$this->b_logo->PlaceHolder = RemoveHtml($this->b_logo->caption());
+		if (!EmptyValue($this->b_logo->Upload->DbValue)) {
+			$this->b_logo->ImageWidth = 200;
+			$this->b_logo->ImageHeight = 0;
+			$this->b_logo->ImageAlt = $this->b_logo->alt();
+			$this->b_logo->EditValue = $this->b_logo->Upload->DbValue;
+		} else {
+			$this->b_logo->EditValue = "";
+		}
+		if (!EmptyValue($this->b_logo->CurrentValue))
+				$this->b_logo->Upload->FileName = $this->b_logo->CurrentValue;
 
 		// b_no_of_emp
 		$this->b_no_of_emp->EditAttrs["class"] = "form-control";
@@ -1182,16 +1431,12 @@ class business extends DbTable
 		// b_deal_with_referral
 		$this->b_deal_with_referral->EditAttrs["class"] = "form-control";
 		$this->b_deal_with_referral->EditCustomAttributes = "";
-		if (!$this->b_deal_with_referral->Raw)
-			$this->b_deal_with_referral->CurrentValue = HtmlDecode($this->b_deal_with_referral->CurrentValue);
 		$this->b_deal_with_referral->EditValue = $this->b_deal_with_referral->CurrentValue;
 		$this->b_deal_with_referral->PlaceHolder = RemoveHtml($this->b_deal_with_referral->caption());
 
 		// b_comments
 		$this->b_comments->EditAttrs["class"] = "form-control";
 		$this->b_comments->EditCustomAttributes = "";
-		if (!$this->b_comments->Raw)
-			$this->b_comments->CurrentValue = HtmlDecode($this->b_comments->CurrentValue);
 		$this->b_comments->EditValue = $this->b_comments->CurrentValue;
 		$this->b_comments->PlaceHolder = RemoveHtml($this->b_comments->caption());
 
@@ -1351,8 +1596,98 @@ class business extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
+		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
+		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// No binary fields
+		// Set up field name / file name field / file type field
+		$fldName = "";
+		$fileNameFld = "";
+		$fileTypeFld = "";
+		if ($fldparm == 'b_logo') {
+			$fldName = "b_logo";
+			$fileNameFld = "b_logo";
+		} else {
+			return FALSE; // Incorrect field
+		}
+
+		// Set up key values
+		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
+		if (count($ar) == 1) {
+			$this->b_id->CurrentValue = $ar[0];
+		} else {
+			return FALSE; // Incorrect key
+		}
+
+		// Set up filter (WHERE Clause)
+		$filter = $this->getRecordFilter();
+		$this->CurrentFilter = $filter;
+		$sql = $this->getCurrentSql();
+		$conn = $this->getConnection();
+		$dbtype = GetConnectionType($this->Dbid);
+		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
+			$val = $rs->fields($fldName);
+			if (!EmptyValue($val)) {
+				$fld = $this->fields[$fldName];
+
+				// Binary data
+				if ($fld->DataType == DATATYPE_BLOB) {
+					if ($dbtype != "MYSQL") {
+						if (is_array($val) || is_object($val)) // Byte array
+							$val = BytesToString($val);
+					}
+					if ($resize)
+						ResizeBinary($val, $width, $height);
+
+					// Write file type
+					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
+						AddHeader("Content-type", $rs->fields($fileTypeFld));
+					} else {
+						AddHeader("Content-type", ContentType($val));
+					}
+
+					// Write file name
+					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
+						$fileName = $rs->fields($fileNameFld);
+						$pathinfo = pathinfo($fileName);
+						$ext = strtolower(@$pathinfo["extension"]);
+						$isPdf = SameText($ext, "pdf");
+						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
+							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
+					}
+
+					// Write file data
+					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
+						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
+						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
+							$val .= "\0\0\0\0";
+					}
+
+					// Clear any debug message
+					if (ob_get_length())
+						ob_end_clean();
+
+					// Write binary data
+					Write($val);
+
+				// Upload to folder
+				} else {
+					if ($fld->UploadMultiple)
+						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
+					else
+						$files = [$val];
+					$data = [];
+					$ar = [];
+					foreach ($files as $file) {
+						if (!EmptyValue($file))
+							$ar[$file] = FullUrl($fld->hrefPath() . $file);
+					}
+					$data[$fld->Param] = $ar;
+					WriteJson($data);
+				}
+			}
+			$rs->close();
+			return TRUE;
+		}
 		return FALSE;
 	}
 

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class division_delete extends division
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'division';
@@ -539,12 +539,23 @@ class division_delete extends division
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("divisionlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->division_id->setVisibility();
 		$this->division_state_id->setVisibility();
 		$this->division_name->setVisibility();
-		$this->division_desc->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -566,8 +577,9 @@ class division_delete extends division
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->division_state_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -634,7 +646,7 @@ class division_delete extends division
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -685,8 +697,12 @@ class division_delete extends division
 			return;
 		$this->division_id->setDbValue($row['division_id']);
 		$this->division_state_id->setDbValue($row['division_state_id']);
+		if (array_key_exists('EV__division_state_id', $rs->fields)) {
+			$this->division_state_id->VirtualValue = $rs->fields('EV__division_state_id'); // Set up virtual field value
+		} else {
+			$this->division_state_id->VirtualValue = ""; // Clear value
+		}
 		$this->division_name->setDbValue($row['division_name']);
-		$this->division_desc->setDbValue($row['division_desc']);
 	}
 
 	// Return a row with default values
@@ -696,7 +712,6 @@ class division_delete extends division
 		$row['division_id'] = NULL;
 		$row['division_state_id'] = NULL;
 		$row['division_name'] = NULL;
-		$row['division_desc'] = NULL;
 		return $row;
 	}
 
@@ -714,26 +729,43 @@ class division_delete extends division
 		// division_id
 		// division_state_id
 		// division_name
-		// division_desc
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// division_id
 			$this->division_id->ViewValue = $this->division_id->CurrentValue;
+			$this->division_id->CssClass = "font-weight-bold";
 			$this->division_id->ViewCustomAttributes = "";
 
 			// division_state_id
-			$this->division_state_id->ViewValue = $this->division_state_id->CurrentValue;
-			$this->division_state_id->ViewValue = FormatNumber($this->division_state_id->ViewValue, 0, -2, -2, -2);
+			if ($this->division_state_id->VirtualValue != "") {
+				$this->division_state_id->ViewValue = $this->division_state_id->VirtualValue;
+			} else {
+				$curVal = strval($this->division_state_id->CurrentValue);
+				if ($curVal != "") {
+					$this->division_state_id->ViewValue = $this->division_state_id->lookupCacheOption($curVal);
+					if ($this->division_state_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`state_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->division_state_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->division_state_id->ViewValue = $this->division_state_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->division_state_id->ViewValue = $this->division_state_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->division_state_id->ViewValue = NULL;
+				}
+			}
 			$this->division_state_id->ViewCustomAttributes = "";
 
 			// division_name
 			$this->division_name->ViewValue = $this->division_name->CurrentValue;
 			$this->division_name->ViewCustomAttributes = "";
-
-			// division_desc
-			$this->division_desc->ViewValue = $this->division_desc->CurrentValue;
-			$this->division_desc->ViewCustomAttributes = "";
 
 			// division_id
 			$this->division_id->LinkCustomAttributes = "";
@@ -749,11 +781,6 @@ class division_delete extends division
 			$this->division_name->LinkCustomAttributes = "";
 			$this->division_name->HrefValue = "";
 			$this->division_name->TooltipValue = "";
-
-			// division_desc
-			$this->division_desc->LinkCustomAttributes = "";
-			$this->division_desc->HrefValue = "";
-			$this->division_desc->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
@@ -872,6 +899,8 @@ class division_delete extends division
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_division_state_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -892,6 +921,8 @@ class division_delete extends division
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_division_state_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

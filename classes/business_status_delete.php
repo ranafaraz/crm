@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class business_status_delete extends business_status
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'business_status';
@@ -539,10 +539,23 @@ class business_status_delete extends business_status
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("business_statuslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->business_status_id->setVisibility();
 		$this->business_status_caption->setVisibility();
+		$this->b_status_desc->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -683,6 +696,7 @@ class business_status_delete extends business_status
 			return;
 		$this->business_status_id->setDbValue($row['business_status_id']);
 		$this->business_status_caption->setDbValue($row['business_status_caption']);
+		$this->b_status_desc->setDbValue($row['b_status_desc']);
 	}
 
 	// Return a row with default values
@@ -691,6 +705,7 @@ class business_status_delete extends business_status
 		$row = [];
 		$row['business_status_id'] = NULL;
 		$row['business_status_caption'] = NULL;
+		$row['b_status_desc'] = NULL;
 		return $row;
 	}
 
@@ -707,16 +722,22 @@ class business_status_delete extends business_status
 		// Common render codes for all row types
 		// business_status_id
 		// business_status_caption
+		// b_status_desc
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// business_status_id
 			$this->business_status_id->ViewValue = $this->business_status_id->CurrentValue;
+			$this->business_status_id->CssClass = "font-weight-bold";
 			$this->business_status_id->ViewCustomAttributes = "";
 
 			// business_status_caption
 			$this->business_status_caption->ViewValue = $this->business_status_caption->CurrentValue;
 			$this->business_status_caption->ViewCustomAttributes = "";
+
+			// b_status_desc
+			$this->b_status_desc->ViewValue = $this->b_status_desc->CurrentValue;
+			$this->b_status_desc->ViewCustomAttributes = "";
 
 			// business_status_id
 			$this->business_status_id->LinkCustomAttributes = "";
@@ -727,6 +748,11 @@ class business_status_delete extends business_status
 			$this->business_status_caption->LinkCustomAttributes = "";
 			$this->business_status_caption->HrefValue = "";
 			$this->business_status_caption->TooltipValue = "";
+
+			// b_status_desc
+			$this->b_status_desc->LinkCustomAttributes = "";
+			$this->b_status_desc->HrefValue = "";
+			$this->b_status_desc->TooltipValue = "";
 		}
 
 		// Call Row Rendered event

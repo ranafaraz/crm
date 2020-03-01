@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class business_nature_delete extends business_nature
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'business_nature';
@@ -539,6 +539,18 @@ class business_nature_delete extends business_nature
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("business_naturelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->b_nature_id->setVisibility();
@@ -716,6 +728,7 @@ class business_nature_delete extends business_nature
 
 			// b_nature_id
 			$this->b_nature_id->ViewValue = $this->b_nature_id->CurrentValue;
+			$this->b_nature_id->CssClass = "font-weight-bold";
 			$this->b_nature_id->ViewCustomAttributes = "";
 
 			// b_nature_caption

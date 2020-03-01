@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $country_list = new country_list();
 $country_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $country_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$country_list->isExport() && !$country->CurrentAction) { ?>
 <form name="fcountrylistsrch" id="fcountrylistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fcountrylistsrch-search-panel" class="<?php echo $country_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $country_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $country_list->showPageHeader(); ?>
 <?php
 $country_list->showMessage();
 ?>
 <?php if ($country_list->TotalRecords > 0 || $country->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($country_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> country">
+<?php if (!$country_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$country_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $country_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $country_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fcountrylist" id="fcountrylist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

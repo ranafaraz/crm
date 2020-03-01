@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -30,6 +30,7 @@ class referral extends DbTable
 	public $referral_name;
 	public $referral_desc;
 	public $referral_deal_signed;
+	public $referral_scanned;
 
 	// Constructor
 	public function __construct()
@@ -73,10 +74,13 @@ class referral extends DbTable
 		$this->fields['referral_id'] = &$this->referral_id;
 
 		// referral_branch_id
-		$this->referral_branch_id = new DbField('referral', 'referral', 'x_referral_branch_id', 'referral_branch_id', '`referral_branch_id`', '`referral_branch_id`', 3, 12, -1, FALSE, '`referral_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->referral_branch_id = new DbField('referral', 'referral', 'x_referral_branch_id', 'referral_branch_id', '`referral_branch_id`', '`referral_branch_id`', 3, 12, -1, FALSE, '`EV__referral_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->referral_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->referral_branch_id->Required = TRUE; // Required field
 		$this->referral_branch_id->Sortable = TRUE; // Allow sort
+		$this->referral_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->referral_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->referral_branch_id->Lookup = new Lookup('referral_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->referral_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['referral_branch_id'] = &$this->referral_branch_id;
 
@@ -100,6 +104,14 @@ class referral extends DbTable
 		$this->referral_deal_signed->Required = TRUE; // Required field
 		$this->referral_deal_signed->Sortable = TRUE; // Allow sort
 		$this->fields['referral_deal_signed'] = &$this->referral_deal_signed;
+
+		// referral_scanned
+		$this->referral_scanned = new DbField('referral', 'referral', 'x_referral_scanned', 'referral_scanned', '`referral_scanned`', '`referral_scanned`', 201, 500, -1, TRUE, '`referral_scanned`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
+		$this->referral_scanned->Nullable = FALSE; // NOT NULL field
+		$this->referral_scanned->Required = TRUE; // Required field
+		$this->referral_scanned->Sortable = TRUE; // Allow sort
+		$this->referral_scanned->ImageResize = TRUE;
+		$this->fields['referral_scanned'] = &$this->referral_scanned;
 	}
 
 	// Field Visibility
@@ -133,9 +145,21 @@ class referral extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -162,6 +186,22 @@ class referral extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `referral`.`referral_branch_id` LIMIT 1) AS `EV__referral_branch_id` FROM `referral`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -317,8 +357,13 @@ class referral extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -326,8 +371,26 @@ class referral extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->referral_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->referral_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->referral_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->referral_branch_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -355,7 +418,10 @@ class referral extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -458,12 +524,18 @@ class referral extends DbTable
 		$this->referral_name->DbValue = $row['referral_name'];
 		$this->referral_desc->DbValue = $row['referral_desc'];
 		$this->referral_deal_signed->DbValue = $row['referral_deal_signed'];
+		$this->referral_scanned->Upload->DbValue = $row['referral_scanned'];
 	}
 
 	// Delete uploaded files
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
+		$oldFiles = EmptyValue($row['referral_scanned']) ? [] : [$row['referral_scanned']];
+		foreach ($oldFiles as $oldFile) {
+			if (file_exists($this->referral_scanned->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->referral_scanned->oldPhysicalUploadPath() . $oldFile);
+		}
 	}
 
 	// Record filter WHERE clause
@@ -693,6 +765,7 @@ class referral extends DbTable
 		$this->referral_name->setDbValue($rs->fields('referral_name'));
 		$this->referral_desc->setDbValue($rs->fields('referral_desc'));
 		$this->referral_deal_signed->setDbValue($rs->fields('referral_deal_signed'));
+		$this->referral_scanned->Upload->DbValue = $rs->fields('referral_scanned');
 	}
 
 	// Render list row values
@@ -709,14 +782,37 @@ class referral extends DbTable
 		// referral_name
 		// referral_desc
 		// referral_deal_signed
+		// referral_scanned
 		// referral_id
 
 		$this->referral_id->ViewValue = $this->referral_id->CurrentValue;
+		$this->referral_id->CssClass = "font-weight-bold";
 		$this->referral_id->ViewCustomAttributes = "";
 
 		// referral_branch_id
-		$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
-		$this->referral_branch_id->ViewValue = FormatNumber($this->referral_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->referral_branch_id->VirtualValue != "") {
+			$this->referral_branch_id->ViewValue = $this->referral_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->referral_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->referral_branch_id->ViewValue = $this->referral_branch_id->lookupCacheOption($curVal);
+				if ($this->referral_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->referral_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->referral_branch_id->ViewValue = $this->referral_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->referral_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->referral_branch_id->ViewCustomAttributes = "";
 
 		// referral_name
@@ -730,6 +826,17 @@ class referral extends DbTable
 		// referral_deal_signed
 		$this->referral_deal_signed->ViewValue = $this->referral_deal_signed->CurrentValue;
 		$this->referral_deal_signed->ViewCustomAttributes = "";
+
+		// referral_scanned
+		if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+			$this->referral_scanned->ImageWidth = 200;
+			$this->referral_scanned->ImageHeight = 0;
+			$this->referral_scanned->ImageAlt = $this->referral_scanned->alt();
+			$this->referral_scanned->ViewValue = $this->referral_scanned->Upload->DbValue;
+		} else {
+			$this->referral_scanned->ViewValue = "";
+		}
+		$this->referral_scanned->ViewCustomAttributes = "";
 
 		// referral_id
 		$this->referral_id->LinkCustomAttributes = "";
@@ -756,6 +863,25 @@ class referral extends DbTable
 		$this->referral_deal_signed->HrefValue = "";
 		$this->referral_deal_signed->TooltipValue = "";
 
+		// referral_scanned
+		$this->referral_scanned->LinkCustomAttributes = "";
+		if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+			$this->referral_scanned->HrefValue = GetFileUploadUrl($this->referral_scanned, $this->referral_scanned->htmlDecode($this->referral_scanned->Upload->DbValue)); // Add prefix/suffix
+			$this->referral_scanned->LinkAttrs["target"] = ""; // Add target
+			if ($this->isExport())
+				$this->referral_scanned->HrefValue = FullUrl($this->referral_scanned->HrefValue, "href");
+		} else {
+			$this->referral_scanned->HrefValue = "";
+		}
+		$this->referral_scanned->ExportHrefValue = $this->referral_scanned->UploadPath . $this->referral_scanned->Upload->DbValue;
+		$this->referral_scanned->TooltipValue = "";
+		if ($this->referral_scanned->UseColorbox) {
+			if (EmptyValue($this->referral_scanned->TooltipValue))
+				$this->referral_scanned->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+			$this->referral_scanned->LinkAttrs["data-rel"] = "referral_x_referral_scanned";
+			$this->referral_scanned->LinkAttrs->appendClass("ew-lightbox");
+		}
+
 		// Call Row Rendered event
 		$this->Row_Rendered();
 
@@ -775,13 +901,11 @@ class referral extends DbTable
 		$this->referral_id->EditAttrs["class"] = "form-control";
 		$this->referral_id->EditCustomAttributes = "";
 		$this->referral_id->EditValue = $this->referral_id->CurrentValue;
+		$this->referral_id->CssClass = "font-weight-bold";
 		$this->referral_id->ViewCustomAttributes = "";
 
 		// referral_branch_id
-		$this->referral_branch_id->EditAttrs["class"] = "form-control";
 		$this->referral_branch_id->EditCustomAttributes = "";
-		$this->referral_branch_id->EditValue = $this->referral_branch_id->CurrentValue;
-		$this->referral_branch_id->PlaceHolder = RemoveHtml($this->referral_branch_id->caption());
 
 		// referral_name
 		$this->referral_name->EditAttrs["class"] = "form-control";
@@ -804,6 +928,20 @@ class referral extends DbTable
 		$this->referral_deal_signed->EditCustomAttributes = "";
 		$this->referral_deal_signed->EditValue = $this->referral_deal_signed->CurrentValue;
 		$this->referral_deal_signed->PlaceHolder = RemoveHtml($this->referral_deal_signed->caption());
+
+		// referral_scanned
+		$this->referral_scanned->EditAttrs["class"] = "form-control";
+		$this->referral_scanned->EditCustomAttributes = "";
+		if (!EmptyValue($this->referral_scanned->Upload->DbValue)) {
+			$this->referral_scanned->ImageWidth = 200;
+			$this->referral_scanned->ImageHeight = 0;
+			$this->referral_scanned->ImageAlt = $this->referral_scanned->alt();
+			$this->referral_scanned->EditValue = $this->referral_scanned->Upload->DbValue;
+		} else {
+			$this->referral_scanned->EditValue = "";
+		}
+		if (!EmptyValue($this->referral_scanned->CurrentValue))
+				$this->referral_scanned->Upload->FileName = $this->referral_scanned->CurrentValue;
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -839,6 +977,7 @@ class referral extends DbTable
 					$doc->exportCaption($this->referral_name);
 					$doc->exportCaption($this->referral_desc);
 					$doc->exportCaption($this->referral_deal_signed);
+					$doc->exportCaption($this->referral_scanned);
 				} else {
 					$doc->exportCaption($this->referral_id);
 					$doc->exportCaption($this->referral_branch_id);
@@ -880,6 +1019,7 @@ class referral extends DbTable
 						$doc->exportField($this->referral_name);
 						$doc->exportField($this->referral_desc);
 						$doc->exportField($this->referral_deal_signed);
+						$doc->exportField($this->referral_scanned);
 					} else {
 						$doc->exportField($this->referral_id);
 						$doc->exportField($this->referral_branch_id);
@@ -903,8 +1043,98 @@ class referral extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
+		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
+		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// No binary fields
+		// Set up field name / file name field / file type field
+		$fldName = "";
+		$fileNameFld = "";
+		$fileTypeFld = "";
+		if ($fldparm == 'referral_scanned') {
+			$fldName = "referral_scanned";
+			$fileNameFld = "referral_scanned";
+		} else {
+			return FALSE; // Incorrect field
+		}
+
+		// Set up key values
+		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
+		if (count($ar) == 1) {
+			$this->referral_id->CurrentValue = $ar[0];
+		} else {
+			return FALSE; // Incorrect key
+		}
+
+		// Set up filter (WHERE Clause)
+		$filter = $this->getRecordFilter();
+		$this->CurrentFilter = $filter;
+		$sql = $this->getCurrentSql();
+		$conn = $this->getConnection();
+		$dbtype = GetConnectionType($this->Dbid);
+		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
+			$val = $rs->fields($fldName);
+			if (!EmptyValue($val)) {
+				$fld = $this->fields[$fldName];
+
+				// Binary data
+				if ($fld->DataType == DATATYPE_BLOB) {
+					if ($dbtype != "MYSQL") {
+						if (is_array($val) || is_object($val)) // Byte array
+							$val = BytesToString($val);
+					}
+					if ($resize)
+						ResizeBinary($val, $width, $height);
+
+					// Write file type
+					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
+						AddHeader("Content-type", $rs->fields($fileTypeFld));
+					} else {
+						AddHeader("Content-type", ContentType($val));
+					}
+
+					// Write file name
+					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
+						$fileName = $rs->fields($fileNameFld);
+						$pathinfo = pathinfo($fileName);
+						$ext = strtolower(@$pathinfo["extension"]);
+						$isPdf = SameText($ext, "pdf");
+						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
+							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
+					}
+
+					// Write file data
+					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
+						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
+						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
+							$val .= "\0\0\0\0";
+					}
+
+					// Clear any debug message
+					if (ob_get_length())
+						ob_end_clean();
+
+					// Write binary data
+					Write($val);
+
+				// Upload to folder
+				} else {
+					if ($fld->UploadMultiple)
+						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
+					else
+						$files = [$val];
+					$data = [];
+					$ar = [];
+					foreach ($files as $file) {
+						if (!EmptyValue($file))
+							$ar[$file] = FullUrl($fld->hrefPath() . $file);
+					}
+					$data[$fld->Param] = $ar;
+					WriteJson($data);
+				}
+			}
+			$rs->close();
+			return TRUE;
+		}
 		return FALSE;
 	}
 

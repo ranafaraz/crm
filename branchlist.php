@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $branch_list = new branch_list();
 $branch_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $branch_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$branch_list->isExport() && !$branch->CurrentAction) { ?>
 <form name="fbranchlistsrch" id="fbranchlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fbranchlistsrch-search-panel" class="<?php echo $branch_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $branch_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $branch_list->showPageHeader(); ?>
 <?php
 $branch_list->showMessage();
 ?>
 <?php if ($branch_list->TotalRecords > 0 || $branch->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($branch_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> branch">
+<?php if (!$branch_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$branch_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $branch_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $branch_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fbranchlist" id="fbranchlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $state_edit = new state_edit();
 $state_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,9 +66,6 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $state_edit->state_country_id->caption(), $state_edit->state_country_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_state_country_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($state_edit->state_country_id->errorMessage()) ?>");
 			<?php if ($state_edit->state_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_state_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -101,6 +99,8 @@ loadjs.ready("head", function() {
 	fstateedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fstateedit.lists["x_state_country_id"] = <?php echo $state_edit->state_country_id->Lookup->toClientList($state_edit) ?>;
+	fstateedit.lists["x_state_country_id"].options = <?php echo JsonEncode($state_edit->state_country_id->lookupOptions()) ?>;
 	loadjs.done("fstateedit");
 });
 </script>
@@ -140,7 +140,15 @@ $state_edit->showMessage();
 		<label id="elh_state_state_country_id" for="x_state_country_id" class="<?php echo $state_edit->LeftColumnClass ?>"><?php echo $state_edit->state_country_id->caption() ?><?php echo $state_edit->state_country_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $state_edit->RightColumnClass ?>"><div <?php echo $state_edit->state_country_id->cellAttributes() ?>>
 <span id="el_state_state_country_id">
-<input type="text" data-table="state" data-field="x_state_country_id" name="x_state_country_id" id="x_state_country_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($state_edit->state_country_id->getPlaceHolder()) ?>" value="<?php echo $state_edit->state_country_id->EditValue ?>"<?php echo $state_edit->state_country_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_state_country_id"><?php echo EmptyValue(strval($state_edit->state_country_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $state_edit->state_country_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($state_edit->state_country_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($state_edit->state_country_id->ReadOnly || $state_edit->state_country_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_state_country_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_state_country_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $state_edit->state_country_id->caption() ?>" data-title="<?php echo $state_edit->state_country_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_state_country_id',url:'countryaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $state_edit->state_country_id->Lookup->getParamTag($state_edit, "p_x_state_country_id") ?>
+<input type="hidden" data-table="state" data-field="x_state_country_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $state_edit->state_country_id->displayValueSeparatorAttribute() ?>" name="x_state_country_id" id="x_state_country_id" value="<?php echo $state_edit->state_country_id->CurrentValue ?>"<?php echo $state_edit->state_country_id->editAttributes() ?>>
 </span>
 <?php echo $state_edit->state_country_id->CustomMsg ?></div></div>
 	</div>

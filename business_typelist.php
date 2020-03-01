@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_type_list = new business_type_list();
 $business_type_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $business_type_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$business_type_list->isExport() && !$business_type->CurrentAction) { ?>
 <form name="fbusiness_typelistsrch" id="fbusiness_typelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fbusiness_typelistsrch-search-panel" class="<?php echo $business_type_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $business_type_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $business_type_list->showPageHeader(); ?>
 <?php
 $business_type_list->showMessage();
 ?>
 <?php if ($business_type_list->TotalRecords > 0 || $business_type->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($business_type_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> business_type">
+<?php if (!$business_type_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$business_type_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $business_type_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $business_type_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fbusiness_typelist" id="fbusiness_typelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -79,10 +79,13 @@ class organization extends DbTable
 		$this->fields['org_id'] = &$this->org_id;
 
 		// org_city_id
-		$this->org_city_id = new DbField('organization', 'organization', 'x_org_city_id', 'org_city_id', '`org_city_id`', '`org_city_id`', 3, 12, -1, FALSE, '`org_city_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->org_city_id = new DbField('organization', 'organization', 'x_org_city_id', 'org_city_id', '`org_city_id`', '`org_city_id`', 3, 12, -1, FALSE, '`EV__org_city_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->org_city_id->Nullable = FALSE; // NOT NULL field
 		$this->org_city_id->Required = TRUE; // Required field
 		$this->org_city_id->Sortable = TRUE; // Allow sort
+		$this->org_city_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->org_city_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->org_city_id->Lookup = new Lookup('org_city_id', 'city', FALSE, 'city_id', ["city_name","","",""], [], [], [], [], [], [], '', '');
 		$this->org_city_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['org_city_id'] = &$this->org_city_id;
 
@@ -115,10 +118,11 @@ class organization extends DbTable
 		$this->fields['org_contact_no'] = &$this->org_contact_no;
 
 		// org_logo
-		$this->org_logo = new DbField('organization', 'organization', 'x_org_logo', 'org_logo', '`org_logo`', '`org_logo`', 200, 200, -1, FALSE, '`org_logo`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->org_logo = new DbField('organization', 'organization', 'x_org_logo', 'org_logo', '`org_logo`', '`org_logo`', 200, 200, -1, TRUE, '`org_logo`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
 		$this->org_logo->Nullable = FALSE; // NOT NULL field
 		$this->org_logo->Required = TRUE; // Required field
 		$this->org_logo->Sortable = TRUE; // Allow sort
+		$this->org_logo->ImageResize = TRUE;
 		$this->fields['org_logo'] = &$this->org_logo;
 
 		// org_bank_acc
@@ -181,9 +185,21 @@ class organization extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -210,6 +226,22 @@ class organization extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `city_name` FROM `city` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`city_id` = `organization`.`org_city_id` LIMIT 1) AS `EV__org_city_id` FROM `organization`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -365,8 +397,13 @@ class organization extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -374,8 +411,26 @@ class organization extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->org_city_id->AdvancedSearch->SearchValue != "" ||
+			$this->org_city_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->org_city_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->org_city_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -403,7 +458,10 @@ class organization extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -507,7 +565,7 @@ class organization extends DbTable
 		$this->org_head_office->DbValue = $row['org_head_office'];
 		$this->org_owner->DbValue = $row['org_owner'];
 		$this->org_contact_no->DbValue = $row['org_contact_no'];
-		$this->org_logo->DbValue = $row['org_logo'];
+		$this->org_logo->Upload->DbValue = $row['org_logo'];
 		$this->org_bank_acc->DbValue = $row['org_bank_acc'];
 		$this->org_ntn->DbValue = $row['org_ntn'];
 		$this->org_email->DbValue = $row['org_email'];
@@ -518,6 +576,11 @@ class organization extends DbTable
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
+		$oldFiles = EmptyValue($row['org_logo']) ? [] : [$row['org_logo']];
+		foreach ($oldFiles as $oldFile) {
+			if (file_exists($this->org_logo->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->org_logo->oldPhysicalUploadPath() . $oldFile);
+		}
 	}
 
 	// Record filter WHERE clause
@@ -748,7 +811,7 @@ class organization extends DbTable
 		$this->org_head_office->setDbValue($rs->fields('org_head_office'));
 		$this->org_owner->setDbValue($rs->fields('org_owner'));
 		$this->org_contact_no->setDbValue($rs->fields('org_contact_no'));
-		$this->org_logo->setDbValue($rs->fields('org_logo'));
+		$this->org_logo->Upload->DbValue = $rs->fields('org_logo');
 		$this->org_bank_acc->setDbValue($rs->fields('org_bank_acc'));
 		$this->org_ntn->setDbValue($rs->fields('org_ntn'));
 		$this->org_email->setDbValue($rs->fields('org_email'));
@@ -778,11 +841,33 @@ class organization extends DbTable
 		// org_id
 
 		$this->org_id->ViewValue = $this->org_id->CurrentValue;
+		$this->org_id->CssClass = "font-weight-bold";
 		$this->org_id->ViewCustomAttributes = "";
 
 		// org_city_id
-		$this->org_city_id->ViewValue = $this->org_city_id->CurrentValue;
-		$this->org_city_id->ViewValue = FormatNumber($this->org_city_id->ViewValue, 0, -2, -2, -2);
+		if ($this->org_city_id->VirtualValue != "") {
+			$this->org_city_id->ViewValue = $this->org_city_id->VirtualValue;
+		} else {
+			$curVal = strval($this->org_city_id->CurrentValue);
+			if ($curVal != "") {
+				$this->org_city_id->ViewValue = $this->org_city_id->lookupCacheOption($curVal);
+				if ($this->org_city_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->org_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->org_city_id->ViewValue = $this->org_city_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->org_city_id->ViewValue = $this->org_city_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->org_city_id->ViewValue = NULL;
+			}
+		}
 		$this->org_city_id->ViewCustomAttributes = "";
 
 		// org_name
@@ -802,7 +887,14 @@ class organization extends DbTable
 		$this->org_contact_no->ViewCustomAttributes = "";
 
 		// org_logo
-		$this->org_logo->ViewValue = $this->org_logo->CurrentValue;
+		if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+			$this->org_logo->ImageWidth = 200;
+			$this->org_logo->ImageHeight = 0;
+			$this->org_logo->ImageAlt = $this->org_logo->alt();
+			$this->org_logo->ViewValue = $this->org_logo->Upload->DbValue;
+		} else {
+			$this->org_logo->ViewValue = "";
+		}
 		$this->org_logo->ViewCustomAttributes = "";
 
 		// org_bank_acc
@@ -853,8 +945,22 @@ class organization extends DbTable
 
 		// org_logo
 		$this->org_logo->LinkCustomAttributes = "";
-		$this->org_logo->HrefValue = "";
+		if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+			$this->org_logo->HrefValue = GetFileUploadUrl($this->org_logo, $this->org_logo->htmlDecode($this->org_logo->Upload->DbValue)); // Add prefix/suffix
+			$this->org_logo->LinkAttrs["target"] = ""; // Add target
+			if ($this->isExport())
+				$this->org_logo->HrefValue = FullUrl($this->org_logo->HrefValue, "href");
+		} else {
+			$this->org_logo->HrefValue = "";
+		}
+		$this->org_logo->ExportHrefValue = $this->org_logo->UploadPath . $this->org_logo->Upload->DbValue;
 		$this->org_logo->TooltipValue = "";
+		if ($this->org_logo->UseColorbox) {
+			if (EmptyValue($this->org_logo->TooltipValue))
+				$this->org_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+			$this->org_logo->LinkAttrs["data-rel"] = "organization_x_org_logo";
+			$this->org_logo->LinkAttrs->appendClass("ew-lightbox");
+		}
 
 		// org_bank_acc
 		$this->org_bank_acc->LinkCustomAttributes = "";
@@ -895,13 +1001,12 @@ class organization extends DbTable
 		$this->org_id->EditAttrs["class"] = "form-control";
 		$this->org_id->EditCustomAttributes = "";
 		$this->org_id->EditValue = $this->org_id->CurrentValue;
+		$this->org_id->CssClass = "font-weight-bold";
 		$this->org_id->ViewCustomAttributes = "";
 
 		// org_city_id
 		$this->org_city_id->EditAttrs["class"] = "form-control";
 		$this->org_city_id->EditCustomAttributes = "";
-		$this->org_city_id->EditValue = $this->org_city_id->CurrentValue;
-		$this->org_city_id->PlaceHolder = RemoveHtml($this->org_city_id->caption());
 
 		// org_name
 		$this->org_name->EditAttrs["class"] = "form-control";
@@ -938,10 +1043,16 @@ class organization extends DbTable
 		// org_logo
 		$this->org_logo->EditAttrs["class"] = "form-control";
 		$this->org_logo->EditCustomAttributes = "";
-		if (!$this->org_logo->Raw)
-			$this->org_logo->CurrentValue = HtmlDecode($this->org_logo->CurrentValue);
-		$this->org_logo->EditValue = $this->org_logo->CurrentValue;
-		$this->org_logo->PlaceHolder = RemoveHtml($this->org_logo->caption());
+		if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+			$this->org_logo->ImageWidth = 200;
+			$this->org_logo->ImageHeight = 0;
+			$this->org_logo->ImageAlt = $this->org_logo->alt();
+			$this->org_logo->EditValue = $this->org_logo->Upload->DbValue;
+		} else {
+			$this->org_logo->EditValue = "";
+		}
+		if (!EmptyValue($this->org_logo->CurrentValue))
+				$this->org_logo->Upload->FileName = $this->org_logo->CurrentValue;
 
 		// org_bank_acc
 		$this->org_bank_acc->EditAttrs["class"] = "form-control";
@@ -1099,8 +1210,98 @@ class organization extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
+		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
+		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// No binary fields
+		// Set up field name / file name field / file type field
+		$fldName = "";
+		$fileNameFld = "";
+		$fileTypeFld = "";
+		if ($fldparm == 'org_logo') {
+			$fldName = "org_logo";
+			$fileNameFld = "org_logo";
+		} else {
+			return FALSE; // Incorrect field
+		}
+
+		// Set up key values
+		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
+		if (count($ar) == 1) {
+			$this->org_id->CurrentValue = $ar[0];
+		} else {
+			return FALSE; // Incorrect key
+		}
+
+		// Set up filter (WHERE Clause)
+		$filter = $this->getRecordFilter();
+		$this->CurrentFilter = $filter;
+		$sql = $this->getCurrentSql();
+		$conn = $this->getConnection();
+		$dbtype = GetConnectionType($this->Dbid);
+		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
+			$val = $rs->fields($fldName);
+			if (!EmptyValue($val)) {
+				$fld = $this->fields[$fldName];
+
+				// Binary data
+				if ($fld->DataType == DATATYPE_BLOB) {
+					if ($dbtype != "MYSQL") {
+						if (is_array($val) || is_object($val)) // Byte array
+							$val = BytesToString($val);
+					}
+					if ($resize)
+						ResizeBinary($val, $width, $height);
+
+					// Write file type
+					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
+						AddHeader("Content-type", $rs->fields($fileTypeFld));
+					} else {
+						AddHeader("Content-type", ContentType($val));
+					}
+
+					// Write file name
+					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
+						$fileName = $rs->fields($fileNameFld);
+						$pathinfo = pathinfo($fileName);
+						$ext = strtolower(@$pathinfo["extension"]);
+						$isPdf = SameText($ext, "pdf");
+						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
+							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
+					}
+
+					// Write file data
+					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
+						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
+						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
+							$val .= "\0\0\0\0";
+					}
+
+					// Clear any debug message
+					if (ob_get_length())
+						ob_end_clean();
+
+					// Write binary data
+					Write($val);
+
+				// Upload to folder
+				} else {
+					if ($fld->UploadMultiple)
+						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
+					else
+						$files = [$val];
+					$data = [];
+					$ar = [];
+					foreach ($files as $file) {
+						if (!EmptyValue($file))
+							$ar[$file] = FullUrl($fld->hrefPath() . $file);
+					}
+					$data[$fld->Param] = $ar;
+					WriteJson($data);
+				}
+			}
+			$rs->close();
+			return TRUE;
+		}
 		return FALSE;
 	}
 

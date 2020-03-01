@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -76,26 +76,35 @@ class services_availed_by_customer extends DbTable
 		$this->fields['sabc_id'] = &$this->sabc_id;
 
 		// sabc_branch_id
-		$this->sabc_branch_id = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_branch_id', 'sabc_branch_id', '`sabc_branch_id`', '`sabc_branch_id`', 3, 12, -1, FALSE, '`sabc_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->sabc_branch_id = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_branch_id', 'sabc_branch_id', '`sabc_branch_id`', '`sabc_branch_id`', 3, 12, -1, FALSE, '`EV__sabc_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->sabc_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->sabc_branch_id->Required = TRUE; // Required field
 		$this->sabc_branch_id->Sortable = TRUE; // Allow sort
+		$this->sabc_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->sabc_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->sabc_branch_id->Lookup = new Lookup('sabc_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->sabc_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['sabc_branch_id'] = &$this->sabc_branch_id;
 
 		// sabc_business_id
-		$this->sabc_business_id = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_business_id', 'sabc_business_id', '`sabc_business_id`', '`sabc_business_id`', 3, 12, -1, FALSE, '`sabc_business_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->sabc_business_id = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_business_id', 'sabc_business_id', '`sabc_business_id`', '`sabc_business_id`', 3, 12, -1, FALSE, '`EV__sabc_business_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->sabc_business_id->Nullable = FALSE; // NOT NULL field
 		$this->sabc_business_id->Required = TRUE; // Required field
 		$this->sabc_business_id->Sortable = TRUE; // Allow sort
+		$this->sabc_business_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->sabc_business_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->sabc_business_id->Lookup = new Lookup('sabc_business_id', 'business', FALSE, 'b_id', ["b_name","","",""], [], [], [], [], [], [], '', '');
 		$this->sabc_business_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['sabc_business_id'] = &$this->sabc_business_id;
 
 		// sabc_service_id
-		$this->sabc_service_id = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_service_id', 'sabc_service_id', '`sabc_service_id`', '`sabc_service_id`', 3, 12, -1, FALSE, '`sabc_service_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->sabc_service_id = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_service_id', 'sabc_service_id', '`sabc_service_id`', '`sabc_service_id`', 3, 12, -1, FALSE, '`EV__sabc_service_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->sabc_service_id->Nullable = FALSE; // NOT NULL field
 		$this->sabc_service_id->Required = TRUE; // Required field
 		$this->sabc_service_id->Sortable = TRUE; // Allow sort
+		$this->sabc_service_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->sabc_service_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->sabc_service_id->Lookup = new Lookup('sabc_service_id', 'services', FALSE, 'service_id', ["service_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->sabc_service_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['sabc_service_id'] = &$this->sabc_service_id;
 
@@ -124,7 +133,7 @@ class services_availed_by_customer extends DbTable
 		$this->fields['sabc_desc'] = &$this->sabc_desc;
 
 		// sabc_signed_on
-		$this->sabc_signed_on = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_signed_on', 'sabc_signed_on', '`sabc_signed_on`', CastDateFieldForLike("`sabc_signed_on`", 0, "DB"), 133, 10, 0, FALSE, '`sabc_signed_on`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->sabc_signed_on = new DbField('services_availed_by_customer', 'services_availed_by_customer', 'x_sabc_signed_on', 'sabc_signed_on', '`sabc_signed_on`', CastDateFieldForLike("`sabc_signed_on`", 2, "DB"), 133, 10, 2, FALSE, '`sabc_signed_on`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->sabc_signed_on->Nullable = FALSE; // NOT NULL field
 		$this->sabc_signed_on->Required = TRUE; // Required field
 		$this->sabc_signed_on->Sortable = TRUE; // Allow sort
@@ -163,9 +172,21 @@ class services_availed_by_customer extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -192,6 +213,22 @@ class services_availed_by_customer extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `services_availed_by_customer`.`sabc_branch_id` LIMIT 1) AS `EV__sabc_branch_id`, (SELECT `b_name` FROM `business` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`b_id` = `services_availed_by_customer`.`sabc_business_id` LIMIT 1) AS `EV__sabc_business_id`, (SELECT `service_caption` FROM `services` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`service_id` = `services_availed_by_customer`.`sabc_service_id` LIMIT 1) AS `EV__sabc_service_id` FROM `services_availed_by_customer`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -347,8 +384,13 @@ class services_availed_by_customer extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -356,8 +398,38 @@ class services_availed_by_customer extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->sabc_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->sabc_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->sabc_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->sabc_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->sabc_business_id->AdvancedSearch->SearchValue != "" ||
+			$this->sabc_business_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->sabc_business_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->sabc_business_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->sabc_service_id->AdvancedSearch->SearchValue != "" ||
+			$this->sabc_service_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->sabc_service_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->sabc_service_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -385,7 +457,10 @@ class services_availed_by_customer extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -751,21 +826,85 @@ class services_availed_by_customer extends DbTable
 		// sabc_id
 
 		$this->sabc_id->ViewValue = $this->sabc_id->CurrentValue;
+		$this->sabc_id->CssClass = "font-weight-bold";
 		$this->sabc_id->ViewCustomAttributes = "";
 
 		// sabc_branch_id
-		$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
-		$this->sabc_branch_id->ViewValue = FormatNumber($this->sabc_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->sabc_branch_id->VirtualValue != "") {
+			$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->sabc_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->lookupCacheOption($curVal);
+				if ($this->sabc_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->sabc_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->sabc_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->sabc_branch_id->ViewCustomAttributes = "";
 
 		// sabc_business_id
-		$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
-		$this->sabc_business_id->ViewValue = FormatNumber($this->sabc_business_id->ViewValue, 0, -2, -2, -2);
+		if ($this->sabc_business_id->VirtualValue != "") {
+			$this->sabc_business_id->ViewValue = $this->sabc_business_id->VirtualValue;
+		} else {
+			$curVal = strval($this->sabc_business_id->CurrentValue);
+			if ($curVal != "") {
+				$this->sabc_business_id->ViewValue = $this->sabc_business_id->lookupCacheOption($curVal);
+				if ($this->sabc_business_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->sabc_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->sabc_business_id->ViewValue = $this->sabc_business_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->sabc_business_id->ViewValue = NULL;
+			}
+		}
 		$this->sabc_business_id->ViewCustomAttributes = "";
 
 		// sabc_service_id
-		$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
-		$this->sabc_service_id->ViewValue = FormatNumber($this->sabc_service_id->ViewValue, 0, -2, -2, -2);
+		if ($this->sabc_service_id->VirtualValue != "") {
+			$this->sabc_service_id->ViewValue = $this->sabc_service_id->VirtualValue;
+		} else {
+			$curVal = strval($this->sabc_service_id->CurrentValue);
+			if ($curVal != "") {
+				$this->sabc_service_id->ViewValue = $this->sabc_service_id->lookupCacheOption($curVal);
+				if ($this->sabc_service_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->sabc_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->sabc_service_id->ViewValue = $this->sabc_service_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->sabc_service_id->ViewValue = NULL;
+			}
+		}
 		$this->sabc_service_id->ViewCustomAttributes = "";
 
 		// sabc_pkg
@@ -787,7 +926,7 @@ class services_availed_by_customer extends DbTable
 
 		// sabc_signed_on
 		$this->sabc_signed_on->ViewValue = $this->sabc_signed_on->CurrentValue;
-		$this->sabc_signed_on->ViewValue = FormatDateTime($this->sabc_signed_on->ViewValue, 0);
+		$this->sabc_signed_on->ViewValue = FormatDateTime($this->sabc_signed_on->ViewValue, 2);
 		$this->sabc_signed_on->ViewCustomAttributes = "";
 
 		// sabc_id
@@ -849,25 +988,19 @@ class services_availed_by_customer extends DbTable
 		$this->sabc_id->EditAttrs["class"] = "form-control";
 		$this->sabc_id->EditCustomAttributes = "";
 		$this->sabc_id->EditValue = $this->sabc_id->CurrentValue;
+		$this->sabc_id->CssClass = "font-weight-bold";
 		$this->sabc_id->ViewCustomAttributes = "";
 
 		// sabc_branch_id
-		$this->sabc_branch_id->EditAttrs["class"] = "form-control";
 		$this->sabc_branch_id->EditCustomAttributes = "";
-		$this->sabc_branch_id->EditValue = $this->sabc_branch_id->CurrentValue;
-		$this->sabc_branch_id->PlaceHolder = RemoveHtml($this->sabc_branch_id->caption());
 
 		// sabc_business_id
 		$this->sabc_business_id->EditAttrs["class"] = "form-control";
 		$this->sabc_business_id->EditCustomAttributes = "";
-		$this->sabc_business_id->EditValue = $this->sabc_business_id->CurrentValue;
-		$this->sabc_business_id->PlaceHolder = RemoveHtml($this->sabc_business_id->caption());
 
 		// sabc_service_id
 		$this->sabc_service_id->EditAttrs["class"] = "form-control";
 		$this->sabc_service_id->EditCustomAttributes = "";
-		$this->sabc_service_id->EditValue = $this->sabc_service_id->CurrentValue;
-		$this->sabc_service_id->PlaceHolder = RemoveHtml($this->sabc_service_id->caption());
 
 		// sabc_pkg
 		$this->sabc_pkg->EditCustomAttributes = "";
@@ -888,7 +1021,7 @@ class services_availed_by_customer extends DbTable
 		// sabc_signed_on
 		$this->sabc_signed_on->EditAttrs["class"] = "form-control";
 		$this->sabc_signed_on->EditCustomAttributes = "";
-		$this->sabc_signed_on->EditValue = FormatDateTime($this->sabc_signed_on->CurrentValue, 8);
+		$this->sabc_signed_on->EditValue = FormatDateTime($this->sabc_signed_on->CurrentValue, 2);
 		$this->sabc_signed_on->PlaceHolder = RemoveHtml($this->sabc_signed_on->caption());
 
 		// Call Row Rendered event

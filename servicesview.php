@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $services_view = new services_view();
 $services_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -115,7 +116,7 @@ $services_view->showMessage();
 		<td class="<?php echo $services_view->TableLeftColumnClass ?>"><span id="elh_services_service_logo"><?php echo $services_view->service_logo->caption() ?></span></td>
 		<td data-name="service_logo" <?php echo $services_view->service_logo->cellAttributes() ?>>
 <span id="el_services_service_logo">
-<span<?php echo $services_view->service_logo->viewAttributes() ?>><?php echo $services_view->service_logo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($services_view->service_logo, $services_view->service_logo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

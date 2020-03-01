@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $sms_package_list = new sms_package_list();
 $sms_package_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -73,6 +74,19 @@ $sms_package_list->showMessage();
 ?>
 <?php if ($sms_package_list->TotalRecords > 0 || $sms_package->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($sms_package_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> sms_package">
+<?php if (!$sms_package_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$sms_package_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $sms_package_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $sms_package_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fsms_packagelist" id="fsms_packagelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

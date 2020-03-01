@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $acc_nature_edit = new acc_nature_edit();
 $acc_nature_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -144,10 +145,16 @@ $acc_nature_edit->showMessage();
 <?php } ?>
 <?php if ($acc_nature_edit->acc_nature_desc->Visible) { // acc_nature_desc ?>
 	<div id="r_acc_nature_desc" class="form-group row">
-		<label id="elh_acc_nature_acc_nature_desc" for="x_acc_nature_desc" class="<?php echo $acc_nature_edit->LeftColumnClass ?>"><?php echo $acc_nature_edit->acc_nature_desc->caption() ?><?php echo $acc_nature_edit->acc_nature_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_acc_nature_acc_nature_desc" class="<?php echo $acc_nature_edit->LeftColumnClass ?>"><?php echo $acc_nature_edit->acc_nature_desc->caption() ?><?php echo $acc_nature_edit->acc_nature_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $acc_nature_edit->RightColumnClass ?>"><div <?php echo $acc_nature_edit->acc_nature_desc->cellAttributes() ?>>
 <span id="el_acc_nature_acc_nature_desc">
+<?php $acc_nature_edit->acc_nature_desc->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="acc_nature" data-field="x_acc_nature_desc" name="x_acc_nature_desc" id="x_acc_nature_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($acc_nature_edit->acc_nature_desc->getPlaceHolder()) ?>"<?php echo $acc_nature_edit->acc_nature_desc->editAttributes() ?>><?php echo $acc_nature_edit->acc_nature_desc->EditValue ?></textarea>
+<script>
+loadjs.ready(["facc_natureedit", "editor"], function() {
+	ew.createEditor("facc_natureedit", "x_acc_nature_desc", 35, 4, <?php echo $acc_nature_edit->acc_nature_desc->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $acc_nature_edit->acc_nature_desc->CustomMsg ?></div></div>
 	</div>

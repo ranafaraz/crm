@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class district_add extends district
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'district';
@@ -540,6 +540,8 @@ class district_add extends district
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class district_add extends district
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("districtlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -659,8 +673,9 @@ class district_add extends district
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->district_division_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -851,6 +866,11 @@ class district_add extends district
 			return;
 		$this->district_id->setDbValue($row['district_id']);
 		$this->district_division_id->setDbValue($row['district_division_id']);
+		if (array_key_exists('EV__district_division_id', $rs->fields)) {
+			$this->district_division_id->VirtualValue = $rs->fields('EV__district_division_id'); // Set up virtual field value
+		} else {
+			$this->district_division_id->VirtualValue = ""; // Clear value
+		}
 		$this->district_name->setDbValue($row['district_name']);
 	}
 
@@ -907,11 +927,33 @@ class district_add extends district
 
 			// district_id
 			$this->district_id->ViewValue = $this->district_id->CurrentValue;
+			$this->district_id->CssClass = "font-weight-bold";
 			$this->district_id->ViewCustomAttributes = "";
 
 			// district_division_id
-			$this->district_division_id->ViewValue = $this->district_division_id->CurrentValue;
-			$this->district_division_id->ViewValue = FormatNumber($this->district_division_id->ViewValue, 0, -2, -2, -2);
+			if ($this->district_division_id->VirtualValue != "") {
+				$this->district_division_id->ViewValue = $this->district_division_id->VirtualValue;
+			} else {
+				$curVal = strval($this->district_division_id->CurrentValue);
+				if ($curVal != "") {
+					$this->district_division_id->ViewValue = $this->district_division_id->lookupCacheOption($curVal);
+					if ($this->district_division_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`division_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->district_division_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->district_division_id->ViewValue = $this->district_division_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->district_division_id->ViewValue = $this->district_division_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->district_division_id->ViewValue = NULL;
+				}
+			}
 			$this->district_division_id->ViewCustomAttributes = "";
 
 			// district_name
@@ -930,10 +972,36 @@ class district_add extends district
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// district_division_id
-			$this->district_division_id->EditAttrs["class"] = "form-control";
 			$this->district_division_id->EditCustomAttributes = "";
-			$this->district_division_id->EditValue = HtmlEncode($this->district_division_id->CurrentValue);
-			$this->district_division_id->PlaceHolder = RemoveHtml($this->district_division_id->caption());
+			$curVal = trim(strval($this->district_division_id->CurrentValue));
+			if ($curVal != "")
+				$this->district_division_id->ViewValue = $this->district_division_id->lookupCacheOption($curVal);
+			else
+				$this->district_division_id->ViewValue = $this->district_division_id->Lookup !== NULL && is_array($this->district_division_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->district_division_id->ViewValue !== NULL) { // Load from cache
+				$this->district_division_id->EditValue = array_values($this->district_division_id->Lookup->Options);
+				if ($this->district_division_id->ViewValue == "")
+					$this->district_division_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`division_id`" . SearchString("=", $this->district_division_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->district_division_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->district_division_id->ViewValue = $this->district_division_id->displayValue($arwrk);
+				} else {
+					$this->district_division_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->district_division_id->EditValue = $arwrk;
+			}
 
 			// district_name
 			$this->district_name->EditAttrs["class"] = "form-control";
@@ -976,9 +1044,6 @@ class district_add extends district
 			if (!$this->district_division_id->IsDetailKey && $this->district_division_id->FormValue != NULL && $this->district_division_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->district_division_id->caption(), $this->district_division_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->district_division_id->FormValue)) {
-			AddMessage($FormError, $this->district_division_id->errorMessage());
 		}
 		if ($this->district_name->Required) {
 			if (!$this->district_name->IsDetailKey && $this->district_name->FormValue != NULL && $this->district_name->FormValue == "") {
@@ -1081,6 +1146,8 @@ class district_add extends district
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_district_division_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1101,6 +1168,8 @@ class district_add extends district
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_district_division_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $division_delete = new division_delete();
 $division_delete->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -78,9 +79,6 @@ $division_delete->showMessage();
 <?php if ($division_delete->division_name->Visible) { // division_name ?>
 		<th class="<?php echo $division_delete->division_name->headerCellClass() ?>"><span id="elh_division_division_name" class="division_division_name"><?php echo $division_delete->division_name->caption() ?></span></th>
 <?php } ?>
-<?php if ($division_delete->division_desc->Visible) { // division_desc ?>
-		<th class="<?php echo $division_delete->division_desc->headerCellClass() ?>"><span id="elh_division_division_desc" class="division_division_desc"><?php echo $division_delete->division_desc->caption() ?></span></th>
-<?php } ?>
 	</tr>
 	</thead>
 	<tbody>
@@ -120,13 +118,6 @@ while (!$division_delete->Recordset->EOF) {
 		<td <?php echo $division_delete->division_name->cellAttributes() ?>>
 <span id="el<?php echo $division_delete->RowCount ?>_division_division_name" class="division_division_name">
 <span<?php echo $division_delete->division_name->viewAttributes() ?>><?php echo $division_delete->division_name->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($division_delete->division_desc->Visible) { // division_desc ?>
-		<td <?php echo $division_delete->division_desc->cellAttributes() ?>>
-<span id="el<?php echo $division_delete->RowCount ?>_division_division_desc" class="division_division_desc">
-<span<?php echo $division_delete->division_desc->viewAttributes() ?>><?php echo $division_delete->division_desc->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

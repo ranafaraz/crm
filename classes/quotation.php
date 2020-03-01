@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -77,31 +77,40 @@ class quotation extends DbTable
 		$this->fields['quote_id'] = &$this->quote_id;
 
 		// quote_branch_id
-		$this->quote_branch_id = new DbField('quotation', 'quotation', 'x_quote_branch_id', 'quote_branch_id', '`quote_branch_id`', '`quote_branch_id`', 3, 12, -1, FALSE, '`quote_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->quote_branch_id = new DbField('quotation', 'quotation', 'x_quote_branch_id', 'quote_branch_id', '`quote_branch_id`', '`quote_branch_id`', 3, 12, -1, FALSE, '`EV__quote_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->quote_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->quote_branch_id->Required = TRUE; // Required field
 		$this->quote_branch_id->Sortable = TRUE; // Allow sort
+		$this->quote_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->quote_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->quote_branch_id->Lookup = new Lookup('quote_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->quote_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['quote_branch_id'] = &$this->quote_branch_id;
 
 		// quote_business_id
-		$this->quote_business_id = new DbField('quotation', 'quotation', 'x_quote_business_id', 'quote_business_id', '`quote_business_id`', '`quote_business_id`', 3, 12, -1, FALSE, '`quote_business_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->quote_business_id = new DbField('quotation', 'quotation', 'x_quote_business_id', 'quote_business_id', '`quote_business_id`', '`quote_business_id`', 3, 12, -1, FALSE, '`EV__quote_business_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->quote_business_id->Nullable = FALSE; // NOT NULL field
 		$this->quote_business_id->Required = TRUE; // Required field
 		$this->quote_business_id->Sortable = TRUE; // Allow sort
+		$this->quote_business_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->quote_business_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->quote_business_id->Lookup = new Lookup('quote_business_id', 'business', FALSE, 'b_id', ["b_name","","",""], [], [], [], [], [], [], '', '');
 		$this->quote_business_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['quote_business_id'] = &$this->quote_business_id;
 
 		// quote_service_id
-		$this->quote_service_id = new DbField('quotation', 'quotation', 'x_quote_service_id', 'quote_service_id', '`quote_service_id`', '`quote_service_id`', 3, 12, -1, FALSE, '`quote_service_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->quote_service_id = new DbField('quotation', 'quotation', 'x_quote_service_id', 'quote_service_id', '`quote_service_id`', '`quote_service_id`', 3, 12, -1, FALSE, '`EV__quote_service_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->quote_service_id->Nullable = FALSE; // NOT NULL field
 		$this->quote_service_id->Required = TRUE; // Required field
 		$this->quote_service_id->Sortable = TRUE; // Allow sort
+		$this->quote_service_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->quote_service_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->quote_service_id->Lookup = new Lookup('quote_service_id', 'services', FALSE, 'service_id', ["service_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->quote_service_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['quote_service_id'] = &$this->quote_service_id;
 
 		// quote_issue_date
-		$this->quote_issue_date = new DbField('quotation', 'quotation', 'x_quote_issue_date', 'quote_issue_date', '`quote_issue_date`', CastDateFieldForLike("`quote_issue_date`", 0, "DB"), 133, 10, 0, FALSE, '`quote_issue_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->quote_issue_date = new DbField('quotation', 'quotation', 'x_quote_issue_date', 'quote_issue_date', '`quote_issue_date`', CastDateFieldForLike("`quote_issue_date`", 2, "DB"), 133, 10, 2, FALSE, '`quote_issue_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->quote_issue_date->Nullable = FALSE; // NOT NULL field
 		$this->quote_issue_date->Required = TRUE; // Required field
 		$this->quote_issue_date->Sortable = TRUE; // Allow sort
@@ -109,7 +118,7 @@ class quotation extends DbTable
 		$this->fields['quote_issue_date'] = &$this->quote_issue_date;
 
 		// quote_due_date
-		$this->quote_due_date = new DbField('quotation', 'quotation', 'x_quote_due_date', 'quote_due_date', '`quote_due_date`', CastDateFieldForLike("`quote_due_date`", 0, "DB"), 133, 10, 0, FALSE, '`quote_due_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->quote_due_date = new DbField('quotation', 'quotation', 'x_quote_due_date', 'quote_due_date', '`quote_due_date`', CastDateFieldForLike("`quote_due_date`", 2, "DB"), 133, 10, 2, FALSE, '`quote_due_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->quote_due_date->Nullable = FALSE; // NOT NULL field
 		$this->quote_due_date->Required = TRUE; // Required field
 		$this->quote_due_date->Sortable = TRUE; // Allow sort
@@ -170,9 +179,21 @@ class quotation extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -199,6 +220,22 @@ class quotation extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `quotation`.`quote_branch_id` LIMIT 1) AS `EV__quote_branch_id`, (SELECT `b_name` FROM `business` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`b_id` = `quotation`.`quote_business_id` LIMIT 1) AS `EV__quote_business_id`, (SELECT `service_caption` FROM `services` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`service_id` = `quotation`.`quote_service_id` LIMIT 1) AS `EV__quote_service_id` FROM `quotation`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -354,8 +391,13 @@ class quotation extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -363,8 +405,38 @@ class quotation extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->quote_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->quote_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->quote_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->quote_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->quote_business_id->AdvancedSearch->SearchValue != "" ||
+			$this->quote_business_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->quote_business_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->quote_business_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->quote_service_id->AdvancedSearch->SearchValue != "" ||
+			$this->quote_service_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->quote_service_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->quote_service_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -392,7 +464,10 @@ class quotation extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -761,31 +836,95 @@ class quotation extends DbTable
 		// quote_id
 
 		$this->quote_id->ViewValue = $this->quote_id->CurrentValue;
+		$this->quote_id->CssClass = "font-weight-bold";
 		$this->quote_id->ViewCustomAttributes = "";
 
 		// quote_branch_id
-		$this->quote_branch_id->ViewValue = $this->quote_branch_id->CurrentValue;
-		$this->quote_branch_id->ViewValue = FormatNumber($this->quote_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->quote_branch_id->VirtualValue != "") {
+			$this->quote_branch_id->ViewValue = $this->quote_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->quote_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->quote_branch_id->ViewValue = $this->quote_branch_id->lookupCacheOption($curVal);
+				if ($this->quote_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->quote_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->quote_branch_id->ViewValue = $this->quote_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->quote_branch_id->ViewValue = $this->quote_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->quote_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->quote_branch_id->ViewCustomAttributes = "";
 
 		// quote_business_id
-		$this->quote_business_id->ViewValue = $this->quote_business_id->CurrentValue;
-		$this->quote_business_id->ViewValue = FormatNumber($this->quote_business_id->ViewValue, 0, -2, -2, -2);
+		if ($this->quote_business_id->VirtualValue != "") {
+			$this->quote_business_id->ViewValue = $this->quote_business_id->VirtualValue;
+		} else {
+			$curVal = strval($this->quote_business_id->CurrentValue);
+			if ($curVal != "") {
+				$this->quote_business_id->ViewValue = $this->quote_business_id->lookupCacheOption($curVal);
+				if ($this->quote_business_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->quote_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->quote_business_id->ViewValue = $this->quote_business_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->quote_business_id->ViewValue = $this->quote_business_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->quote_business_id->ViewValue = NULL;
+			}
+		}
 		$this->quote_business_id->ViewCustomAttributes = "";
 
 		// quote_service_id
-		$this->quote_service_id->ViewValue = $this->quote_service_id->CurrentValue;
-		$this->quote_service_id->ViewValue = FormatNumber($this->quote_service_id->ViewValue, 0, -2, -2, -2);
+		if ($this->quote_service_id->VirtualValue != "") {
+			$this->quote_service_id->ViewValue = $this->quote_service_id->VirtualValue;
+		} else {
+			$curVal = strval($this->quote_service_id->CurrentValue);
+			if ($curVal != "") {
+				$this->quote_service_id->ViewValue = $this->quote_service_id->lookupCacheOption($curVal);
+				if ($this->quote_service_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->quote_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->quote_service_id->ViewValue = $this->quote_service_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->quote_service_id->ViewValue = $this->quote_service_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->quote_service_id->ViewValue = NULL;
+			}
+		}
 		$this->quote_service_id->ViewCustomAttributes = "";
 
 		// quote_issue_date
 		$this->quote_issue_date->ViewValue = $this->quote_issue_date->CurrentValue;
-		$this->quote_issue_date->ViewValue = FormatDateTime($this->quote_issue_date->ViewValue, 0);
+		$this->quote_issue_date->ViewValue = FormatDateTime($this->quote_issue_date->ViewValue, 2);
 		$this->quote_issue_date->ViewCustomAttributes = "";
 
 		// quote_due_date
 		$this->quote_due_date->ViewValue = $this->quote_due_date->CurrentValue;
-		$this->quote_due_date->ViewValue = FormatDateTime($this->quote_due_date->ViewValue, 0);
+		$this->quote_due_date->ViewValue = FormatDateTime($this->quote_due_date->ViewValue, 2);
 		$this->quote_due_date->ViewCustomAttributes = "";
 
 		// quote_amount
@@ -865,36 +1004,30 @@ class quotation extends DbTable
 		$this->quote_id->EditAttrs["class"] = "form-control";
 		$this->quote_id->EditCustomAttributes = "";
 		$this->quote_id->EditValue = $this->quote_id->CurrentValue;
+		$this->quote_id->CssClass = "font-weight-bold";
 		$this->quote_id->ViewCustomAttributes = "";
 
 		// quote_branch_id
-		$this->quote_branch_id->EditAttrs["class"] = "form-control";
 		$this->quote_branch_id->EditCustomAttributes = "";
-		$this->quote_branch_id->EditValue = $this->quote_branch_id->CurrentValue;
-		$this->quote_branch_id->PlaceHolder = RemoveHtml($this->quote_branch_id->caption());
 
 		// quote_business_id
 		$this->quote_business_id->EditAttrs["class"] = "form-control";
 		$this->quote_business_id->EditCustomAttributes = "";
-		$this->quote_business_id->EditValue = $this->quote_business_id->CurrentValue;
-		$this->quote_business_id->PlaceHolder = RemoveHtml($this->quote_business_id->caption());
 
 		// quote_service_id
 		$this->quote_service_id->EditAttrs["class"] = "form-control";
 		$this->quote_service_id->EditCustomAttributes = "";
-		$this->quote_service_id->EditValue = $this->quote_service_id->CurrentValue;
-		$this->quote_service_id->PlaceHolder = RemoveHtml($this->quote_service_id->caption());
 
 		// quote_issue_date
 		$this->quote_issue_date->EditAttrs["class"] = "form-control";
 		$this->quote_issue_date->EditCustomAttributes = "";
-		$this->quote_issue_date->EditValue = FormatDateTime($this->quote_issue_date->CurrentValue, 8);
+		$this->quote_issue_date->EditValue = FormatDateTime($this->quote_issue_date->CurrentValue, 2);
 		$this->quote_issue_date->PlaceHolder = RemoveHtml($this->quote_issue_date->caption());
 
 		// quote_due_date
 		$this->quote_due_date->EditAttrs["class"] = "form-control";
 		$this->quote_due_date->EditCustomAttributes = "";
-		$this->quote_due_date->EditValue = FormatDateTime($this->quote_due_date->CurrentValue, 8);
+		$this->quote_due_date->EditValue = FormatDateTime($this->quote_due_date->CurrentValue, 2);
 		$this->quote_due_date->PlaceHolder = RemoveHtml($this->quote_due_date->caption());
 
 		// quote_amount

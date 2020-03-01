@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $division_add = new division_add();
 $division_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -60,18 +61,10 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $division_add->division_state_id->caption(), $division_add->division_state_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_division_state_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($division_add->division_state_id->errorMessage()) ?>");
 			<?php if ($division_add->division_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_division_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $division_add->division_name->caption(), $division_add->division_name->RequiredErrorMessage)) ?>");
-			<?php } ?>
-			<?php if ($division_add->division_desc->Required) { ?>
-				elm = this.getElements("x" + infix + "_division_desc");
-				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $division_add->division_desc->caption(), $division_add->division_desc->RequiredErrorMessage)) ?>");
 			<?php } ?>
 
 				// Call Form_CustomValidate event
@@ -101,6 +94,8 @@ loadjs.ready("head", function() {
 	fdivisionadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fdivisionadd.lists["x_division_state_id"] = <?php echo $division_add->division_state_id->Lookup->toClientList($division_add) ?>;
+	fdivisionadd.lists["x_division_state_id"].options = <?php echo JsonEncode($division_add->division_state_id->lookupOptions()) ?>;
 	loadjs.done("fdivisionadd");
 });
 </script>
@@ -129,7 +124,15 @@ $division_add->showMessage();
 		<label id="elh_division_division_state_id" for="x_division_state_id" class="<?php echo $division_add->LeftColumnClass ?>"><?php echo $division_add->division_state_id->caption() ?><?php echo $division_add->division_state_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $division_add->RightColumnClass ?>"><div <?php echo $division_add->division_state_id->cellAttributes() ?>>
 <span id="el_division_division_state_id">
-<input type="text" data-table="division" data-field="x_division_state_id" name="x_division_state_id" id="x_division_state_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($division_add->division_state_id->getPlaceHolder()) ?>" value="<?php echo $division_add->division_state_id->EditValue ?>"<?php echo $division_add->division_state_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_division_state_id"><?php echo EmptyValue(strval($division_add->division_state_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $division_add->division_state_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($division_add->division_state_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($division_add->division_state_id->ReadOnly || $division_add->division_state_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_division_state_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_division_state_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $division_add->division_state_id->caption() ?>" data-title="<?php echo $division_add->division_state_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_division_state_id',url:'stateaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $division_add->division_state_id->Lookup->getParamTag($division_add, "p_x_division_state_id") ?>
+<input type="hidden" data-table="division" data-field="x_division_state_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $division_add->division_state_id->displayValueSeparatorAttribute() ?>" name="x_division_state_id" id="x_division_state_id" value="<?php echo $division_add->division_state_id->CurrentValue ?>"<?php echo $division_add->division_state_id->editAttributes() ?>>
 </span>
 <?php echo $division_add->division_state_id->CustomMsg ?></div></div>
 	</div>
@@ -142,16 +145,6 @@ $division_add->showMessage();
 <input type="text" data-table="division" data-field="x_division_name" name="x_division_name" id="x_division_name" size="30" maxlength="50" placeholder="<?php echo HtmlEncode($division_add->division_name->getPlaceHolder()) ?>" value="<?php echo $division_add->division_name->EditValue ?>"<?php echo $division_add->division_name->editAttributes() ?>>
 </span>
 <?php echo $division_add->division_name->CustomMsg ?></div></div>
-	</div>
-<?php } ?>
-<?php if ($division_add->division_desc->Visible) { // division_desc ?>
-	<div id="r_division_desc" class="form-group row">
-		<label id="elh_division_division_desc" for="x_division_desc" class="<?php echo $division_add->LeftColumnClass ?>"><?php echo $division_add->division_desc->caption() ?><?php echo $division_add->division_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $division_add->RightColumnClass ?>"><div <?php echo $division_add->division_desc->cellAttributes() ?>>
-<span id="el_division_division_desc">
-<input type="text" data-table="division" data-field="x_division_desc" name="x_division_desc" id="x_division_desc" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($division_add->division_desc->getPlaceHolder()) ?>" value="<?php echo $division_add->division_desc->EditValue ?>"<?php echo $division_add->division_desc->editAttributes() ?>>
-</span>
-<?php echo $division_add->division_desc->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 </div><!-- /page* -->

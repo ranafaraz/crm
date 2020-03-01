@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $user_add = new user_add();
 $user_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -60,17 +61,11 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $user_add->user_branch_id->caption(), $user_add->user_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_user_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($user_add->user_branch_id->errorMessage()) ?>");
 			<?php if ($user_add->user_type_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_user_type_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $user_add->user_type_id->caption(), $user_add->user_type_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_user_type_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($user_add->user_type_id->errorMessage()) ?>");
 			<?php if ($user_add->user_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_user_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -81,6 +76,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $user_add->user_password->caption(), $user_add->user_password->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_user_password");
+				if (elm && $(elm).hasClass("ew-password-strength") && !$(elm).data("validated"))
+					return this.onError(elm, ew.language.phrase("PasswordTooSimple"));
 			<?php if ($user_add->user_email->Required) { ?>
 				elm = this.getElements("x" + infix + "_user_email");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -92,9 +90,10 @@ loadjs.ready("head", function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $user_add->user_father->caption(), $user_add->user_father->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($user_add->user_photo->Required) { ?>
-				elm = this.getElements("x" + infix + "_user_photo");
-				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $user_add->user_photo->caption(), $user_add->user_photo->RequiredErrorMessage)) ?>");
+				felm = this.getElements("x" + infix + "_user_photo");
+				elm = this.getElements("fn_x" + infix + "_user_photo");
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $user_add->user_photo->caption(), $user_add->user_photo->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($user_add->user_cnic->Required) { ?>
 				elm = this.getElements("x" + infix + "_user_cnic");
@@ -129,6 +128,10 @@ loadjs.ready("head", function() {
 	fuseradd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fuseradd.lists["x_user_branch_id"] = <?php echo $user_add->user_branch_id->Lookup->toClientList($user_add) ?>;
+	fuseradd.lists["x_user_branch_id"].options = <?php echo JsonEncode($user_add->user_branch_id->lookupOptions()) ?>;
+	fuseradd.lists["x_user_type_id"] = <?php echo $user_add->user_type_id->Lookup->toClientList($user_add) ?>;
+	fuseradd.lists["x_user_type_id"].options = <?php echo JsonEncode($user_add->user_type_id->lookupOptions()) ?>;
 	loadjs.done("fuseradd");
 });
 </script>
@@ -157,7 +160,23 @@ $user_add->showMessage();
 		<label id="elh_user_user_branch_id" for="x_user_branch_id" class="<?php echo $user_add->LeftColumnClass ?>"><?php echo $user_add->user_branch_id->caption() ?><?php echo $user_add->user_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $user_add->RightColumnClass ?>"><div <?php echo $user_add->user_branch_id->cellAttributes() ?>>
 <span id="el_user_user_branch_id">
-<input type="text" data-table="user" data-field="x_user_branch_id" name="x_user_branch_id" id="x_user_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($user_add->user_branch_id->getPlaceHolder()) ?>" value="<?php echo $user_add->user_branch_id->EditValue ?>"<?php echo $user_add->user_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($user_add->user_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $user_add->user_branch_id->ViewValue ?></button>
+		<div id="dsl_x_user_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $user_add->user_branch_id->radioButtonListHtml(TRUE, "x_user_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_user_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="user" data-field="x_user_branch_id" data-value-separator="<?php echo $user_add->user_branch_id->displayValueSeparatorAttribute() ?>" name="x_user_branch_id" id="x_user_branch_id" value="{value}"<?php echo $user_add->user_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$user_add->user_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $user_add->user_branch_id->Lookup->getParamTag($user_add, "p_x_user_branch_id") ?>
 </span>
 <?php echo $user_add->user_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -167,7 +186,23 @@ $user_add->showMessage();
 		<label id="elh_user_user_type_id" for="x_user_type_id" class="<?php echo $user_add->LeftColumnClass ?>"><?php echo $user_add->user_type_id->caption() ?><?php echo $user_add->user_type_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $user_add->RightColumnClass ?>"><div <?php echo $user_add->user_type_id->cellAttributes() ?>>
 <span id="el_user_user_type_id">
-<input type="text" data-table="user" data-field="x_user_type_id" name="x_user_type_id" id="x_user_type_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($user_add->user_type_id->getPlaceHolder()) ?>" value="<?php echo $user_add->user_type_id->EditValue ?>"<?php echo $user_add->user_type_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($user_add->user_type_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $user_add->user_type_id->ViewValue ?></button>
+		<div id="dsl_x_user_type_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $user_add->user_type_id->radioButtonListHtml(TRUE, "x_user_type_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_user_type_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="user" data-field="x_user_type_id" data-value-separator="<?php echo $user_add->user_type_id->displayValueSeparatorAttribute() ?>" name="x_user_type_id" id="x_user_type_id" value="{value}"<?php echo $user_add->user_type_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$user_add->user_type_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $user_add->user_type_id->Lookup->getParamTag($user_add, "p_x_user_type_id") ?>
 </span>
 <?php echo $user_add->user_type_id->CustomMsg ?></div></div>
 	</div>
@@ -187,7 +222,16 @@ $user_add->showMessage();
 		<label id="elh_user_user_password" for="x_user_password" class="<?php echo $user_add->LeftColumnClass ?>"><?php echo $user_add->user_password->caption() ?><?php echo $user_add->user_password->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $user_add->RightColumnClass ?>"><div <?php echo $user_add->user_password->cellAttributes() ?>>
 <span id="el_user_user_password">
-<input type="text" data-table="user" data-field="x_user_password" name="x_user_password" id="x_user_password" size="30" maxlength="255" placeholder="<?php echo HtmlEncode($user_add->user_password->getPlaceHolder()) ?>" value="<?php echo $user_add->user_password->EditValue ?>"<?php echo $user_add->user_password->editAttributes() ?>>
+<div class="input-group" id="ig_user_password">
+<input type="password" autocomplete="new-password" data-password-strength="pst_user_password" data-table="user" data-field="x_user_password" name="x_user_password" id="x_user_password" size="30" maxlength="255" placeholder="<?php echo HtmlEncode($user_add->user_password->getPlaceHolder()) ?>"<?php echo $user_add->user_password->editAttributes() ?>>
+<div class="input-group-append">
+	<button type="button" class="btn btn-default ew-toggle-password" onclick="ew.togglePassword(event);"><i class="fas fa-eye"></i></button>
+	<button type="button" class="btn btn-default ew-password-generator" title="<?php echo HtmlTitle($Language->phrase("GeneratePassword")) ?>" data-password-field="x_user_password" data-password-confirm="c_user_password" data-password-strength="pst_user_password"><?php echo $Language->phrase("GeneratePassword") ?></button>
+</div>
+</div>
+<div class="progress ew-password-strength-bar form-text mt-1 d-none" id="pst_user_password">
+	<div class="progress-bar" role="progressbar"></div>
+</div>
 </span>
 <?php echo $user_add->user_password->CustomMsg ?></div></div>
 	</div>
@@ -214,10 +258,23 @@ $user_add->showMessage();
 <?php } ?>
 <?php if ($user_add->user_photo->Visible) { // user_photo ?>
 	<div id="r_user_photo" class="form-group row">
-		<label id="elh_user_user_photo" for="x_user_photo" class="<?php echo $user_add->LeftColumnClass ?>"><?php echo $user_add->user_photo->caption() ?><?php echo $user_add->user_photo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_user_user_photo" class="<?php echo $user_add->LeftColumnClass ?>"><?php echo $user_add->user_photo->caption() ?><?php echo $user_add->user_photo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $user_add->RightColumnClass ?>"><div <?php echo $user_add->user_photo->cellAttributes() ?>>
 <span id="el_user_user_photo">
-<textarea data-table="user" data-field="x_user_photo" name="x_user_photo" id="x_user_photo" cols="35" rows="4" placeholder="<?php echo HtmlEncode($user_add->user_photo->getPlaceHolder()) ?>"<?php echo $user_add->user_photo->editAttributes() ?>><?php echo $user_add->user_photo->EditValue ?></textarea>
+<div id="fd_x_user_photo">
+<div class="input-group">
+	<div class="custom-file">
+		<input type="file" class="custom-file-input" title="<?php echo $user_add->user_photo->title() ?>" data-table="user" data-field="x_user_photo" name="x_user_photo" id="x_user_photo" lang="<?php echo CurrentLanguageID() ?>"<?php echo $user_add->user_photo->editAttributes() ?><?php if ($user_add->user_photo->ReadOnly || $user_add->user_photo->Disabled) echo " disabled"; ?>>
+		<label class="custom-file-label ew-file-label" for="x_user_photo"><?php echo $Language->phrase("ChooseFile") ?></label>
+	</div>
+</div>
+<input type="hidden" name="fn_x_user_photo" id= "fn_x_user_photo" value="<?php echo $user_add->user_photo->Upload->FileName ?>">
+<input type="hidden" name="fa_x_user_photo" id= "fa_x_user_photo" value="0">
+<input type="hidden" name="fs_x_user_photo" id= "fs_x_user_photo" value="500">
+<input type="hidden" name="fx_x_user_photo" id= "fx_x_user_photo" value="<?php echo $user_add->user_photo->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_user_photo" id= "fm_x_user_photo" value="<?php echo $user_add->user_photo->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_user_photo" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
 <?php echo $user_add->user_photo->CustomMsg ?></div></div>
 	</div>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class organization_edit extends organization
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'organization';
@@ -540,6 +540,8 @@ class organization_edit extends organization
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class organization_edit extends organization
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("organizationlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -663,8 +677,9 @@ class organization_edit extends organization
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->org_city_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -768,6 +783,9 @@ class organization_edit extends organization
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
+		$this->org_logo->Upload->Index = $CurrentForm->Index;
+		$this->org_logo->Upload->uploadFile();
+		$this->org_logo->CurrentValue = $this->org_logo->Upload->FileName;
 	}
 
 	// Load form values
@@ -776,6 +794,7 @@ class organization_edit extends organization
 
 		// Load from form
 		global $CurrentForm;
+		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'org_id' first before field var 'x_org_id'
 		$val = $CurrentForm->hasValue("org_id") ? $CurrentForm->getValue("org_id") : $CurrentForm->getValue("x_org_id");
@@ -827,15 +846,6 @@ class organization_edit extends organization
 				$this->org_contact_no->setFormValue($val);
 		}
 
-		// Check field name 'org_logo' first before field var 'x_org_logo'
-		$val = $CurrentForm->hasValue("org_logo") ? $CurrentForm->getValue("org_logo") : $CurrentForm->getValue("x_org_logo");
-		if (!$this->org_logo->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->org_logo->Visible = FALSE; // Disable update for API request
-			else
-				$this->org_logo->setFormValue($val);
-		}
-
 		// Check field name 'org_bank_acc' first before field var 'x_org_bank_acc'
 		$val = $CurrentForm->hasValue("org_bank_acc") ? $CurrentForm->getValue("org_bank_acc") : $CurrentForm->getValue("x_org_bank_acc");
 		if (!$this->org_bank_acc->IsDetailKey) {
@@ -883,7 +893,6 @@ class organization_edit extends organization
 		$this->org_head_office->CurrentValue = $this->org_head_office->FormValue;
 		$this->org_owner->CurrentValue = $this->org_owner->FormValue;
 		$this->org_contact_no->CurrentValue = $this->org_contact_no->FormValue;
-		$this->org_logo->CurrentValue = $this->org_logo->FormValue;
 		$this->org_bank_acc->CurrentValue = $this->org_bank_acc->FormValue;
 		$this->org_ntn->CurrentValue = $this->org_ntn->FormValue;
 		$this->org_email->CurrentValue = $this->org_email->FormValue;
@@ -927,11 +936,17 @@ class organization_edit extends organization
 			return;
 		$this->org_id->setDbValue($row['org_id']);
 		$this->org_city_id->setDbValue($row['org_city_id']);
+		if (array_key_exists('EV__org_city_id', $rs->fields)) {
+			$this->org_city_id->VirtualValue = $rs->fields('EV__org_city_id'); // Set up virtual field value
+		} else {
+			$this->org_city_id->VirtualValue = ""; // Clear value
+		}
 		$this->org_name->setDbValue($row['org_name']);
 		$this->org_head_office->setDbValue($row['org_head_office']);
 		$this->org_owner->setDbValue($row['org_owner']);
 		$this->org_contact_no->setDbValue($row['org_contact_no']);
-		$this->org_logo->setDbValue($row['org_logo']);
+		$this->org_logo->Upload->DbValue = $row['org_logo'];
+		$this->org_logo->setDbValue($this->org_logo->Upload->DbValue);
 		$this->org_bank_acc->setDbValue($row['org_bank_acc']);
 		$this->org_ntn->setDbValue($row['org_ntn']);
 		$this->org_email->setDbValue($row['org_email']);
@@ -1006,11 +1021,33 @@ class organization_edit extends organization
 
 			// org_id
 			$this->org_id->ViewValue = $this->org_id->CurrentValue;
+			$this->org_id->CssClass = "font-weight-bold";
 			$this->org_id->ViewCustomAttributes = "";
 
 			// org_city_id
-			$this->org_city_id->ViewValue = $this->org_city_id->CurrentValue;
-			$this->org_city_id->ViewValue = FormatNumber($this->org_city_id->ViewValue, 0, -2, -2, -2);
+			if ($this->org_city_id->VirtualValue != "") {
+				$this->org_city_id->ViewValue = $this->org_city_id->VirtualValue;
+			} else {
+				$curVal = strval($this->org_city_id->CurrentValue);
+				if ($curVal != "") {
+					$this->org_city_id->ViewValue = $this->org_city_id->lookupCacheOption($curVal);
+					if ($this->org_city_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->org_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->org_city_id->ViewValue = $this->org_city_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->org_city_id->ViewValue = $this->org_city_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->org_city_id->ViewValue = NULL;
+				}
+			}
 			$this->org_city_id->ViewCustomAttributes = "";
 
 			// org_name
@@ -1030,7 +1067,14 @@ class organization_edit extends organization
 			$this->org_contact_no->ViewCustomAttributes = "";
 
 			// org_logo
-			$this->org_logo->ViewValue = $this->org_logo->CurrentValue;
+			if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+				$this->org_logo->ImageWidth = 200;
+				$this->org_logo->ImageHeight = 0;
+				$this->org_logo->ImageAlt = $this->org_logo->alt();
+				$this->org_logo->ViewValue = $this->org_logo->Upload->DbValue;
+			} else {
+				$this->org_logo->ViewValue = "";
+			}
 			$this->org_logo->ViewCustomAttributes = "";
 
 			// org_bank_acc
@@ -1081,8 +1125,22 @@ class organization_edit extends organization
 
 			// org_logo
 			$this->org_logo->LinkCustomAttributes = "";
-			$this->org_logo->HrefValue = "";
+			if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+				$this->org_logo->HrefValue = GetFileUploadUrl($this->org_logo, $this->org_logo->htmlDecode($this->org_logo->Upload->DbValue)); // Add prefix/suffix
+				$this->org_logo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->org_logo->HrefValue = FullUrl($this->org_logo->HrefValue, "href");
+			} else {
+				$this->org_logo->HrefValue = "";
+			}
+			$this->org_logo->ExportHrefValue = $this->org_logo->UploadPath . $this->org_logo->Upload->DbValue;
 			$this->org_logo->TooltipValue = "";
+			if ($this->org_logo->UseColorbox) {
+				if (EmptyValue($this->org_logo->TooltipValue))
+					$this->org_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->org_logo->LinkAttrs["data-rel"] = "organization_x_org_logo";
+				$this->org_logo->LinkAttrs->appendClass("ew-lightbox");
+			}
 
 			// org_bank_acc
 			$this->org_bank_acc->LinkCustomAttributes = "";
@@ -1109,13 +1167,40 @@ class organization_edit extends organization
 			$this->org_id->EditAttrs["class"] = "form-control";
 			$this->org_id->EditCustomAttributes = "";
 			$this->org_id->EditValue = $this->org_id->CurrentValue;
+			$this->org_id->CssClass = "font-weight-bold";
 			$this->org_id->ViewCustomAttributes = "";
 
 			// org_city_id
-			$this->org_city_id->EditAttrs["class"] = "form-control";
 			$this->org_city_id->EditCustomAttributes = "";
-			$this->org_city_id->EditValue = HtmlEncode($this->org_city_id->CurrentValue);
-			$this->org_city_id->PlaceHolder = RemoveHtml($this->org_city_id->caption());
+			$curVal = trim(strval($this->org_city_id->CurrentValue));
+			if ($curVal != "")
+				$this->org_city_id->ViewValue = $this->org_city_id->lookupCacheOption($curVal);
+			else
+				$this->org_city_id->ViewValue = $this->org_city_id->Lookup !== NULL && is_array($this->org_city_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->org_city_id->ViewValue !== NULL) { // Load from cache
+				$this->org_city_id->EditValue = array_values($this->org_city_id->Lookup->Options);
+				if ($this->org_city_id->ViewValue == "")
+					$this->org_city_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`city_id`" . SearchString("=", $this->org_city_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->org_city_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->org_city_id->ViewValue = $this->org_city_id->displayValue($arwrk);
+				} else {
+					$this->org_city_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->org_city_id->EditValue = $arwrk;
+			}
 
 			// org_name
 			$this->org_name->EditAttrs["class"] = "form-control";
@@ -1152,10 +1237,18 @@ class organization_edit extends organization
 			// org_logo
 			$this->org_logo->EditAttrs["class"] = "form-control";
 			$this->org_logo->EditCustomAttributes = "";
-			if (!$this->org_logo->Raw)
-				$this->org_logo->CurrentValue = HtmlDecode($this->org_logo->CurrentValue);
-			$this->org_logo->EditValue = HtmlEncode($this->org_logo->CurrentValue);
-			$this->org_logo->PlaceHolder = RemoveHtml($this->org_logo->caption());
+			if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+				$this->org_logo->ImageWidth = 200;
+				$this->org_logo->ImageHeight = 0;
+				$this->org_logo->ImageAlt = $this->org_logo->alt();
+				$this->org_logo->EditValue = $this->org_logo->Upload->DbValue;
+			} else {
+				$this->org_logo->EditValue = "";
+			}
+			if (!EmptyValue($this->org_logo->CurrentValue))
+					$this->org_logo->Upload->FileName = $this->org_logo->CurrentValue;
+			if ($this->isShow())
+				RenderUploadField($this->org_logo);
 
 			// org_bank_acc
 			$this->org_bank_acc->EditAttrs["class"] = "form-control";
@@ -1217,7 +1310,15 @@ class organization_edit extends organization
 
 			// org_logo
 			$this->org_logo->LinkCustomAttributes = "";
-			$this->org_logo->HrefValue = "";
+			if (!EmptyValue($this->org_logo->Upload->DbValue)) {
+				$this->org_logo->HrefValue = GetFileUploadUrl($this->org_logo, $this->org_logo->htmlDecode($this->org_logo->Upload->DbValue)); // Add prefix/suffix
+				$this->org_logo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->org_logo->HrefValue = FullUrl($this->org_logo->HrefValue, "href");
+			} else {
+				$this->org_logo->HrefValue = "";
+			}
+			$this->org_logo->ExportHrefValue = $this->org_logo->UploadPath . $this->org_logo->Upload->DbValue;
 
 			// org_bank_acc
 			$this->org_bank_acc->LinkCustomAttributes = "";
@@ -1264,9 +1365,6 @@ class organization_edit extends organization
 				AddMessage($FormError, str_replace("%s", $this->org_city_id->caption(), $this->org_city_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->org_city_id->FormValue)) {
-			AddMessage($FormError, $this->org_city_id->errorMessage());
-		}
 		if ($this->org_name->Required) {
 			if (!$this->org_name->IsDetailKey && $this->org_name->FormValue != NULL && $this->org_name->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->org_name->caption(), $this->org_name->RequiredErrorMessage));
@@ -1288,7 +1386,7 @@ class organization_edit extends organization
 			}
 		}
 		if ($this->org_logo->Required) {
-			if (!$this->org_logo->IsDetailKey && $this->org_logo->FormValue != NULL && $this->org_logo->FormValue == "") {
+			if ($this->org_logo->Upload->FileName == "" && !$this->org_logo->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->org_logo->caption(), $this->org_logo->RequiredErrorMessage));
 			}
 		}
@@ -1365,7 +1463,16 @@ class organization_edit extends organization
 			$this->org_contact_no->setDbValueDef($rsnew, $this->org_contact_no->CurrentValue, "", $this->org_contact_no->ReadOnly);
 
 			// org_logo
-			$this->org_logo->setDbValueDef($rsnew, $this->org_logo->CurrentValue, "", $this->org_logo->ReadOnly);
+			if ($this->org_logo->Visible && !$this->org_logo->ReadOnly && !$this->org_logo->Upload->KeepFile) {
+				$this->org_logo->Upload->DbValue = $rsold['org_logo']; // Get original value
+				if ($this->org_logo->Upload->FileName == "") {
+					$rsnew['org_logo'] = NULL;
+				} else {
+					$rsnew['org_logo'] = $this->org_logo->Upload->FileName;
+				}
+				$this->org_logo->ImageWidth = 1000; // Resize width
+				$this->org_logo->ImageHeight = 0; // Resize height
+			}
 
 			// org_bank_acc
 			$this->org_bank_acc->setDbValueDef($rsnew, $this->org_bank_acc->CurrentValue, "", $this->org_bank_acc->ReadOnly);
@@ -1378,6 +1485,45 @@ class organization_edit extends organization
 
 			// org_website
 			$this->org_website->setDbValueDef($rsnew, $this->org_website->CurrentValue, "", $this->org_website->ReadOnly);
+			if ($this->org_logo->Visible && !$this->org_logo->Upload->KeepFile) {
+				$oldFiles = EmptyValue($this->org_logo->Upload->DbValue) ? [] : [$this->org_logo->htmlDecode($this->org_logo->Upload->DbValue)];
+				if (!EmptyValue($this->org_logo->Upload->FileName)) {
+					$newFiles = [$this->org_logo->Upload->FileName];
+					$NewFileCount = count($newFiles);
+					for ($i = 0; $i < $NewFileCount; $i++) {
+						if ($newFiles[$i] != "") {
+							$file = $newFiles[$i];
+							$tempPath = UploadTempPath($this->org_logo, $this->org_logo->Upload->Index);
+							if (file_exists($tempPath . $file)) {
+								if (Config("DELETE_UPLOADED_FILES")) {
+									$oldFileFound = FALSE;
+									$oldFileCount = count($oldFiles);
+									for ($j = 0; $j < $oldFileCount; $j++) {
+										$oldFile = $oldFiles[$j];
+										if ($oldFile == $file) { // Old file found, no need to delete anymore
+											unset($oldFiles[$j]);
+											$oldFileFound = TRUE;
+											break;
+										}
+									}
+									if ($oldFileFound) // No need to check if file exists further
+										continue;
+								}
+								$file1 = UniqueFilename($this->org_logo->physicalUploadPath(), $file); // Get new file name
+								if ($file1 != $file) { // Rename temp file
+									while (file_exists($tempPath . $file1) || file_exists($this->org_logo->physicalUploadPath() . $file1)) // Make sure no file name clash
+										$file1 = UniqueFilename($this->org_logo->physicalUploadPath(), $file1, TRUE); // Use indexed name
+									rename($tempPath . $file, $tempPath . $file1);
+									$newFiles[$i] = $file1;
+								}
+							}
+						}
+					}
+					$this->org_logo->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
+					$this->org_logo->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
+					$this->org_logo->setDbValueDef($rsnew, $this->org_logo->Upload->FileName, "", $this->org_logo->ReadOnly);
+				}
+			}
 
 			// Call Row Updating event
 			$updateRow = $this->Row_Updating($rsold, $rsnew);
@@ -1403,6 +1549,35 @@ class organization_edit extends organization
 					$editRow = TRUE; // No field to update
 				$conn->raiseErrorFn = "";
 				if ($editRow) {
+					if ($this->org_logo->Visible && !$this->org_logo->Upload->KeepFile) {
+						$oldFiles = EmptyValue($this->org_logo->Upload->DbValue) ? [] : [$this->org_logo->htmlDecode($this->org_logo->Upload->DbValue)];
+						if (!EmptyValue($this->org_logo->Upload->FileName)) {
+							$newFiles = [$this->org_logo->Upload->FileName];
+							$newFiles2 = [$this->org_logo->htmlDecode($rsnew['org_logo'])];
+							$newFileCount = count($newFiles);
+							for ($i = 0; $i < $newFileCount; $i++) {
+								if ($newFiles[$i] != "") {
+									$file = UploadTempPath($this->org_logo, $this->org_logo->Upload->Index) . $newFiles[$i];
+									if (file_exists($file)) {
+										if (@$newFiles2[$i] != "") // Use correct file name
+											$newFiles[$i] = $newFiles2[$i];
+										if (!$this->org_logo->Upload->ResizeAndSaveToFile($this->org_logo->ImageWidth, $this->org_logo->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
+											$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
+											return FALSE;
+										}
+									}
+								}
+							}
+						} else {
+							$newFiles = [];
+						}
+						if (Config("DELETE_UPLOADED_FILES")) {
+							foreach ($oldFiles as $oldFile) {
+								if ($oldFile != "" && !in_array($oldFile, $newFiles))
+									@unlink($this->org_logo->oldPhysicalUploadPath() . $oldFile);
+							}
+						}
+					}
 				}
 			} else {
 				if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1425,6 +1600,12 @@ class organization_edit extends organization
 
 		// Clean upload path if any
 		if ($editRow) {
+
+			// org_logo
+			if ($this->org_logo->Upload->FileToken != "")
+				CleanUploadTempPath($this->org_logo->Upload->FileToken, $this->org_logo->Upload->Index);
+			else
+				CleanUploadTempPath($this->org_logo, $this->org_logo->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1460,6 +1641,8 @@ class organization_edit extends organization
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_org_city_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1480,6 +1663,8 @@ class organization_edit extends organization
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_org_city_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

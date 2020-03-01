@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $organization_view = new organization_view();
 $organization_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -135,7 +136,7 @@ $organization_view->showMessage();
 		<td class="<?php echo $organization_view->TableLeftColumnClass ?>"><span id="elh_organization_org_logo"><?php echo $organization_view->org_logo->caption() ?></span></td>
 		<td data-name="org_logo" <?php echo $organization_view->org_logo->cellAttributes() ?>>
 <span id="el_organization_org_logo">
-<span<?php echo $organization_view->org_logo->viewAttributes() ?>><?php echo $organization_view->org_logo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($organization_view->org_logo, $organization_view->org_logo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

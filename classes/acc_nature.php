@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -78,7 +78,7 @@ class acc_nature extends DbTable
 		$this->fields['acc_nature_name'] = &$this->acc_nature_name;
 
 		// acc_nature_desc
-		$this->acc_nature_desc = new DbField('acc_nature', 'acc_nature', 'x_acc_nature_desc', 'acc_nature_desc', '`acc_nature_desc`', '`acc_nature_desc`', 201, 65535, -1, FALSE, '`acc_nature_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->acc_nature_desc = new DbField('acc_nature', 'acc_nature', 'x_acc_nature_desc', 'acc_nature_desc', '`acc_nature_desc`', '`acc_nature_desc`', 200, 100, -1, FALSE, '`acc_nature_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->acc_nature_desc->Nullable = FALSE; // NOT NULL field
 		$this->acc_nature_desc->Required = TRUE; // Required field
 		$this->acc_nature_desc->Sortable = TRUE; // Allow sort
@@ -689,6 +689,7 @@ class acc_nature extends DbTable
 		// acc_nature_id
 
 		$this->acc_nature_id->ViewValue = $this->acc_nature_id->CurrentValue;
+		$this->acc_nature_id->CssClass = "font-weight-bold";
 		$this->acc_nature_id->ViewCustomAttributes = "";
 
 		// acc_nature_name
@@ -733,6 +734,7 @@ class acc_nature extends DbTable
 		$this->acc_nature_id->EditAttrs["class"] = "form-control";
 		$this->acc_nature_id->EditCustomAttributes = "";
 		$this->acc_nature_id->EditValue = $this->acc_nature_id->CurrentValue;
+		$this->acc_nature_id->CssClass = "font-weight-bold";
 		$this->acc_nature_id->ViewCustomAttributes = "";
 
 		// acc_nature_name

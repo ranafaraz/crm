@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $invoices_edit = new invoices_edit();
 $invoices_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,25 +66,16 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $invoices_edit->invoice_branch_id->caption(), $invoices_edit->invoice_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_invoice_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($invoices_edit->invoice_branch_id->errorMessage()) ?>");
 			<?php if ($invoices_edit->invoice_business_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_invoice_business_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $invoices_edit->invoice_business_id->caption(), $invoices_edit->invoice_business_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_invoice_business_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($invoices_edit->invoice_business_id->errorMessage()) ?>");
 			<?php if ($invoices_edit->invoice_service_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_invoice_service_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $invoices_edit->invoice_service_id->caption(), $invoices_edit->invoice_service_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_invoice_service_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($invoices_edit->invoice_service_id->errorMessage()) ?>");
 			<?php if ($invoices_edit->invoice_amount->Required) { ?>
 				elm = this.getElements("x" + infix + "_invoice_amount");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -175,6 +167,12 @@ loadjs.ready("head", function() {
 	finvoicesedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	finvoicesedit.lists["x_invoice_branch_id"] = <?php echo $invoices_edit->invoice_branch_id->Lookup->toClientList($invoices_edit) ?>;
+	finvoicesedit.lists["x_invoice_branch_id"].options = <?php echo JsonEncode($invoices_edit->invoice_branch_id->lookupOptions()) ?>;
+	finvoicesedit.lists["x_invoice_business_id"] = <?php echo $invoices_edit->invoice_business_id->Lookup->toClientList($invoices_edit) ?>;
+	finvoicesedit.lists["x_invoice_business_id"].options = <?php echo JsonEncode($invoices_edit->invoice_business_id->lookupOptions()) ?>;
+	finvoicesedit.lists["x_invoice_service_id"] = <?php echo $invoices_edit->invoice_service_id->Lookup->toClientList($invoices_edit) ?>;
+	finvoicesedit.lists["x_invoice_service_id"].options = <?php echo JsonEncode($invoices_edit->invoice_service_id->lookupOptions()) ?>;
 	finvoicesedit.lists["x_invoice_status"] = <?php echo $invoices_edit->invoice_status->Lookup->toClientList($invoices_edit) ?>;
 	finvoicesedit.lists["x_invoice_status"].options = <?php echo JsonEncode($invoices_edit->invoice_status->options(FALSE, TRUE)) ?>;
 	loadjs.done("finvoicesedit");
@@ -216,7 +214,23 @@ $invoices_edit->showMessage();
 		<label id="elh_invoices_invoice_branch_id" for="x_invoice_branch_id" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_branch_id->caption() ?><?php echo $invoices_edit->invoice_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $invoices_edit->RightColumnClass ?>"><div <?php echo $invoices_edit->invoice_branch_id->cellAttributes() ?>>
 <span id="el_invoices_invoice_branch_id">
-<input type="text" data-table="invoices" data-field="x_invoice_branch_id" name="x_invoice_branch_id" id="x_invoice_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_branch_id->getPlaceHolder()) ?>" value="<?php echo $invoices_edit->invoice_branch_id->EditValue ?>"<?php echo $invoices_edit->invoice_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($invoices_edit->invoice_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $invoices_edit->invoice_branch_id->ViewValue ?></button>
+		<div id="dsl_x_invoice_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $invoices_edit->invoice_branch_id->radioButtonListHtml(TRUE, "x_invoice_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_invoice_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="invoices" data-field="x_invoice_branch_id" data-value-separator="<?php echo $invoices_edit->invoice_branch_id->displayValueSeparatorAttribute() ?>" name="x_invoice_branch_id" id="x_invoice_branch_id" value="{value}"<?php echo $invoices_edit->invoice_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$invoices_edit->invoice_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $invoices_edit->invoice_branch_id->Lookup->getParamTag($invoices_edit, "p_x_invoice_branch_id") ?>
 </span>
 <?php echo $invoices_edit->invoice_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -226,7 +240,15 @@ $invoices_edit->showMessage();
 		<label id="elh_invoices_invoice_business_id" for="x_invoice_business_id" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_business_id->caption() ?><?php echo $invoices_edit->invoice_business_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $invoices_edit->RightColumnClass ?>"><div <?php echo $invoices_edit->invoice_business_id->cellAttributes() ?>>
 <span id="el_invoices_invoice_business_id">
-<input type="text" data-table="invoices" data-field="x_invoice_business_id" name="x_invoice_business_id" id="x_invoice_business_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_business_id->getPlaceHolder()) ?>" value="<?php echo $invoices_edit->invoice_business_id->EditValue ?>"<?php echo $invoices_edit->invoice_business_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_invoice_business_id"><?php echo EmptyValue(strval($invoices_edit->invoice_business_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $invoices_edit->invoice_business_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($invoices_edit->invoice_business_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($invoices_edit->invoice_business_id->ReadOnly || $invoices_edit->invoice_business_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_invoice_business_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_invoice_business_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $invoices_edit->invoice_business_id->caption() ?>" data-title="<?php echo $invoices_edit->invoice_business_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_invoice_business_id',url:'businessaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $invoices_edit->invoice_business_id->Lookup->getParamTag($invoices_edit, "p_x_invoice_business_id") ?>
+<input type="hidden" data-table="invoices" data-field="x_invoice_business_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $invoices_edit->invoice_business_id->displayValueSeparatorAttribute() ?>" name="x_invoice_business_id" id="x_invoice_business_id" value="<?php echo $invoices_edit->invoice_business_id->CurrentValue ?>"<?php echo $invoices_edit->invoice_business_id->editAttributes() ?>>
 </span>
 <?php echo $invoices_edit->invoice_business_id->CustomMsg ?></div></div>
 	</div>
@@ -236,7 +258,15 @@ $invoices_edit->showMessage();
 		<label id="elh_invoices_invoice_service_id" for="x_invoice_service_id" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_service_id->caption() ?><?php echo $invoices_edit->invoice_service_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $invoices_edit->RightColumnClass ?>"><div <?php echo $invoices_edit->invoice_service_id->cellAttributes() ?>>
 <span id="el_invoices_invoice_service_id">
-<input type="text" data-table="invoices" data-field="x_invoice_service_id" name="x_invoice_service_id" id="x_invoice_service_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_service_id->getPlaceHolder()) ?>" value="<?php echo $invoices_edit->invoice_service_id->EditValue ?>"<?php echo $invoices_edit->invoice_service_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_invoice_service_id"><?php echo EmptyValue(strval($invoices_edit->invoice_service_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $invoices_edit->invoice_service_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($invoices_edit->invoice_service_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($invoices_edit->invoice_service_id->ReadOnly || $invoices_edit->invoice_service_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_invoice_service_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+		<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_invoice_service_id" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $invoices_edit->invoice_service_id->caption() ?>" data-title="<?php echo $invoices_edit->invoice_service_id->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_invoice_service_id',url:'servicesaddopt.php'});"><i class="fas fa-plus ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $invoices_edit->invoice_service_id->Lookup->getParamTag($invoices_edit, "p_x_invoice_service_id") ?>
+<input type="hidden" data-table="invoices" data-field="x_invoice_service_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $invoices_edit->invoice_service_id->displayValueSeparatorAttribute() ?>" name="x_invoice_service_id" id="x_invoice_service_id" value="<?php echo $invoices_edit->invoice_service_id->CurrentValue ?>"<?php echo $invoices_edit->invoice_service_id->editAttributes() ?>>
 </span>
 <?php echo $invoices_edit->invoice_service_id->CustomMsg ?></div></div>
 	</div>
@@ -323,11 +353,11 @@ loadjs.ready(["finvoicesedit", "datetimepicker"], function() {
 		<label id="elh_invoices_invoice_collection_date" for="x_invoice_collection_date" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_collection_date->caption() ?><?php echo $invoices_edit->invoice_collection_date->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $invoices_edit->RightColumnClass ?>"><div <?php echo $invoices_edit->invoice_collection_date->cellAttributes() ?>>
 <span id="el_invoices_invoice_collection_date">
-<input type="text" data-table="invoices" data-field="x_invoice_collection_date" name="x_invoice_collection_date" id="x_invoice_collection_date" maxlength="10" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_collection_date->getPlaceHolder()) ?>" value="<?php echo $invoices_edit->invoice_collection_date->EditValue ?>"<?php echo $invoices_edit->invoice_collection_date->editAttributes() ?>>
+<input type="text" data-table="invoices" data-field="x_invoice_collection_date" data-format="2" name="x_invoice_collection_date" id="x_invoice_collection_date" maxlength="10" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_collection_date->getPlaceHolder()) ?>" value="<?php echo $invoices_edit->invoice_collection_date->EditValue ?>"<?php echo $invoices_edit->invoice_collection_date->editAttributes() ?>>
 <?php if (!$invoices_edit->invoice_collection_date->ReadOnly && !$invoices_edit->invoice_collection_date->Disabled && !isset($invoices_edit->invoice_collection_date->EditAttrs["readonly"]) && !isset($invoices_edit->invoice_collection_date->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["finvoicesedit", "datetimepicker"], function() {
-	ew.createDateTimePicker("finvoicesedit", "x_invoice_collection_date", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+	ew.createDateTimePicker("finvoicesedit", "x_invoice_collection_date", {"ignoreReadonly":true,"useCurrent":false,"format":2});
 });
 </script>
 <?php } ?>
@@ -337,20 +367,32 @@ loadjs.ready(["finvoicesedit", "datetimepicker"], function() {
 <?php } ?>
 <?php if ($invoices_edit->invoice_content->Visible) { // invoice_content ?>
 	<div id="r_invoice_content" class="form-group row">
-		<label id="elh_invoices_invoice_content" for="x_invoice_content" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_content->caption() ?><?php echo $invoices_edit->invoice_content->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_invoices_invoice_content" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_content->caption() ?><?php echo $invoices_edit->invoice_content->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $invoices_edit->RightColumnClass ?>"><div <?php echo $invoices_edit->invoice_content->cellAttributes() ?>>
 <span id="el_invoices_invoice_content">
+<?php $invoices_edit->invoice_content->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="invoices" data-field="x_invoice_content" name="x_invoice_content" id="x_invoice_content" cols="35" rows="4" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_content->getPlaceHolder()) ?>"<?php echo $invoices_edit->invoice_content->editAttributes() ?>><?php echo $invoices_edit->invoice_content->EditValue ?></textarea>
+<script>
+loadjs.ready(["finvoicesedit", "editor"], function() {
+	ew.createEditor("finvoicesedit", "x_invoice_content", 35, 4, <?php echo $invoices_edit->invoice_content->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $invoices_edit->invoice_content->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($invoices_edit->invoice_comments->Visible) { // invoice_comments ?>
 	<div id="r_invoice_comments" class="form-group row">
-		<label id="elh_invoices_invoice_comments" for="x_invoice_comments" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_comments->caption() ?><?php echo $invoices_edit->invoice_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_invoices_invoice_comments" class="<?php echo $invoices_edit->LeftColumnClass ?>"><?php echo $invoices_edit->invoice_comments->caption() ?><?php echo $invoices_edit->invoice_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $invoices_edit->RightColumnClass ?>"><div <?php echo $invoices_edit->invoice_comments->cellAttributes() ?>>
 <span id="el_invoices_invoice_comments">
+<?php $invoices_edit->invoice_comments->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="invoices" data-field="x_invoice_comments" name="x_invoice_comments" id="x_invoice_comments" cols="35" rows="4" placeholder="<?php echo HtmlEncode($invoices_edit->invoice_comments->getPlaceHolder()) ?>"<?php echo $invoices_edit->invoice_comments->editAttributes() ?>><?php echo $invoices_edit->invoice_comments->EditValue ?></textarea>
+<script>
+loadjs.ready(["finvoicesedit", "editor"], function() {
+	ew.createEditor("finvoicesedit", "x_invoice_comments", 35, 4, <?php echo $invoices_edit->invoice_comments->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $invoices_edit->invoice_comments->CustomMsg ?></div></div>
 	</div>

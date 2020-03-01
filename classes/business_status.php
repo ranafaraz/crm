@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -27,6 +27,7 @@ class business_status extends DbTable
 	// Fields
 	public $business_status_id;
 	public $business_status_caption;
+	public $b_status_desc;
 
 	// Constructor
 	public function __construct()
@@ -75,6 +76,13 @@ class business_status extends DbTable
 		$this->business_status_caption->Required = TRUE; // Required field
 		$this->business_status_caption->Sortable = TRUE; // Allow sort
 		$this->fields['business_status_caption'] = &$this->business_status_caption;
+
+		// b_status_desc
+		$this->b_status_desc = new DbField('business_status', 'business_status', 'x_b_status_desc', 'b_status_desc', '`b_status_desc`', '`b_status_desc`', 200, 100, -1, FALSE, '`b_status_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->b_status_desc->Nullable = FALSE; // NOT NULL field
+		$this->b_status_desc->Required = TRUE; // Required field
+		$this->b_status_desc->Sortable = TRUE; // Allow sort
+		$this->fields['b_status_desc'] = &$this->b_status_desc;
 	}
 
 	// Field Visibility
@@ -430,6 +438,7 @@ class business_status extends DbTable
 		$row = is_array($rs) ? $rs : $rs->fields;
 		$this->business_status_id->DbValue = $row['business_status_id'];
 		$this->business_status_caption->DbValue = $row['business_status_caption'];
+		$this->b_status_desc->DbValue = $row['b_status_desc'];
 	}
 
 	// Delete uploaded files
@@ -662,6 +671,7 @@ class business_status extends DbTable
 	{
 		$this->business_status_id->setDbValue($rs->fields('business_status_id'));
 		$this->business_status_caption->setDbValue($rs->fields('business_status_caption'));
+		$this->b_status_desc->setDbValue($rs->fields('b_status_desc'));
 	}
 
 	// Render list row values
@@ -675,14 +685,20 @@ class business_status extends DbTable
 		// Common render codes
 		// business_status_id
 		// business_status_caption
+		// b_status_desc
 		// business_status_id
 
 		$this->business_status_id->ViewValue = $this->business_status_id->CurrentValue;
+		$this->business_status_id->CssClass = "font-weight-bold";
 		$this->business_status_id->ViewCustomAttributes = "";
 
 		// business_status_caption
 		$this->business_status_caption->ViewValue = $this->business_status_caption->CurrentValue;
 		$this->business_status_caption->ViewCustomAttributes = "";
+
+		// b_status_desc
+		$this->b_status_desc->ViewValue = $this->b_status_desc->CurrentValue;
+		$this->b_status_desc->ViewCustomAttributes = "";
 
 		// business_status_id
 		$this->business_status_id->LinkCustomAttributes = "";
@@ -693,6 +709,11 @@ class business_status extends DbTable
 		$this->business_status_caption->LinkCustomAttributes = "";
 		$this->business_status_caption->HrefValue = "";
 		$this->business_status_caption->TooltipValue = "";
+
+		// b_status_desc
+		$this->b_status_desc->LinkCustomAttributes = "";
+		$this->b_status_desc->HrefValue = "";
+		$this->b_status_desc->TooltipValue = "";
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -713,6 +734,7 @@ class business_status extends DbTable
 		$this->business_status_id->EditAttrs["class"] = "form-control";
 		$this->business_status_id->EditCustomAttributes = "";
 		$this->business_status_id->EditValue = $this->business_status_id->CurrentValue;
+		$this->business_status_id->CssClass = "font-weight-bold";
 		$this->business_status_id->ViewCustomAttributes = "";
 
 		// business_status_caption
@@ -722,6 +744,12 @@ class business_status extends DbTable
 			$this->business_status_caption->CurrentValue = HtmlDecode($this->business_status_caption->CurrentValue);
 		$this->business_status_caption->EditValue = $this->business_status_caption->CurrentValue;
 		$this->business_status_caption->PlaceHolder = RemoveHtml($this->business_status_caption->caption());
+
+		// b_status_desc
+		$this->b_status_desc->EditAttrs["class"] = "form-control";
+		$this->b_status_desc->EditCustomAttributes = "";
+		$this->b_status_desc->EditValue = $this->b_status_desc->CurrentValue;
+		$this->b_status_desc->PlaceHolder = RemoveHtml($this->b_status_desc->caption());
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -754,9 +782,11 @@ class business_status extends DbTable
 				if ($exportPageType == "view") {
 					$doc->exportCaption($this->business_status_id);
 					$doc->exportCaption($this->business_status_caption);
+					$doc->exportCaption($this->b_status_desc);
 				} else {
 					$doc->exportCaption($this->business_status_id);
 					$doc->exportCaption($this->business_status_caption);
+					$doc->exportCaption($this->b_status_desc);
 				}
 				$doc->endExportRow();
 			}
@@ -790,9 +820,11 @@ class business_status extends DbTable
 					if ($exportPageType == "view") {
 						$doc->exportField($this->business_status_id);
 						$doc->exportField($this->business_status_caption);
+						$doc->exportField($this->b_status_desc);
 					} else {
 						$doc->exportField($this->business_status_id);
 						$doc->exportField($this->business_status_caption);
+						$doc->exportField($this->b_status_desc);
 					}
 					$doc->endExportRow($rowCnt);
 				}

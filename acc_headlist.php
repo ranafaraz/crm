@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $acc_head_list = new acc_head_list();
 $acc_head_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $acc_head_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$acc_head_list->isExport() && !$acc_head->CurrentAction) { ?>
 <form name="facc_headlistsrch" id="facc_headlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="facc_headlistsrch-search-panel" class="<?php echo $acc_head_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $acc_head_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $acc_head_list->showPageHeader(); ?>
 <?php
 $acc_head_list->showMessage();
 ?>
 <?php if ($acc_head_list->TotalRecords > 0 || $acc_head->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($acc_head_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> acc_head">
+<?php if (!$acc_head_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$acc_head_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $acc_head_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $acc_head_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="facc_headlist" id="facc_headlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

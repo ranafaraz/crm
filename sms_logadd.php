@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $sms_log_add = new sms_log_add();
 $sms_log_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -60,17 +61,11 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $sms_log_add->sms_log_branch_id->caption(), $sms_log_add->sms_log_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_sms_log_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($sms_log_add->sms_log_branch_id->errorMessage()) ?>");
 			<?php if ($sms_log_add->sms_log_sms_api_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_sms_log_sms_api_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $sms_log_add->sms_log_sms_api_id->caption(), $sms_log_add->sms_log_sms_api_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_sms_log_sms_api_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($sms_log_add->sms_log_sms_api_id->errorMessage()) ?>");
 			<?php if ($sms_log_add->sms_log_message->Required) { ?>
 				elm = this.getElements("x" + infix + "_sms_log_message");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -117,6 +112,10 @@ loadjs.ready("head", function() {
 	fsms_logadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fsms_logadd.lists["x_sms_log_branch_id"] = <?php echo $sms_log_add->sms_log_branch_id->Lookup->toClientList($sms_log_add) ?>;
+	fsms_logadd.lists["x_sms_log_branch_id"].options = <?php echo JsonEncode($sms_log_add->sms_log_branch_id->lookupOptions()) ?>;
+	fsms_logadd.lists["x_sms_log_sms_api_id"] = <?php echo $sms_log_add->sms_log_sms_api_id->Lookup->toClientList($sms_log_add) ?>;
+	fsms_logadd.lists["x_sms_log_sms_api_id"].options = <?php echo JsonEncode($sms_log_add->sms_log_sms_api_id->lookupOptions()) ?>;
 	loadjs.done("fsms_logadd");
 });
 </script>
@@ -145,7 +144,23 @@ $sms_log_add->showMessage();
 		<label id="elh_sms_log_sms_log_branch_id" for="x_sms_log_branch_id" class="<?php echo $sms_log_add->LeftColumnClass ?>"><?php echo $sms_log_add->sms_log_branch_id->caption() ?><?php echo $sms_log_add->sms_log_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_log_add->RightColumnClass ?>"><div <?php echo $sms_log_add->sms_log_branch_id->cellAttributes() ?>>
 <span id="el_sms_log_sms_log_branch_id">
-<input type="text" data-table="sms_log" data-field="x_sms_log_branch_id" name="x_sms_log_branch_id" id="x_sms_log_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($sms_log_add->sms_log_branch_id->getPlaceHolder()) ?>" value="<?php echo $sms_log_add->sms_log_branch_id->EditValue ?>"<?php echo $sms_log_add->sms_log_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($sms_log_add->sms_log_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $sms_log_add->sms_log_branch_id->ViewValue ?></button>
+		<div id="dsl_x_sms_log_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $sms_log_add->sms_log_branch_id->radioButtonListHtml(TRUE, "x_sms_log_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_sms_log_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="sms_log" data-field="x_sms_log_branch_id" data-value-separator="<?php echo $sms_log_add->sms_log_branch_id->displayValueSeparatorAttribute() ?>" name="x_sms_log_branch_id" id="x_sms_log_branch_id" value="{value}"<?php echo $sms_log_add->sms_log_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$sms_log_add->sms_log_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $sms_log_add->sms_log_branch_id->Lookup->getParamTag($sms_log_add, "p_x_sms_log_branch_id") ?>
 </span>
 <?php echo $sms_log_add->sms_log_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -155,17 +170,30 @@ $sms_log_add->showMessage();
 		<label id="elh_sms_log_sms_log_sms_api_id" for="x_sms_log_sms_api_id" class="<?php echo $sms_log_add->LeftColumnClass ?>"><?php echo $sms_log_add->sms_log_sms_api_id->caption() ?><?php echo $sms_log_add->sms_log_sms_api_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_log_add->RightColumnClass ?>"><div <?php echo $sms_log_add->sms_log_sms_api_id->cellAttributes() ?>>
 <span id="el_sms_log_sms_log_sms_api_id">
-<input type="text" data-table="sms_log" data-field="x_sms_log_sms_api_id" name="x_sms_log_sms_api_id" id="x_sms_log_sms_api_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($sms_log_add->sms_log_sms_api_id->getPlaceHolder()) ?>" value="<?php echo $sms_log_add->sms_log_sms_api_id->EditValue ?>"<?php echo $sms_log_add->sms_log_sms_api_id->editAttributes() ?>>
+<div class="input-group ew-lookup-list">
+	<div class="form-control ew-lookup-text" tabindex="-1" id="lu_x_sms_log_sms_api_id"><?php echo EmptyValue(strval($sms_log_add->sms_log_sms_api_id->ViewValue)) ? $Language->phrase("PleaseSelect") : $sms_log_add->sms_log_sms_api_id->ViewValue ?></div>
+	<div class="input-group-append">
+		<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($sms_log_add->sms_log_sms_api_id->caption()), $Language->phrase("LookupLink", TRUE))) ?>" class="ew-lookup-btn btn btn-default"<?php echo ($sms_log_add->sms_log_sms_api_id->ReadOnly || $sms_log_add->sms_log_sms_api_id->Disabled) ? " disabled" : "" ?> onclick="ew.modalLookupShow({lnk:this,el:'x_sms_log_sms_api_id',m:0,n:10});"><i class="fas fa-search ew-icon"></i></button>
+	</div>
+</div>
+<?php echo $sms_log_add->sms_log_sms_api_id->Lookup->getParamTag($sms_log_add, "p_x_sms_log_sms_api_id") ?>
+<input type="hidden" data-table="sms_log" data-field="x_sms_log_sms_api_id" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $sms_log_add->sms_log_sms_api_id->displayValueSeparatorAttribute() ?>" name="x_sms_log_sms_api_id" id="x_sms_log_sms_api_id" value="<?php echo $sms_log_add->sms_log_sms_api_id->CurrentValue ?>"<?php echo $sms_log_add->sms_log_sms_api_id->editAttributes() ?>>
 </span>
 <?php echo $sms_log_add->sms_log_sms_api_id->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($sms_log_add->sms_log_message->Visible) { // sms_log_message ?>
 	<div id="r_sms_log_message" class="form-group row">
-		<label id="elh_sms_log_sms_log_message" for="x_sms_log_message" class="<?php echo $sms_log_add->LeftColumnClass ?>"><?php echo $sms_log_add->sms_log_message->caption() ?><?php echo $sms_log_add->sms_log_message->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_sms_log_sms_log_message" class="<?php echo $sms_log_add->LeftColumnClass ?>"><?php echo $sms_log_add->sms_log_message->caption() ?><?php echo $sms_log_add->sms_log_message->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_log_add->RightColumnClass ?>"><div <?php echo $sms_log_add->sms_log_message->cellAttributes() ?>>
 <span id="el_sms_log_sms_log_message">
+<?php $sms_log_add->sms_log_message->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="sms_log" data-field="x_sms_log_message" name="x_sms_log_message" id="x_sms_log_message" cols="35" rows="4" placeholder="<?php echo HtmlEncode($sms_log_add->sms_log_message->getPlaceHolder()) ?>"<?php echo $sms_log_add->sms_log_message->editAttributes() ?>><?php echo $sms_log_add->sms_log_message->EditValue ?></textarea>
+<script>
+loadjs.ready(["fsms_logadd", "editor"], function() {
+	ew.createEditor("fsms_logadd", "x_sms_log_message", 35, 4, <?php echo $sms_log_add->sms_log_message->ReadOnly || FALSE ? "true" : "false" ?>);
+});
+</script>
 </span>
 <?php echo $sms_log_add->sms_log_message->CustomMsg ?></div></div>
 	</div>
@@ -185,11 +213,11 @@ $sms_log_add->showMessage();
 		<label id="elh_sms_log_sms_log_date" for="x_sms_log_date" class="<?php echo $sms_log_add->LeftColumnClass ?>"><?php echo $sms_log_add->sms_log_date->caption() ?><?php echo $sms_log_add->sms_log_date->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_log_add->RightColumnClass ?>"><div <?php echo $sms_log_add->sms_log_date->cellAttributes() ?>>
 <span id="el_sms_log_sms_log_date">
-<input type="text" data-table="sms_log" data-field="x_sms_log_date" name="x_sms_log_date" id="x_sms_log_date" maxlength="10" placeholder="<?php echo HtmlEncode($sms_log_add->sms_log_date->getPlaceHolder()) ?>" value="<?php echo $sms_log_add->sms_log_date->EditValue ?>"<?php echo $sms_log_add->sms_log_date->editAttributes() ?>>
+<input type="text" data-table="sms_log" data-field="x_sms_log_date" data-format="2" name="x_sms_log_date" id="x_sms_log_date" maxlength="10" placeholder="<?php echo HtmlEncode($sms_log_add->sms_log_date->getPlaceHolder()) ?>" value="<?php echo $sms_log_add->sms_log_date->EditValue ?>"<?php echo $sms_log_add->sms_log_date->editAttributes() ?>>
 <?php if (!$sms_log_add->sms_log_date->ReadOnly && !$sms_log_add->sms_log_date->Disabled && !isset($sms_log_add->sms_log_date->EditAttrs["readonly"]) && !isset($sms_log_add->sms_log_date->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["fsms_logadd", "datetimepicker"], function() {
-	ew.createDateTimePicker("fsms_logadd", "x_sms_log_date", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+	ew.createDateTimePicker("fsms_logadd", "x_sms_log_date", {"ignoreReadonly":true,"useCurrent":false,"format":2});
 });
 </script>
 <?php } ?>

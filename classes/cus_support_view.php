@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class cus_support_view extends cus_support
 	public $PageID = "view";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'cus_support';
@@ -618,8 +618,64 @@ class cus_support_view extends cus_support
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canView()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("cus_supportlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
+
+		// Get export parameters
+		$custom = "";
+		if (Param("export") !== NULL) {
+			$this->Export = Param("export");
+			$custom = Param("custom", "");
+		} elseif (IsPost()) {
+			if (Post("exporttype") !== NULL)
+				$this->Export = Post("exporttype");
+			$custom = Post("custom", "");
+		} elseif (Get("cmd") == "json") {
+			$this->Export = Get("cmd");
+		} else {
+			$this->setExportReturnUrl(CurrentUrl());
+		}
+		$ExportFileName = $this->TableVar; // Get export file, used in header
+		if (Get("cus_sup_id") !== NULL) {
+			if ($ExportFileName != "")
+				$ExportFileName .= "_";
+			$ExportFileName .= Get("cus_sup_id");
+		}
+
+		// Get custom export parameters
+		if ($this->isExport() && $custom != "") {
+			$this->CustomExport = $this->Export;
+			$this->Export = "print";
+		}
+		$CustomExportType = $this->CustomExport;
+		$ExportType = $this->Export; // Get export parameter, used in header
+
+		// Update Export URLs
+		if (Config("USE_PHPEXCEL"))
+			$this->ExportExcelCustom = FALSE;
+		if ($this->ExportExcelCustom)
+			$this->ExportExcelUrl .= "&amp;custom=1";
+		if (Config("USE_PHPWORD"))
+			$this->ExportWordCustom = FALSE;
+		if ($this->ExportWordCustom)
+			$this->ExportWordUrl .= "&amp;custom=1";
+		if ($this->ExportPdfCustom)
+			$this->ExportPdfUrl .= "&amp;custom=1";
 		$this->CurrentAction = Param("action"); // Set up current action
+
+		// Setup export options
+		$this->setupExportOptions();
 		$this->cus_sup_id->setVisibility();
 		$this->cus_sup_branch_id->setVisibility();
 		$this->cus_sup_emp_id->setVisibility();
@@ -650,8 +706,10 @@ class cus_support_view extends cus_support
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->cus_sup_branch_id);
+		$this->setupLookupOptions($this->cus_sup_emp_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 
@@ -698,6 +756,12 @@ class cus_support_view extends cus_support
 						$returnUrl = "cus_supportlist.php"; // No matching record, return to list
 					}
 			}
+
+			// Export data only
+			if (!$this->CustomExport && in_array($this->Export, array_keys(Config("EXPORT_CLASSES")))) {
+				$this->exportData();
+				$this->terminate();
+			}
 		} else {
 			$returnUrl = "cus_supportlist.php"; // Not page request, return to list
 		}
@@ -738,7 +802,7 @@ class cus_support_view extends cus_support
 			$item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"#\" onclick=\"return ew.modalDialogShow({lnk:this,url:'" . HtmlEncode($this->AddUrl) . "'});\">" . $Language->phrase("ViewPageAddLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("ViewPageAddLink") . "</a>";
-		$item->Visible = ($this->AddUrl != "");
+		$item->Visible = ($this->AddUrl != "" && $Security->isLoggedIn());
 
 		// Edit
 		$item = &$option->add("edit");
@@ -747,7 +811,7 @@ class cus_support_view extends cus_support
 			$item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"#\" onclick=\"return ew.modalDialogShow({lnk:this,url:'" . HtmlEncode($this->EditUrl) . "'});\">" . $Language->phrase("ViewPageEditLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("ViewPageEditLink") . "</a>";
-		$item->Visible = ($this->EditUrl != "");
+		$item->Visible = ($this->EditUrl != "" && $Security->isLoggedIn());
 
 		// Copy
 		$item = &$option->add("copy");
@@ -756,7 +820,7 @@ class cus_support_view extends cus_support
 			$item->Body = "<a class=\"ew-action ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"#\" onclick=\"return ew.modalDialogShow({lnk:this,btn:'AddBtn',url:'" . HtmlEncode($this->CopyUrl) . "'});\">" . $Language->phrase("ViewPageCopyLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode($this->CopyUrl) . "\">" . $Language->phrase("ViewPageCopyLink") . "</a>";
-		$item->Visible = ($this->CopyUrl != "");
+		$item->Visible = ($this->CopyUrl != "" && $Security->isLoggedIn());
 
 		// Delete
 		$item = &$option->add("delete");
@@ -764,7 +828,7 @@ class cus_support_view extends cus_support
 			$item->Body = "<a onclick=\"return ew.confirmDelete(this);\" class=\"ew-action ew-delete\" title=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" href=\"" . HtmlEncode(UrlAddQuery($this->DeleteUrl, "action=1")) . "\">" . $Language->phrase("ViewPageDeleteLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-delete\" title=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" href=\"" . HtmlEncode($this->DeleteUrl) . "\">" . $Language->phrase("ViewPageDeleteLink") . "</a>";
-		$item->Visible = ($this->DeleteUrl != "");
+		$item->Visible = ($this->DeleteUrl != "" && $Security->isLoggedIn());
 
 		// Set up action default
 		$option = $options["action"];
@@ -774,6 +838,33 @@ class cus_support_view extends cus_support
 		$item = &$option->add($option->GroupOptionName);
 		$item->Body = "";
 		$item->Visible = FALSE;
+	}
+
+	// Load recordset
+	public function loadRecordset($offset = -1, $rowcnt = -1)
+	{
+
+		// Load List page SQL
+		$sql = $this->getListSql();
+		$conn = $this->getConnection();
+
+		// Load recordset
+		$dbtype = GetConnectionType($this->Dbid);
+		if ($this->UseSelectLimit) {
+			$conn->raiseErrorFn = Config("ERROR_FUNC");
+			if ($dbtype == "MSSQL") {
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+			} else {
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
+			}
+			$conn->raiseErrorFn = "";
+		} else {
+			$rs = LoadRecordset($sql, $conn);
+		}
+
+		// Call Recordset Selected event
+		$this->Recordset_Selected($rs);
+		return $rs;
 	}
 
 	// Load row based on key values
@@ -813,9 +904,20 @@ class cus_support_view extends cus_support
 			return;
 		$this->cus_sup_id->setDbValue($row['cus_sup_id']);
 		$this->cus_sup_branch_id->setDbValue($row['cus_sup_branch_id']);
+		if (array_key_exists('EV__cus_sup_branch_id', $rs->fields)) {
+			$this->cus_sup_branch_id->VirtualValue = $rs->fields('EV__cus_sup_branch_id'); // Set up virtual field value
+		} else {
+			$this->cus_sup_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->cus_sup_emp_id->setDbValue($row['cus_sup_emp_id']);
+		if (array_key_exists('EV__cus_sup_emp_id', $rs->fields)) {
+			$this->cus_sup_emp_id->VirtualValue = $rs->fields('EV__cus_sup_emp_id'); // Set up virtual field value
+		} else {
+			$this->cus_sup_emp_id->VirtualValue = ""; // Clear value
+		}
 		$this->cus_sup_query->setDbValue($row['cus_sup_query']);
-		$this->cus_sup_screen_shots->setDbValue($row['cus_sup_screen_shots']);
+		$this->cus_sup_screen_shots->Upload->DbValue = $row['cus_sup_screen_shots'];
+		$this->cus_sup_screen_shots->setDbValue($this->cus_sup_screen_shots->Upload->DbValue);
 		$this->cus_sup_date->setDbValue($row['cus_sup_date']);
 		$this->cus_sup_status->setDbValue($row['cus_sup_status']);
 		$this->cus_sup_comments->setDbValue($row['cus_sup_comments']);
@@ -869,16 +971,59 @@ class cus_support_view extends cus_support
 
 			// cus_sup_id
 			$this->cus_sup_id->ViewValue = $this->cus_sup_id->CurrentValue;
+			$this->cus_sup_id->CssClass = "font-weight-bold";
 			$this->cus_sup_id->ViewCustomAttributes = "";
 
 			// cus_sup_branch_id
-			$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
-			$this->cus_sup_branch_id->ViewValue = FormatNumber($this->cus_sup_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->cus_sup_branch_id->VirtualValue != "") {
+				$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->cus_sup_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->lookupCacheOption($curVal);
+					if ($this->cus_sup_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->cus_sup_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->cus_sup_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->cus_sup_branch_id->ViewCustomAttributes = "";
 
 			// cus_sup_emp_id
-			$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
-			$this->cus_sup_emp_id->ViewValue = FormatNumber($this->cus_sup_emp_id->ViewValue, 0, -2, -2, -2);
+			if ($this->cus_sup_emp_id->VirtualValue != "") {
+				$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->VirtualValue;
+			} else {
+				$curVal = strval($this->cus_sup_emp_id->CurrentValue);
+				if ($curVal != "") {
+					$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->lookupCacheOption($curVal);
+					if ($this->cus_sup_emp_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`emp_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->cus_sup_emp_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->cus_sup_emp_id->ViewValue = NULL;
+				}
+			}
 			$this->cus_sup_emp_id->ViewCustomAttributes = "";
 
 			// cus_sup_query
@@ -886,12 +1031,19 @@ class cus_support_view extends cus_support
 			$this->cus_sup_query->ViewCustomAttributes = "";
 
 			// cus_sup_screen_shots
-			$this->cus_sup_screen_shots->ViewValue = $this->cus_sup_screen_shots->CurrentValue;
+			if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
+				$this->cus_sup_screen_shots->ImageWidth = 200;
+				$this->cus_sup_screen_shots->ImageHeight = 0;
+				$this->cus_sup_screen_shots->ImageAlt = $this->cus_sup_screen_shots->alt();
+				$this->cus_sup_screen_shots->ViewValue = $this->cus_sup_screen_shots->Upload->DbValue;
+			} else {
+				$this->cus_sup_screen_shots->ViewValue = "";
+			}
 			$this->cus_sup_screen_shots->ViewCustomAttributes = "";
 
 			// cus_sup_date
 			$this->cus_sup_date->ViewValue = $this->cus_sup_date->CurrentValue;
-			$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 0);
+			$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 1);
 			$this->cus_sup_date->ViewCustomAttributes = "";
 
 			// cus_sup_status
@@ -908,7 +1060,7 @@ class cus_support_view extends cus_support
 
 			// cus_sup_resolved_on
 			$this->cus_sup_resolved_on->ViewValue = $this->cus_sup_resolved_on->CurrentValue;
-			$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 0);
+			$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 1);
 			$this->cus_sup_resolved_on->ViewCustomAttributes = "";
 
 			// cus_sup_id
@@ -933,8 +1085,22 @@ class cus_support_view extends cus_support
 
 			// cus_sup_screen_shots
 			$this->cus_sup_screen_shots->LinkCustomAttributes = "";
-			$this->cus_sup_screen_shots->HrefValue = "";
+			if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
+				$this->cus_sup_screen_shots->HrefValue = "%u"; // Add prefix/suffix
+				$this->cus_sup_screen_shots->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->cus_sup_screen_shots->HrefValue = FullUrl($this->cus_sup_screen_shots->HrefValue, "href");
+			} else {
+				$this->cus_sup_screen_shots->HrefValue = "";
+			}
+			$this->cus_sup_screen_shots->ExportHrefValue = $this->cus_sup_screen_shots->UploadPath . $this->cus_sup_screen_shots->Upload->DbValue;
 			$this->cus_sup_screen_shots->TooltipValue = "";
+			if ($this->cus_sup_screen_shots->UseColorbox) {
+				if (EmptyValue($this->cus_sup_screen_shots->TooltipValue))
+					$this->cus_sup_screen_shots->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->cus_sup_screen_shots->LinkAttrs["data-rel"] = "cus_support_x_cus_sup_screen_shots";
+				$this->cus_sup_screen_shots->LinkAttrs->appendClass("ew-lightbox");
+			}
 
 			// cus_sup_date
 			$this->cus_sup_date->LinkCustomAttributes = "";
@@ -962,6 +1128,194 @@ class cus_support_view extends cus_support
 			$this->Row_Rendered();
 	}
 
+	// Get export HTML tag
+	protected function getExportTag($type, $custom = FALSE)
+	{
+		global $Language;
+		if (SameText($type, "excel")) {
+			if ($custom)
+				return "<a href=\"#\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" onclick=\"return ew.export(document.fcus_supportview, '" . $this->ExportExcelUrl . "', 'excel', true);\">" . $Language->phrase("ExportToExcel") . "</a>";
+			else
+				return "<a href=\"" . $this->ExportExcelUrl . "\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\">" . $Language->phrase("ExportToExcel") . "</a>";
+		} elseif (SameText($type, "word")) {
+			if ($custom)
+				return "<a href=\"#\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" onclick=\"return ew.export(document.fcus_supportview, '" . $this->ExportWordUrl . "', 'word', true);\">" . $Language->phrase("ExportToWord") . "</a>";
+			else
+				return "<a href=\"" . $this->ExportWordUrl . "\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\">" . $Language->phrase("ExportToWord") . "</a>";
+		} elseif (SameText($type, "pdf")) {
+			if ($custom)
+				return "<a href=\"#\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" onclick=\"return ew.export(document.fcus_supportview, '" . $this->ExportPdfUrl . "', 'pdf', true);\">" . $Language->phrase("ExportToPDF") . "</a>";
+			else
+				return "<a href=\"" . $this->ExportPdfUrl . "\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\">" . $Language->phrase("ExportToPDF") . "</a>";
+		} elseif (SameText($type, "html")) {
+			return "<a href=\"" . $this->ExportHtmlUrl . "\" class=\"ew-export-link ew-html\" title=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\">" . $Language->phrase("ExportToHtml") . "</a>";
+		} elseif (SameText($type, "xml")) {
+			return "<a href=\"" . $this->ExportXmlUrl . "\" class=\"ew-export-link ew-xml\" title=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\">" . $Language->phrase("ExportToXml") . "</a>";
+		} elseif (SameText($type, "csv")) {
+			return "<a href=\"" . $this->ExportCsvUrl . "\" class=\"ew-export-link ew-csv\" title=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\">" . $Language->phrase("ExportToCsv") . "</a>";
+		} elseif (SameText($type, "email")) {
+			$url = $custom ? ",url:'" . $this->pageUrl() . "export=email&amp;custom=1'" : "";
+			return '<button id="emf_cus_support" class="ew-export-link ew-email" title="' . $Language->phrase("ExportToEmailText") . '" data-caption="' . $Language->phrase("ExportToEmailText") . '" onclick="ew.emailDialogShow({lnk:\'emf_cus_support\', hdr:ew.language.phrase(\'ExportToEmailText\'), f:document.fcus_supportview, key:' . ArrayToJsonAttribute($this->RecKey) . ', sel:false' . $url . '});">' . $Language->phrase("ExportToEmail") . '</button>';
+		} elseif (SameText($type, "print")) {
+			return "<a href=\"" . $this->ExportPrintUrl . "\" class=\"ew-export-link ew-print\" title=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\">" . $Language->phrase("PrinterFriendly") . "</a>";
+		}
+	}
+
+	// Set up export options
+	protected function setupExportOptions()
+	{
+		global $Language;
+
+		// Printer friendly
+		$item = &$this->ExportOptions->add("print");
+		$item->Body = $this->getExportTag("print");
+		$item->Visible = TRUE;
+
+		// Export to Excel
+		$item = &$this->ExportOptions->add("excel");
+		$item->Body = $this->getExportTag("excel");
+		$item->Visible = TRUE;
+
+		// Export to Word
+		$item = &$this->ExportOptions->add("word");
+		$item->Body = $this->getExportTag("word");
+		$item->Visible = FALSE;
+
+		// Export to Html
+		$item = &$this->ExportOptions->add("html");
+		$item->Body = $this->getExportTag("html");
+		$item->Visible = FALSE;
+
+		// Export to Xml
+		$item = &$this->ExportOptions->add("xml");
+		$item->Body = $this->getExportTag("xml");
+		$item->Visible = FALSE;
+
+		// Export to Csv
+		$item = &$this->ExportOptions->add("csv");
+		$item->Body = $this->getExportTag("csv");
+		$item->Visible = FALSE;
+
+		// Export to Pdf
+		$item = &$this->ExportOptions->add("pdf");
+		$item->Body = $this->getExportTag("pdf");
+		$item->Visible = TRUE;
+
+		// Export to Email
+		$item = &$this->ExportOptions->add("email");
+		$item->Body = $this->getExportTag("email");
+		$item->Visible = FALSE;
+
+		// Drop down button for export
+		$this->ExportOptions->UseButtonGroup = TRUE;
+		$this->ExportOptions->UseDropDownButton = FALSE;
+		if ($this->ExportOptions->UseButtonGroup && IsMobile())
+			$this->ExportOptions->UseDropDownButton = TRUE;
+		$this->ExportOptions->DropDownButtonPhrase = $Language->phrase("ButtonExport");
+
+		// Add group option item
+		$item = &$this->ExportOptions->add($this->ExportOptions->GroupOptionName);
+		$item->Body = "";
+		$item->Visible = FALSE;
+
+		// Hide options for export
+		if ($this->isExport())
+			$this->ExportOptions->hideAllOptions();
+	}
+
+	/**
+	 * Export data in HTML/CSV/Word/Excel/XML/Email/PDF format
+	 *
+	 * @param boolean $return Return the data rather than output it
+	 * @return mixed
+	 */
+	public function exportData($return = FALSE)
+	{
+		global $Language;
+		$utf8 = SameText(Config("PROJECT_CHARSET"), "utf-8");
+		$selectLimit = FALSE;
+
+		// Load recordset
+		if ($selectLimit) {
+			$this->TotalRecords = $this->listRecordCount();
+		} else {
+			if (!$this->Recordset)
+				$this->Recordset = $this->loadRecordset();
+			$rs = &$this->Recordset;
+			if ($rs)
+				$this->TotalRecords = $rs->RecordCount();
+		}
+		$this->StartRecord = 1;
+		$this->setupStartRecord(); // Set up start record position
+
+		// Set the last record to display
+		if ($this->DisplayRecords <= 0) {
+			$this->StopRecord = $this->TotalRecords;
+		} else {
+			$this->StopRecord = $this->StartRecord + $this->DisplayRecords - 1;
+		}
+		$this->ExportDoc = GetExportDocument($this, "v");
+		$doc = &$this->ExportDoc;
+		if (!$doc)
+			$this->setFailureMessage($Language->phrase("ExportClassNotFound")); // Export class not found
+		if (!$rs || !$doc) {
+			RemoveHeader("Content-Type"); // Remove header
+			RemoveHeader("Content-Disposition");
+			$this->showMessage();
+			return;
+		}
+		if ($selectLimit) {
+			$this->StartRecord = 1;
+			$this->StopRecord = $this->DisplayRecords <= 0 ? $this->TotalRecords : $this->DisplayRecords;
+		}
+
+		// Call Page Exporting server event
+		$this->ExportDoc->ExportCustom = !$this->Page_Exporting();
+		$header = $this->PageHeader;
+		$this->Page_DataRendering($header);
+		$doc->Text .= $header;
+		$this->exportDocument($doc, $rs, $this->StartRecord, $this->StopRecord, "view");
+		$footer = $this->PageFooter;
+		$this->Page_DataRendered($footer);
+		$doc->Text .= $footer;
+
+		// Close recordset
+		$rs->close();
+
+		// Call Page Exported server event
+		$this->Page_Exported();
+
+		// Export header and footer
+		$doc->exportHeaderAndFooter();
+
+		// Clean output buffer (without destroying output buffer)
+		$buffer = ob_get_contents(); // Save the output buffer
+		if (!Config("DEBUG") && $buffer)
+			ob_clean();
+
+		// Write debug message if enabled
+		if (Config("DEBUG") && !$this->isExport("pdf"))
+			echo GetDebugMessage();
+
+		// Output data
+		if ($this->isExport("email")) {
+
+			// Export-to-email disabled
+		} else {
+			$doc->export();
+			if ($return) {
+				RemoveHeader("Content-Type"); // Remove header
+				RemoveHeader("Content-Disposition");
+				$content = ob_get_contents();
+				if ($content)
+					ob_clean();
+				if ($buffer)
+					echo $buffer; // Resume the output buffer
+				return $content;
+			}
+		}
+	}
+
 	// Set up Breadcrumb
 	protected function setupBreadcrumb()
 	{
@@ -987,6 +1341,10 @@ class cus_support_view extends cus_support
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_cus_sup_branch_id":
+					break;
+				case "x_cus_sup_emp_id":
+					break;
 				case "x_cus_sup_status":
 					break;
 				default:
@@ -1009,6 +1367,10 @@ class cus_support_view extends cus_support
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_cus_sup_branch_id":
+							break;
+						case "x_cus_sup_emp_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

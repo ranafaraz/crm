@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class tehsil_delete extends tehsil
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'tehsil';
@@ -539,6 +539,18 @@ class tehsil_delete extends tehsil
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("tehsillist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->tehsil_id->setVisibility();
@@ -565,8 +577,9 @@ class tehsil_delete extends tehsil
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->tehsil_district_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -633,7 +646,7 @@ class tehsil_delete extends tehsil
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -684,6 +697,11 @@ class tehsil_delete extends tehsil
 			return;
 		$this->tehsil_id->setDbValue($row['tehsil_id']);
 		$this->tehsil_district_id->setDbValue($row['tehsil_district_id']);
+		if (array_key_exists('EV__tehsil_district_id', $rs->fields)) {
+			$this->tehsil_district_id->VirtualValue = $rs->fields('EV__tehsil_district_id'); // Set up virtual field value
+		} else {
+			$this->tehsil_district_id->VirtualValue = ""; // Clear value
+		}
 		$this->tehsil_name->setDbValue($row['tehsil_name']);
 	}
 
@@ -716,11 +734,33 @@ class tehsil_delete extends tehsil
 
 			// tehsil_id
 			$this->tehsil_id->ViewValue = $this->tehsil_id->CurrentValue;
+			$this->tehsil_id->CssClass = "font-weight-bold";
 			$this->tehsil_id->ViewCustomAttributes = "";
 
 			// tehsil_district_id
-			$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->CurrentValue;
-			$this->tehsil_district_id->ViewValue = FormatNumber($this->tehsil_district_id->ViewValue, 0, -2, -2, -2);
+			if ($this->tehsil_district_id->VirtualValue != "") {
+				$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->VirtualValue;
+			} else {
+				$curVal = strval($this->tehsil_district_id->CurrentValue);
+				if ($curVal != "") {
+					$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->lookupCacheOption($curVal);
+					if ($this->tehsil_district_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`district_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->tehsil_district_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->tehsil_district_id->ViewValue = $this->tehsil_district_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->tehsil_district_id->ViewValue = NULL;
+				}
+			}
 			$this->tehsil_district_id->ViewCustomAttributes = "";
 
 			// tehsil_name
@@ -859,6 +899,8 @@ class tehsil_delete extends tehsil
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_tehsil_district_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -879,6 +921,8 @@ class tehsil_delete extends tehsil
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_tehsil_district_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

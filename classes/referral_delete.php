@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class referral_delete extends referral
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'referral';
@@ -539,6 +539,18 @@ class referral_delete extends referral
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("referrallist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->referral_id->setVisibility();
@@ -546,6 +558,7 @@ class referral_delete extends referral
 		$this->referral_name->setVisibility();
 		$this->referral_desc->setVisibility();
 		$this->referral_deal_signed->Visible = FALSE;
+		$this->referral_scanned->Visible = FALSE;
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -567,8 +580,9 @@ class referral_delete extends referral
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->referral_branch_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -635,7 +649,7 @@ class referral_delete extends referral
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -686,9 +700,16 @@ class referral_delete extends referral
 			return;
 		$this->referral_id->setDbValue($row['referral_id']);
 		$this->referral_branch_id->setDbValue($row['referral_branch_id']);
+		if (array_key_exists('EV__referral_branch_id', $rs->fields)) {
+			$this->referral_branch_id->VirtualValue = $rs->fields('EV__referral_branch_id'); // Set up virtual field value
+		} else {
+			$this->referral_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->referral_name->setDbValue($row['referral_name']);
 		$this->referral_desc->setDbValue($row['referral_desc']);
 		$this->referral_deal_signed->setDbValue($row['referral_deal_signed']);
+		$this->referral_scanned->Upload->DbValue = $row['referral_scanned'];
+		$this->referral_scanned->setDbValue($this->referral_scanned->Upload->DbValue);
 	}
 
 	// Return a row with default values
@@ -700,6 +721,7 @@ class referral_delete extends referral
 		$row['referral_name'] = NULL;
 		$row['referral_desc'] = NULL;
 		$row['referral_deal_signed'] = NULL;
+		$row['referral_scanned'] = NULL;
 		return $row;
 	}
 
@@ -719,16 +741,39 @@ class referral_delete extends referral
 		// referral_name
 		// referral_desc
 		// referral_deal_signed
+		// referral_scanned
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// referral_id
 			$this->referral_id->ViewValue = $this->referral_id->CurrentValue;
+			$this->referral_id->CssClass = "font-weight-bold";
 			$this->referral_id->ViewCustomAttributes = "";
 
 			// referral_branch_id
-			$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
-			$this->referral_branch_id->ViewValue = FormatNumber($this->referral_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->referral_branch_id->VirtualValue != "") {
+				$this->referral_branch_id->ViewValue = $this->referral_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->referral_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->referral_branch_id->ViewValue = $this->referral_branch_id->lookupCacheOption($curVal);
+					if ($this->referral_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->referral_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->referral_branch_id->ViewValue = $this->referral_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->referral_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->referral_branch_id->ViewCustomAttributes = "";
 
 			// referral_name
@@ -876,6 +921,8 @@ class referral_delete extends referral
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_referral_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -896,6 +943,8 @@ class referral_delete extends referral
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_referral_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

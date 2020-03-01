@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class followup_delete extends followup
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'followup';
@@ -539,6 +539,18 @@ class followup_delete extends followup
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("followuplist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->followup_id->setVisibility();
@@ -573,8 +585,12 @@ class followup_delete extends followup
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->followup_branch_id);
+		$this->setupLookupOptions($this->followup_business_id);
+		$this->setupLookupOptions($this->followup_by_emp_id);
+		$this->setupLookupOptions($this->followup_no_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -641,7 +657,7 @@ class followup_delete extends followup
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -692,9 +708,29 @@ class followup_delete extends followup
 			return;
 		$this->followup_id->setDbValue($row['followup_id']);
 		$this->followup_branch_id->setDbValue($row['followup_branch_id']);
+		if (array_key_exists('EV__followup_branch_id', $rs->fields)) {
+			$this->followup_branch_id->VirtualValue = $rs->fields('EV__followup_branch_id'); // Set up virtual field value
+		} else {
+			$this->followup_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->followup_business_id->setDbValue($row['followup_business_id']);
+		if (array_key_exists('EV__followup_business_id', $rs->fields)) {
+			$this->followup_business_id->VirtualValue = $rs->fields('EV__followup_business_id'); // Set up virtual field value
+		} else {
+			$this->followup_business_id->VirtualValue = ""; // Clear value
+		}
 		$this->followup_by_emp_id->setDbValue($row['followup_by_emp_id']);
+		if (array_key_exists('EV__followup_by_emp_id', $rs->fields)) {
+			$this->followup_by_emp_id->VirtualValue = $rs->fields('EV__followup_by_emp_id'); // Set up virtual field value
+		} else {
+			$this->followup_by_emp_id->VirtualValue = ""; // Clear value
+		}
 		$this->followup_no_id->setDbValue($row['followup_no_id']);
+		if (array_key_exists('EV__followup_no_id', $rs->fields)) {
+			$this->followup_no_id->VirtualValue = $rs->fields('EV__followup_no_id'); // Set up virtual field value
+		} else {
+			$this->followup_no_id->VirtualValue = ""; // Clear value
+		}
 		$this->followup_date->setDbValue($row['followup_date']);
 		$this->followup_comments->setDbValue($row['followup_comments']);
 		$this->followup_response->setDbValue($row['followup_response']);
@@ -748,31 +784,116 @@ class followup_delete extends followup
 
 			// followup_id
 			$this->followup_id->ViewValue = $this->followup_id->CurrentValue;
+			$this->followup_id->CssClass = "font-weight-bold";
 			$this->followup_id->ViewCustomAttributes = "";
 
 			// followup_branch_id
-			$this->followup_branch_id->ViewValue = $this->followup_branch_id->CurrentValue;
-			$this->followup_branch_id->ViewValue = FormatNumber($this->followup_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->followup_branch_id->VirtualValue != "") {
+				$this->followup_branch_id->ViewValue = $this->followup_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->followup_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->followup_branch_id->ViewValue = $this->followup_branch_id->lookupCacheOption($curVal);
+					if ($this->followup_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->followup_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->followup_branch_id->ViewValue = $this->followup_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->followup_branch_id->ViewValue = $this->followup_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->followup_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->followup_branch_id->ViewCustomAttributes = "";
 
 			// followup_business_id
-			$this->followup_business_id->ViewValue = $this->followup_business_id->CurrentValue;
-			$this->followup_business_id->ViewValue = FormatNumber($this->followup_business_id->ViewValue, 0, -2, -2, -2);
+			if ($this->followup_business_id->VirtualValue != "") {
+				$this->followup_business_id->ViewValue = $this->followup_business_id->VirtualValue;
+			} else {
+				$curVal = strval($this->followup_business_id->CurrentValue);
+				if ($curVal != "") {
+					$this->followup_business_id->ViewValue = $this->followup_business_id->lookupCacheOption($curVal);
+					if ($this->followup_business_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->followup_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->followup_business_id->ViewValue = $this->followup_business_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->followup_business_id->ViewValue = $this->followup_business_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->followup_business_id->ViewValue = NULL;
+				}
+			}
 			$this->followup_business_id->ViewCustomAttributes = "";
 
 			// followup_by_emp_id
-			$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->CurrentValue;
-			$this->followup_by_emp_id->ViewValue = FormatNumber($this->followup_by_emp_id->ViewValue, 0, -2, -2, -2);
+			if ($this->followup_by_emp_id->VirtualValue != "") {
+				$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->VirtualValue;
+			} else {
+				$curVal = strval($this->followup_by_emp_id->CurrentValue);
+				if ($curVal != "") {
+					$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->lookupCacheOption($curVal);
+					if ($this->followup_by_emp_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`emp_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->followup_by_emp_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->followup_by_emp_id->ViewValue = $this->followup_by_emp_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->followup_by_emp_id->ViewValue = NULL;
+				}
+			}
 			$this->followup_by_emp_id->ViewCustomAttributes = "";
 
 			// followup_no_id
-			$this->followup_no_id->ViewValue = $this->followup_no_id->CurrentValue;
-			$this->followup_no_id->ViewValue = FormatNumber($this->followup_no_id->ViewValue, 0, -2, -2, -2);
+			if ($this->followup_no_id->VirtualValue != "") {
+				$this->followup_no_id->ViewValue = $this->followup_no_id->VirtualValue;
+			} else {
+				$curVal = strval($this->followup_no_id->CurrentValue);
+				if ($curVal != "") {
+					$this->followup_no_id->ViewValue = $this->followup_no_id->lookupCacheOption($curVal);
+					if ($this->followup_no_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`followup_no_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->followup_no_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->followup_no_id->ViewValue = $this->followup_no_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->followup_no_id->ViewValue = $this->followup_no_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->followup_no_id->ViewValue = NULL;
+				}
+			}
 			$this->followup_no_id->ViewCustomAttributes = "";
 
 			// followup_date
 			$this->followup_date->ViewValue = $this->followup_date->CurrentValue;
-			$this->followup_date->ViewValue = FormatDateTime($this->followup_date->ViewValue, 0);
+			$this->followup_date->ViewValue = FormatDateTime($this->followup_date->ViewValue, 1);
 			$this->followup_date->ViewCustomAttributes = "";
 
 			// followup_response
@@ -785,7 +906,7 @@ class followup_delete extends followup
 
 			// nxt_FU_date
 			$this->nxt_FU_date->ViewValue = $this->nxt_FU_date->CurrentValue;
-			$this->nxt_FU_date->ViewValue = FormatDateTime($this->nxt_FU_date->ViewValue, 0);
+			$this->nxt_FU_date->ViewValue = FormatDateTime($this->nxt_FU_date->ViewValue, 1);
 			$this->nxt_FU_date->ViewCustomAttributes = "";
 
 			// current_FU_status
@@ -958,6 +1079,14 @@ class followup_delete extends followup
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_followup_branch_id":
+					break;
+				case "x_followup_business_id":
+					break;
+				case "x_followup_by_emp_id":
+					break;
+				case "x_followup_no_id":
+					break;
 				case "x_followup_response":
 					break;
 				case "x_current_FU_status":
@@ -982,6 +1111,14 @@ class followup_delete extends followup
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_followup_branch_id":
+							break;
+						case "x_followup_business_id":
+							break;
+						case "x_followup_by_emp_id":
+							break;
+						case "x_followup_no_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

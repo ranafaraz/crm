@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -689,6 +689,7 @@ class user_type extends DbTable
 		// user_type_id
 
 		$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
+		$this->user_type_id->CssClass = "font-weight-bold";
 		$this->user_type_id->ViewCustomAttributes = "";
 
 		// user_type_name
@@ -733,6 +734,7 @@ class user_type extends DbTable
 		$this->user_type_id->EditAttrs["class"] = "form-control";
 		$this->user_type_id->EditCustomAttributes = "";
 		$this->user_type_id->EditValue = $this->user_type_id->CurrentValue;
+		$this->user_type_id->CssClass = "font-weight-bold";
 		$this->user_type_id->ViewCustomAttributes = "";
 
 		// user_type_name

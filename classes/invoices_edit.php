@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class invoices_edit extends invoices
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'invoices';
@@ -540,6 +540,8 @@ class invoices_edit extends invoices
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class invoices_edit extends invoices
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("invoiceslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -665,8 +679,11 @@ class invoices_edit extends invoices
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->invoice_branch_id);
+		$this->setupLookupOptions($this->invoice_business_id);
+		$this->setupLookupOptions($this->invoice_service_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -874,7 +891,7 @@ class invoices_edit extends invoices
 				$this->invoice_collection_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->invoice_collection_date->setFormValue($val);
-			$this->invoice_collection_date->CurrentValue = UnFormatDateTime($this->invoice_collection_date->CurrentValue, 0);
+			$this->invoice_collection_date->CurrentValue = UnFormatDateTime($this->invoice_collection_date->CurrentValue, 2);
 		}
 
 		// Check field name 'invoice_content' first before field var 'x_invoice_content'
@@ -913,7 +930,7 @@ class invoices_edit extends invoices
 		$this->invoice_collected_amount->CurrentValue = $this->invoice_collected_amount->FormValue;
 		$this->invoice_remaining_amount->CurrentValue = $this->invoice_remaining_amount->FormValue;
 		$this->invoice_collection_date->CurrentValue = $this->invoice_collection_date->FormValue;
-		$this->invoice_collection_date->CurrentValue = UnFormatDateTime($this->invoice_collection_date->CurrentValue, 0);
+		$this->invoice_collection_date->CurrentValue = UnFormatDateTime($this->invoice_collection_date->CurrentValue, 2);
 		$this->invoice_content->CurrentValue = $this->invoice_content->FormValue;
 		$this->invoice_comments->CurrentValue = $this->invoice_comments->FormValue;
 	}
@@ -955,8 +972,23 @@ class invoices_edit extends invoices
 			return;
 		$this->invoice_id->setDbValue($row['invoice_id']);
 		$this->invoice_branch_id->setDbValue($row['invoice_branch_id']);
+		if (array_key_exists('EV__invoice_branch_id', $rs->fields)) {
+			$this->invoice_branch_id->VirtualValue = $rs->fields('EV__invoice_branch_id'); // Set up virtual field value
+		} else {
+			$this->invoice_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->invoice_business_id->setDbValue($row['invoice_business_id']);
+		if (array_key_exists('EV__invoice_business_id', $rs->fields)) {
+			$this->invoice_business_id->VirtualValue = $rs->fields('EV__invoice_business_id'); // Set up virtual field value
+		} else {
+			$this->invoice_business_id->VirtualValue = ""; // Clear value
+		}
 		$this->invoice_service_id->setDbValue($row['invoice_service_id']);
+		if (array_key_exists('EV__invoice_service_id', $rs->fields)) {
+			$this->invoice_service_id->VirtualValue = $rs->fields('EV__invoice_service_id'); // Set up virtual field value
+		} else {
+			$this->invoice_service_id->VirtualValue = ""; // Clear value
+		}
 		$this->invoice_amount->setDbValue($row['invoice_amount']);
 		$this->invoice_issue_date->setDbValue($row['invoice_issue_date']);
 		$this->invoice_due_date->setDbValue($row['invoice_due_date']);
@@ -1040,21 +1072,85 @@ class invoices_edit extends invoices
 
 			// invoice_id
 			$this->invoice_id->ViewValue = $this->invoice_id->CurrentValue;
+			$this->invoice_id->CssClass = "font-weight-bold";
 			$this->invoice_id->ViewCustomAttributes = "";
 
 			// invoice_branch_id
-			$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->CurrentValue;
-			$this->invoice_branch_id->ViewValue = FormatNumber($this->invoice_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->invoice_branch_id->VirtualValue != "") {
+				$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->invoice_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->lookupCacheOption($curVal);
+					if ($this->invoice_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->invoice_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->invoice_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->invoice_branch_id->ViewCustomAttributes = "";
 
 			// invoice_business_id
-			$this->invoice_business_id->ViewValue = $this->invoice_business_id->CurrentValue;
-			$this->invoice_business_id->ViewValue = FormatNumber($this->invoice_business_id->ViewValue, 0, -2, -2, -2);
+			if ($this->invoice_business_id->VirtualValue != "") {
+				$this->invoice_business_id->ViewValue = $this->invoice_business_id->VirtualValue;
+			} else {
+				$curVal = strval($this->invoice_business_id->CurrentValue);
+				if ($curVal != "") {
+					$this->invoice_business_id->ViewValue = $this->invoice_business_id->lookupCacheOption($curVal);
+					if ($this->invoice_business_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->invoice_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->invoice_business_id->ViewValue = $this->invoice_business_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->invoice_business_id->ViewValue = $this->invoice_business_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->invoice_business_id->ViewValue = NULL;
+				}
+			}
 			$this->invoice_business_id->ViewCustomAttributes = "";
 
 			// invoice_service_id
-			$this->invoice_service_id->ViewValue = $this->invoice_service_id->CurrentValue;
-			$this->invoice_service_id->ViewValue = FormatNumber($this->invoice_service_id->ViewValue, 0, -2, -2, -2);
+			if ($this->invoice_service_id->VirtualValue != "") {
+				$this->invoice_service_id->ViewValue = $this->invoice_service_id->VirtualValue;
+			} else {
+				$curVal = strval($this->invoice_service_id->CurrentValue);
+				if ($curVal != "") {
+					$this->invoice_service_id->ViewValue = $this->invoice_service_id->lookupCacheOption($curVal);
+					if ($this->invoice_service_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->invoice_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->invoice_service_id->ViewValue = $this->invoice_service_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->invoice_service_id->ViewValue = $this->invoice_service_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->invoice_service_id->ViewValue = NULL;
+				}
+			}
 			$this->invoice_service_id->ViewCustomAttributes = "";
 
 			// invoice_amount
@@ -1092,7 +1188,7 @@ class invoices_edit extends invoices
 
 			// invoice_collection_date
 			$this->invoice_collection_date->ViewValue = $this->invoice_collection_date->CurrentValue;
-			$this->invoice_collection_date->ViewValue = FormatDateTime($this->invoice_collection_date->ViewValue, 0);
+			$this->invoice_collection_date->ViewValue = FormatDateTime($this->invoice_collection_date->ViewValue, 2);
 			$this->invoice_collection_date->ViewCustomAttributes = "";
 
 			// invoice_content
@@ -1173,25 +1269,104 @@ class invoices_edit extends invoices
 			$this->invoice_id->EditAttrs["class"] = "form-control";
 			$this->invoice_id->EditCustomAttributes = "";
 			$this->invoice_id->EditValue = $this->invoice_id->CurrentValue;
+			$this->invoice_id->CssClass = "font-weight-bold";
 			$this->invoice_id->ViewCustomAttributes = "";
 
 			// invoice_branch_id
-			$this->invoice_branch_id->EditAttrs["class"] = "form-control";
 			$this->invoice_branch_id->EditCustomAttributes = "";
-			$this->invoice_branch_id->EditValue = HtmlEncode($this->invoice_branch_id->CurrentValue);
-			$this->invoice_branch_id->PlaceHolder = RemoveHtml($this->invoice_branch_id->caption());
+			$curVal = trim(strval($this->invoice_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->lookupCacheOption($curVal);
+			else
+				$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->Lookup !== NULL && is_array($this->invoice_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->invoice_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->invoice_branch_id->EditValue = array_values($this->invoice_branch_id->Lookup->Options);
+				if ($this->invoice_branch_id->ViewValue == "")
+					$this->invoice_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->invoice_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->invoice_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->displayValue($arwrk);
+				} else {
+					$this->invoice_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->invoice_branch_id->EditValue = $arwrk;
+			}
 
 			// invoice_business_id
-			$this->invoice_business_id->EditAttrs["class"] = "form-control";
 			$this->invoice_business_id->EditCustomAttributes = "";
-			$this->invoice_business_id->EditValue = HtmlEncode($this->invoice_business_id->CurrentValue);
-			$this->invoice_business_id->PlaceHolder = RemoveHtml($this->invoice_business_id->caption());
+			$curVal = trim(strval($this->invoice_business_id->CurrentValue));
+			if ($curVal != "")
+				$this->invoice_business_id->ViewValue = $this->invoice_business_id->lookupCacheOption($curVal);
+			else
+				$this->invoice_business_id->ViewValue = $this->invoice_business_id->Lookup !== NULL && is_array($this->invoice_business_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->invoice_business_id->ViewValue !== NULL) { // Load from cache
+				$this->invoice_business_id->EditValue = array_values($this->invoice_business_id->Lookup->Options);
+				if ($this->invoice_business_id->ViewValue == "")
+					$this->invoice_business_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`b_id`" . SearchString("=", $this->invoice_business_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->invoice_business_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->invoice_business_id->ViewValue = $this->invoice_business_id->displayValue($arwrk);
+				} else {
+					$this->invoice_business_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->invoice_business_id->EditValue = $arwrk;
+			}
 
 			// invoice_service_id
-			$this->invoice_service_id->EditAttrs["class"] = "form-control";
 			$this->invoice_service_id->EditCustomAttributes = "";
-			$this->invoice_service_id->EditValue = HtmlEncode($this->invoice_service_id->CurrentValue);
-			$this->invoice_service_id->PlaceHolder = RemoveHtml($this->invoice_service_id->caption());
+			$curVal = trim(strval($this->invoice_service_id->CurrentValue));
+			if ($curVal != "")
+				$this->invoice_service_id->ViewValue = $this->invoice_service_id->lookupCacheOption($curVal);
+			else
+				$this->invoice_service_id->ViewValue = $this->invoice_service_id->Lookup !== NULL && is_array($this->invoice_service_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->invoice_service_id->ViewValue !== NULL) { // Load from cache
+				$this->invoice_service_id->EditValue = array_values($this->invoice_service_id->Lookup->Options);
+				if ($this->invoice_service_id->ViewValue == "")
+					$this->invoice_service_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`service_id`" . SearchString("=", $this->invoice_service_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->invoice_service_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->invoice_service_id->ViewValue = $this->invoice_service_id->displayValue($arwrk);
+				} else {
+					$this->invoice_service_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->invoice_service_id->EditValue = $arwrk;
+			}
 
 			// invoice_amount
 			$this->invoice_amount->EditAttrs["class"] = "form-control";
@@ -1230,7 +1405,7 @@ class invoices_edit extends invoices
 			// invoice_collection_date
 			$this->invoice_collection_date->EditAttrs["class"] = "form-control";
 			$this->invoice_collection_date->EditCustomAttributes = "";
-			$this->invoice_collection_date->EditValue = HtmlEncode(FormatDateTime($this->invoice_collection_date->CurrentValue, 8));
+			$this->invoice_collection_date->EditValue = HtmlEncode(FormatDateTime($this->invoice_collection_date->CurrentValue, 2));
 			$this->invoice_collection_date->PlaceHolder = RemoveHtml($this->invoice_collection_date->caption());
 
 			// invoice_content
@@ -1328,24 +1503,15 @@ class invoices_edit extends invoices
 				AddMessage($FormError, str_replace("%s", $this->invoice_branch_id->caption(), $this->invoice_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->invoice_branch_id->FormValue)) {
-			AddMessage($FormError, $this->invoice_branch_id->errorMessage());
-		}
 		if ($this->invoice_business_id->Required) {
 			if (!$this->invoice_business_id->IsDetailKey && $this->invoice_business_id->FormValue != NULL && $this->invoice_business_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->invoice_business_id->caption(), $this->invoice_business_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->invoice_business_id->FormValue)) {
-			AddMessage($FormError, $this->invoice_business_id->errorMessage());
-		}
 		if ($this->invoice_service_id->Required) {
 			if (!$this->invoice_service_id->IsDetailKey && $this->invoice_service_id->FormValue != NULL && $this->invoice_service_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->invoice_service_id->caption(), $this->invoice_service_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->invoice_service_id->FormValue)) {
-			AddMessage($FormError, $this->invoice_service_id->errorMessage());
 		}
 		if ($this->invoice_amount->Required) {
 			if (!$this->invoice_amount->IsDetailKey && $this->invoice_amount->FormValue != NULL && $this->invoice_amount->FormValue == "") {
@@ -1475,7 +1641,7 @@ class invoices_edit extends invoices
 			$this->invoice_remaining_amount->setDbValueDef($rsnew, $this->invoice_remaining_amount->CurrentValue, 0, $this->invoice_remaining_amount->ReadOnly);
 
 			// invoice_collection_date
-			$this->invoice_collection_date->setDbValueDef($rsnew, UnFormatDateTime($this->invoice_collection_date->CurrentValue, 0), CurrentDate(), $this->invoice_collection_date->ReadOnly);
+			$this->invoice_collection_date->setDbValueDef($rsnew, UnFormatDateTime($this->invoice_collection_date->CurrentValue, 2), CurrentDate(), $this->invoice_collection_date->ReadOnly);
 
 			// invoice_content
 			$this->invoice_content->setDbValueDef($rsnew, $this->invoice_content->CurrentValue, "", $this->invoice_content->ReadOnly);
@@ -1564,6 +1730,12 @@ class invoices_edit extends invoices
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_invoice_branch_id":
+					break;
+				case "x_invoice_business_id":
+					break;
+				case "x_invoice_service_id":
+					break;
 				case "x_invoice_status":
 					break;
 				default:
@@ -1586,6 +1758,12 @@ class invoices_edit extends invoices
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_invoice_branch_id":
+							break;
+						case "x_invoice_business_id":
+							break;
+						case "x_invoice_service_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

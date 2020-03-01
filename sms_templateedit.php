@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $sms_template_edit = new sms_template_edit();
 $sms_template_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -65,9 +66,6 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $sms_template_edit->sms_temp_branch_id->caption(), $sms_template_edit->sms_temp_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-				elm = this.getElements("x" + infix + "_sms_temp_branch_id");
-				if (elm && !ew.checkInteger(elm.value))
-					return this.onError(elm, "<?php echo JsEncode($sms_template_edit->sms_temp_branch_id->errorMessage()) ?>");
 			<?php if ($sms_template_edit->sms_temp_caption->Required) { ?>
 				elm = this.getElements("x" + infix + "_sms_temp_caption");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -106,6 +104,8 @@ loadjs.ready("head", function() {
 	fsms_templateedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
+	fsms_templateedit.lists["x_sms_temp_branch_id"] = <?php echo $sms_template_edit->sms_temp_branch_id->Lookup->toClientList($sms_template_edit) ?>;
+	fsms_templateedit.lists["x_sms_temp_branch_id"].options = <?php echo JsonEncode($sms_template_edit->sms_temp_branch_id->lookupOptions()) ?>;
 	loadjs.done("fsms_templateedit");
 });
 </script>
@@ -145,7 +145,23 @@ $sms_template_edit->showMessage();
 		<label id="elh_sms_template_sms_temp_branch_id" for="x_sms_temp_branch_id" class="<?php echo $sms_template_edit->LeftColumnClass ?>"><?php echo $sms_template_edit->sms_temp_branch_id->caption() ?><?php echo $sms_template_edit->sms_temp_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_template_edit->RightColumnClass ?>"><div <?php echo $sms_template_edit->sms_temp_branch_id->cellAttributes() ?>>
 <span id="el_sms_template_sms_temp_branch_id">
-<input type="text" data-table="sms_template" data-field="x_sms_temp_branch_id" name="x_sms_temp_branch_id" id="x_sms_temp_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($sms_template_edit->sms_temp_branch_id->getPlaceHolder()) ?>" value="<?php echo $sms_template_edit->sms_temp_branch_id->EditValue ?>"<?php echo $sms_template_edit->sms_temp_branch_id->editAttributes() ?>>
+<div class="btn-group ew-dropdown-list" role="group">
+	<div class="btn-group" role="group">
+		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($sms_template_edit->sms_temp_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $sms_template_edit->sms_temp_branch_id->ViewValue ?></button>
+		<div id="dsl_x_sms_temp_branch_id" data-repeatcolumn="1" class="dropdown-menu">
+			<div class="ew-items" style="overflow-x: hidden;">
+<?php echo $sms_template_edit->sms_temp_branch_id->radioButtonListHtml(TRUE, "x_sms_temp_branch_id") ?>
+			</div><!-- /.ew-items -->
+		</div><!-- /.dropdown-menu -->
+		<div id="tp_x_sms_temp_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="sms_template" data-field="x_sms_temp_branch_id" data-value-separator="<?php echo $sms_template_edit->sms_temp_branch_id->displayValueSeparatorAttribute() ?>" name="x_sms_temp_branch_id" id="x_sms_temp_branch_id" value="{value}"<?php echo $sms_template_edit->sms_temp_branch_id->editAttributes() ?>></div>
+	</div><!-- /.btn-group -->
+	<?php if (!$sms_template_edit->sms_temp_branch_id->ReadOnly) { ?>
+	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
+		<i class="fas fa-times ew-icon"></i>
+	</button>
+	<?php } ?>
+</div><!-- /.ew-dropdown-list -->
+<?php echo $sms_template_edit->sms_temp_branch_id->Lookup->getParamTag($sms_template_edit, "p_x_sms_temp_branch_id") ?>
 </span>
 <?php echo $sms_template_edit->sms_temp_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -165,7 +181,7 @@ $sms_template_edit->showMessage();
 		<label id="elh_sms_template_sms_temp_msg" for="x_sms_temp_msg" class="<?php echo $sms_template_edit->LeftColumnClass ?>"><?php echo $sms_template_edit->sms_temp_msg->caption() ?><?php echo $sms_template_edit->sms_temp_msg->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_template_edit->RightColumnClass ?>"><div <?php echo $sms_template_edit->sms_temp_msg->cellAttributes() ?>>
 <span id="el_sms_template_sms_temp_msg">
-<input type="text" data-table="sms_template" data-field="x_sms_temp_msg" name="x_sms_temp_msg" id="x_sms_temp_msg" size="30" maxlength="200" placeholder="<?php echo HtmlEncode($sms_template_edit->sms_temp_msg->getPlaceHolder()) ?>" value="<?php echo $sms_template_edit->sms_temp_msg->EditValue ?>"<?php echo $sms_template_edit->sms_temp_msg->editAttributes() ?>>
+<textarea data-table="sms_template" data-field="x_sms_temp_msg" name="x_sms_temp_msg" id="x_sms_temp_msg" cols="35" rows="4" placeholder="<?php echo HtmlEncode($sms_template_edit->sms_temp_msg->getPlaceHolder()) ?>"<?php echo $sms_template_edit->sms_temp_msg->editAttributes() ?>><?php echo $sms_template_edit->sms_temp_msg->EditValue ?></textarea>
 </span>
 <?php echo $sms_template_edit->sms_temp_msg->CustomMsg ?></div></div>
 	</div>

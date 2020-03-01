@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_package_delete extends sms_package
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'sms_package';
@@ -539,6 +539,18 @@ class sms_package_delete extends sms_package
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("sms_packagelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->sms_pkg_id->setVisibility();
@@ -569,8 +581,10 @@ class sms_package_delete extends sms_package
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->sms_pkg_sms_api_id);
+		$this->setupLookupOptions($this->sms_pkg_branch_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -637,7 +651,7 @@ class sms_package_delete extends sms_package
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -688,7 +702,17 @@ class sms_package_delete extends sms_package
 			return;
 		$this->sms_pkg_id->setDbValue($row['sms_pkg_id']);
 		$this->sms_pkg_sms_api_id->setDbValue($row['sms_pkg_sms_api_id']);
+		if (array_key_exists('EV__sms_pkg_sms_api_id', $rs->fields)) {
+			$this->sms_pkg_sms_api_id->VirtualValue = $rs->fields('EV__sms_pkg_sms_api_id'); // Set up virtual field value
+		} else {
+			$this->sms_pkg_sms_api_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_pkg_branch_id->setDbValue($row['sms_pkg_branch_id']);
+		if (array_key_exists('EV__sms_pkg_branch_id', $rs->fields)) {
+			$this->sms_pkg_branch_id->VirtualValue = $rs->fields('EV__sms_pkg_branch_id'); // Set up virtual field value
+		} else {
+			$this->sms_pkg_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_pkg_total_allowed_sms->setDbValue($row['sms_pkg_total_allowed_sms']);
 		$this->sms_pkg_expiry_date->setDbValue($row['sms_pkg_expiry_date']);
 		$this->sms_pkg_per_sms_cost->setDbValue($row['sms_pkg_per_sms_cost']);
@@ -736,16 +760,59 @@ class sms_package_delete extends sms_package
 
 			// sms_pkg_id
 			$this->sms_pkg_id->ViewValue = $this->sms_pkg_id->CurrentValue;
+			$this->sms_pkg_id->CssClass = "font-weight-bold";
 			$this->sms_pkg_id->ViewCustomAttributes = "";
 
 			// sms_pkg_sms_api_id
-			$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->CurrentValue;
-			$this->sms_pkg_sms_api_id->ViewValue = FormatNumber($this->sms_pkg_sms_api_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_pkg_sms_api_id->VirtualValue != "") {
+				$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_pkg_sms_api_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->lookupCacheOption($curVal);
+					if ($this->sms_pkg_sms_api_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`sms_api_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_pkg_sms_api_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_pkg_sms_api_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_pkg_sms_api_id->ViewCustomAttributes = "";
 
 			// sms_pkg_branch_id
-			$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->CurrentValue;
-			$this->sms_pkg_branch_id->ViewValue = FormatNumber($this->sms_pkg_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_pkg_branch_id->VirtualValue != "") {
+				$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_pkg_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->lookupCacheOption($curVal);
+					if ($this->sms_pkg_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_pkg_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_pkg_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_pkg_branch_id->ViewCustomAttributes = "";
 
 			// sms_pkg_total_allowed_sms
@@ -910,6 +977,10 @@ class sms_package_delete extends sms_package
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_sms_pkg_sms_api_id":
+					break;
+				case "x_sms_pkg_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -930,6 +1001,10 @@ class sms_package_delete extends sms_package
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_sms_pkg_sms_api_id":
+							break;
+						case "x_sms_pkg_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

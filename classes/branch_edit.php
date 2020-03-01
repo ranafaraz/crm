@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class branch_edit extends branch
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'branch';
@@ -540,6 +540,8 @@ class branch_edit extends branch
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class branch_edit extends branch
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("branchlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -658,8 +672,9 @@ class branch_edit extends branch
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->branch_org_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -872,6 +887,11 @@ class branch_edit extends branch
 			return;
 		$this->branch_id->setDbValue($row['branch_id']);
 		$this->branch_org_id->setDbValue($row['branch_org_id']);
+		if (array_key_exists('EV__branch_org_id', $rs->fields)) {
+			$this->branch_org_id->VirtualValue = $rs->fields('EV__branch_org_id'); // Set up virtual field value
+		} else {
+			$this->branch_org_id->VirtualValue = ""; // Clear value
+		}
 		$this->branch_name->setDbValue($row['branch_name']);
 		$this->branch_manager->setDbValue($row['branch_manager']);
 		$this->branch_contact->setDbValue($row['branch_contact']);
@@ -936,11 +956,33 @@ class branch_edit extends branch
 
 			// branch_id
 			$this->branch_id->ViewValue = $this->branch_id->CurrentValue;
+			$this->branch_id->CssClass = "font-weight-bold";
 			$this->branch_id->ViewCustomAttributes = "";
 
 			// branch_org_id
-			$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
-			$this->branch_org_id->ViewValue = FormatNumber($this->branch_org_id->ViewValue, 0, -2, -2, -2);
+			if ($this->branch_org_id->VirtualValue != "") {
+				$this->branch_org_id->ViewValue = $this->branch_org_id->VirtualValue;
+			} else {
+				$curVal = strval($this->branch_org_id->CurrentValue);
+				if ($curVal != "") {
+					$this->branch_org_id->ViewValue = $this->branch_org_id->lookupCacheOption($curVal);
+					if ($this->branch_org_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`org_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->branch_org_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->branch_org_id->ViewValue = $this->branch_org_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->branch_org_id->ViewValue = NULL;
+				}
+			}
 			$this->branch_org_id->ViewCustomAttributes = "";
 
 			// branch_name
@@ -994,13 +1036,40 @@ class branch_edit extends branch
 			$this->branch_id->EditAttrs["class"] = "form-control";
 			$this->branch_id->EditCustomAttributes = "";
 			$this->branch_id->EditValue = $this->branch_id->CurrentValue;
+			$this->branch_id->CssClass = "font-weight-bold";
 			$this->branch_id->ViewCustomAttributes = "";
 
 			// branch_org_id
-			$this->branch_org_id->EditAttrs["class"] = "form-control";
 			$this->branch_org_id->EditCustomAttributes = "";
-			$this->branch_org_id->EditValue = HtmlEncode($this->branch_org_id->CurrentValue);
-			$this->branch_org_id->PlaceHolder = RemoveHtml($this->branch_org_id->caption());
+			$curVal = trim(strval($this->branch_org_id->CurrentValue));
+			if ($curVal != "")
+				$this->branch_org_id->ViewValue = $this->branch_org_id->lookupCacheOption($curVal);
+			else
+				$this->branch_org_id->ViewValue = $this->branch_org_id->Lookup !== NULL && is_array($this->branch_org_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->branch_org_id->ViewValue !== NULL) { // Load from cache
+				$this->branch_org_id->EditValue = array_values($this->branch_org_id->Lookup->Options);
+				if ($this->branch_org_id->ViewValue == "")
+					$this->branch_org_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`org_id`" . SearchString("=", $this->branch_org_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->branch_org_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->branch_org_id->ViewValue = $this->branch_org_id->displayValue($arwrk);
+				} else {
+					$this->branch_org_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->branch_org_id->EditValue = $arwrk;
+			}
 
 			// branch_name
 			$this->branch_name->EditAttrs["class"] = "form-control";
@@ -1029,8 +1098,6 @@ class branch_edit extends branch
 			// branch_address
 			$this->branch_address->EditAttrs["class"] = "form-control";
 			$this->branch_address->EditCustomAttributes = "";
-			if (!$this->branch_address->Raw)
-				$this->branch_address->CurrentValue = HtmlDecode($this->branch_address->CurrentValue);
 			$this->branch_address->EditValue = HtmlEncode($this->branch_address->CurrentValue);
 			$this->branch_address->PlaceHolder = RemoveHtml($this->branch_address->caption());
 
@@ -1088,9 +1155,6 @@ class branch_edit extends branch
 			if (!$this->branch_org_id->IsDetailKey && $this->branch_org_id->FormValue != NULL && $this->branch_org_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->branch_org_id->caption(), $this->branch_org_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->branch_org_id->FormValue)) {
-			AddMessage($FormError, $this->branch_org_id->errorMessage());
 		}
 		if ($this->branch_name->Required) {
 			if (!$this->branch_name->IsDetailKey && $this->branch_name->FormValue != NULL && $this->branch_name->FormValue == "") {
@@ -1245,6 +1309,8 @@ class branch_edit extends branch
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_branch_org_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1265,6 +1331,8 @@ class branch_edit extends branch
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_branch_org_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

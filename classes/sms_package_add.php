@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_package_add extends sms_package
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'sms_package';
@@ -540,6 +540,8 @@ class sms_package_add extends sms_package
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class sms_package_add extends sms_package
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("sms_packagelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -663,8 +677,10 @@ class sms_package_add extends sms_package
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->sms_pkg_sms_api_id);
+		$this->setupLookupOptions($this->sms_pkg_branch_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -905,7 +921,17 @@ class sms_package_add extends sms_package
 			return;
 		$this->sms_pkg_id->setDbValue($row['sms_pkg_id']);
 		$this->sms_pkg_sms_api_id->setDbValue($row['sms_pkg_sms_api_id']);
+		if (array_key_exists('EV__sms_pkg_sms_api_id', $rs->fields)) {
+			$this->sms_pkg_sms_api_id->VirtualValue = $rs->fields('EV__sms_pkg_sms_api_id'); // Set up virtual field value
+		} else {
+			$this->sms_pkg_sms_api_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_pkg_branch_id->setDbValue($row['sms_pkg_branch_id']);
+		if (array_key_exists('EV__sms_pkg_branch_id', $rs->fields)) {
+			$this->sms_pkg_branch_id->VirtualValue = $rs->fields('EV__sms_pkg_branch_id'); // Set up virtual field value
+		} else {
+			$this->sms_pkg_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_pkg_total_allowed_sms->setDbValue($row['sms_pkg_total_allowed_sms']);
 		$this->sms_pkg_expiry_date->setDbValue($row['sms_pkg_expiry_date']);
 		$this->sms_pkg_per_sms_cost->setDbValue($row['sms_pkg_per_sms_cost']);
@@ -977,16 +1003,59 @@ class sms_package_add extends sms_package
 
 			// sms_pkg_id
 			$this->sms_pkg_id->ViewValue = $this->sms_pkg_id->CurrentValue;
+			$this->sms_pkg_id->CssClass = "font-weight-bold";
 			$this->sms_pkg_id->ViewCustomAttributes = "";
 
 			// sms_pkg_sms_api_id
-			$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->CurrentValue;
-			$this->sms_pkg_sms_api_id->ViewValue = FormatNumber($this->sms_pkg_sms_api_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_pkg_sms_api_id->VirtualValue != "") {
+				$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_pkg_sms_api_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->lookupCacheOption($curVal);
+					if ($this->sms_pkg_sms_api_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`sms_api_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_pkg_sms_api_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_pkg_sms_api_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_pkg_sms_api_id->ViewCustomAttributes = "";
 
 			// sms_pkg_branch_id
-			$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->CurrentValue;
-			$this->sms_pkg_branch_id->ViewValue = FormatNumber($this->sms_pkg_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_pkg_branch_id->VirtualValue != "") {
+				$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_pkg_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->lookupCacheOption($curVal);
+					if ($this->sms_pkg_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_pkg_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_pkg_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_pkg_branch_id->ViewCustomAttributes = "";
 
 			// sms_pkg_total_allowed_sms
@@ -1040,16 +1109,68 @@ class sms_package_add extends sms_package
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// sms_pkg_sms_api_id
-			$this->sms_pkg_sms_api_id->EditAttrs["class"] = "form-control";
 			$this->sms_pkg_sms_api_id->EditCustomAttributes = "";
-			$this->sms_pkg_sms_api_id->EditValue = HtmlEncode($this->sms_pkg_sms_api_id->CurrentValue);
-			$this->sms_pkg_sms_api_id->PlaceHolder = RemoveHtml($this->sms_pkg_sms_api_id->caption());
+			$curVal = trim(strval($this->sms_pkg_sms_api_id->CurrentValue));
+			if ($curVal != "")
+				$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->lookupCacheOption($curVal);
+			else
+				$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->Lookup !== NULL && is_array($this->sms_pkg_sms_api_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sms_pkg_sms_api_id->ViewValue !== NULL) { // Load from cache
+				$this->sms_pkg_sms_api_id->EditValue = array_values($this->sms_pkg_sms_api_id->Lookup->Options);
+				if ($this->sms_pkg_sms_api_id->ViewValue == "")
+					$this->sms_pkg_sms_api_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`sms_api_id`" . SearchString("=", $this->sms_pkg_sms_api_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sms_pkg_sms_api_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sms_pkg_sms_api_id->ViewValue = $this->sms_pkg_sms_api_id->displayValue($arwrk);
+				} else {
+					$this->sms_pkg_sms_api_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sms_pkg_sms_api_id->EditValue = $arwrk;
+			}
 
 			// sms_pkg_branch_id
-			$this->sms_pkg_branch_id->EditAttrs["class"] = "form-control";
 			$this->sms_pkg_branch_id->EditCustomAttributes = "";
-			$this->sms_pkg_branch_id->EditValue = HtmlEncode($this->sms_pkg_branch_id->CurrentValue);
-			$this->sms_pkg_branch_id->PlaceHolder = RemoveHtml($this->sms_pkg_branch_id->caption());
+			$curVal = trim(strval($this->sms_pkg_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->lookupCacheOption($curVal);
+			else
+				$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->Lookup !== NULL && is_array($this->sms_pkg_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sms_pkg_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->sms_pkg_branch_id->EditValue = array_values($this->sms_pkg_branch_id->Lookup->Options);
+				if ($this->sms_pkg_branch_id->ViewValue == "")
+					$this->sms_pkg_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->sms_pkg_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sms_pkg_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sms_pkg_branch_id->ViewValue = $this->sms_pkg_branch_id->displayValue($arwrk);
+				} else {
+					$this->sms_pkg_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sms_pkg_branch_id->EditValue = $arwrk;
+			}
 
 			// sms_pkg_total_allowed_sms
 			$this->sms_pkg_total_allowed_sms->EditAttrs["class"] = "form-control";
@@ -1128,16 +1249,10 @@ class sms_package_add extends sms_package
 				AddMessage($FormError, str_replace("%s", $this->sms_pkg_sms_api_id->caption(), $this->sms_pkg_sms_api_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->sms_pkg_sms_api_id->FormValue)) {
-			AddMessage($FormError, $this->sms_pkg_sms_api_id->errorMessage());
-		}
 		if ($this->sms_pkg_branch_id->Required) {
 			if (!$this->sms_pkg_branch_id->IsDetailKey && $this->sms_pkg_branch_id->FormValue != NULL && $this->sms_pkg_branch_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->sms_pkg_branch_id->caption(), $this->sms_pkg_branch_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->sms_pkg_branch_id->FormValue)) {
-			AddMessage($FormError, $this->sms_pkg_branch_id->errorMessage());
 		}
 		if ($this->sms_pkg_total_allowed_sms->Required) {
 			if (!$this->sms_pkg_total_allowed_sms->IsDetailKey && $this->sms_pkg_total_allowed_sms->FormValue != NULL && $this->sms_pkg_total_allowed_sms->FormValue == "") {
@@ -1276,6 +1391,10 @@ class sms_package_add extends sms_package
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_sms_pkg_sms_api_id":
+					break;
+				case "x_sms_pkg_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1296,6 +1415,10 @@ class sms_package_add extends sms_package
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_sms_pkg_sms_api_id":
+							break;
+						case "x_sms_pkg_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

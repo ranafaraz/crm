@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $user_list = new user_list();
 $user_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $user_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$user_list->isExport() && !$user->CurrentAction) { ?>
 <form name="fuserlistsrch" id="fuserlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fuserlistsrch-search-panel" class="<?php echo $user_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $user_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $user_list->showPageHeader(); ?>
 <?php
 $user_list->showMessage();
 ?>
 <?php if ($user_list->TotalRecords > 0 || $user->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($user_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> user">
+<?php if (!$user_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$user_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $user_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $user_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fuserlist" id="fuserlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -179,7 +195,7 @@ $user_list->ListOptions->render("header", "left");
 		<th data-name="user_password" class="<?php echo $user_list->user_password->headerCellClass() ?>"><div id="elh_user_user_password" class="user_user_password"><div class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?></div></div></th>
 	<?php } else { ?>
 		<th data-name="user_password" class="<?php echo $user_list->user_password->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_password) ?>', 1);"><div id="elh_user_user_password" class="user_user_password">
-			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_password->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_password->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_password->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_password->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>

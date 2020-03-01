@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -74,18 +74,24 @@ class acc_transaction extends DbTable
 		$this->fields['acc_trans_id'] = &$this->acc_trans_id;
 
 		// acc_trans_branch_id
-		$this->acc_trans_branch_id = new DbField('acc_transaction', 'acc_transaction', 'x_acc_trans_branch_id', 'acc_trans_branch_id', '`acc_trans_branch_id`', '`acc_trans_branch_id`', 3, 12, -1, FALSE, '`acc_trans_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->acc_trans_branch_id = new DbField('acc_transaction', 'acc_transaction', 'x_acc_trans_branch_id', 'acc_trans_branch_id', '`acc_trans_branch_id`', '`acc_trans_branch_id`', 3, 12, -1, FALSE, '`EV__acc_trans_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->acc_trans_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->acc_trans_branch_id->Required = TRUE; // Required field
 		$this->acc_trans_branch_id->Sortable = TRUE; // Allow sort
+		$this->acc_trans_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->acc_trans_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->acc_trans_branch_id->Lookup = new Lookup('acc_trans_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->acc_trans_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['acc_trans_branch_id'] = &$this->acc_trans_branch_id;
 
 		// acc_trans_acc_head_id
-		$this->acc_trans_acc_head_id = new DbField('acc_transaction', 'acc_transaction', 'x_acc_trans_acc_head_id', 'acc_trans_acc_head_id', '`acc_trans_acc_head_id`', '`acc_trans_acc_head_id`', 3, 12, -1, FALSE, '`acc_trans_acc_head_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->acc_trans_acc_head_id = new DbField('acc_transaction', 'acc_transaction', 'x_acc_trans_acc_head_id', 'acc_trans_acc_head_id', '`acc_trans_acc_head_id`', '`acc_trans_acc_head_id`', 3, 12, -1, FALSE, '`EV__acc_trans_acc_head_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->acc_trans_acc_head_id->Nullable = FALSE; // NOT NULL field
 		$this->acc_trans_acc_head_id->Required = TRUE; // Required field
 		$this->acc_trans_acc_head_id->Sortable = TRUE; // Allow sort
+		$this->acc_trans_acc_head_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->acc_trans_acc_head_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->acc_trans_acc_head_id->Lookup = new Lookup('acc_trans_acc_head_id', 'acc_head', FALSE, 'acc_head_id', ["acc_head_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->acc_trans_acc_head_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['acc_trans_acc_head_id'] = &$this->acc_trans_acc_head_id;
 
@@ -144,9 +150,21 @@ class acc_transaction extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -173,6 +191,22 @@ class acc_transaction extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `acc_transaction`.`acc_trans_branch_id` LIMIT 1) AS `EV__acc_trans_branch_id`, (SELECT `acc_head_caption` FROM `acc_head` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`acc_head_id` = `acc_transaction`.`acc_trans_acc_head_id` LIMIT 1) AS `EV__acc_trans_acc_head_id` FROM `acc_transaction`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -328,8 +362,13 @@ class acc_transaction extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -337,8 +376,32 @@ class acc_transaction extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->acc_trans_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->acc_trans_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->acc_trans_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->acc_trans_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->acc_trans_acc_head_id->AdvancedSearch->SearchValue != "" ||
+			$this->acc_trans_acc_head_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->acc_trans_acc_head_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->acc_trans_acc_head_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -366,7 +429,10 @@ class acc_transaction extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -726,16 +792,59 @@ class acc_transaction extends DbTable
 		// acc_trans_id
 
 		$this->acc_trans_id->ViewValue = $this->acc_trans_id->CurrentValue;
+		$this->acc_trans_id->CssClass = "font-weight-bold";
 		$this->acc_trans_id->ViewCustomAttributes = "";
 
 		// acc_trans_branch_id
-		$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->CurrentValue;
-		$this->acc_trans_branch_id->ViewValue = FormatNumber($this->acc_trans_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->acc_trans_branch_id->VirtualValue != "") {
+			$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->acc_trans_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->lookupCacheOption($curVal);
+				if ($this->acc_trans_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->acc_trans_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->acc_trans_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->acc_trans_branch_id->ViewCustomAttributes = "";
 
 		// acc_trans_acc_head_id
-		$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->CurrentValue;
-		$this->acc_trans_acc_head_id->ViewValue = FormatNumber($this->acc_trans_acc_head_id->ViewValue, 0, -2, -2, -2);
+		if ($this->acc_trans_acc_head_id->VirtualValue != "") {
+			$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->VirtualValue;
+		} else {
+			$curVal = strval($this->acc_trans_acc_head_id->CurrentValue);
+			if ($curVal != "") {
+				$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->lookupCacheOption($curVal);
+				if ($this->acc_trans_acc_head_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`acc_head_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->acc_trans_acc_head_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->acc_trans_acc_head_id->ViewValue = NULL;
+			}
+		}
 		$this->acc_trans_acc_head_id->ViewCustomAttributes = "";
 
 		// acc_trans_narration
@@ -801,19 +910,14 @@ class acc_transaction extends DbTable
 		$this->acc_trans_id->EditAttrs["class"] = "form-control";
 		$this->acc_trans_id->EditCustomAttributes = "";
 		$this->acc_trans_id->EditValue = $this->acc_trans_id->CurrentValue;
+		$this->acc_trans_id->CssClass = "font-weight-bold";
 		$this->acc_trans_id->ViewCustomAttributes = "";
 
 		// acc_trans_branch_id
-		$this->acc_trans_branch_id->EditAttrs["class"] = "form-control";
 		$this->acc_trans_branch_id->EditCustomAttributes = "";
-		$this->acc_trans_branch_id->EditValue = $this->acc_trans_branch_id->CurrentValue;
-		$this->acc_trans_branch_id->PlaceHolder = RemoveHtml($this->acc_trans_branch_id->caption());
 
 		// acc_trans_acc_head_id
-		$this->acc_trans_acc_head_id->EditAttrs["class"] = "form-control";
 		$this->acc_trans_acc_head_id->EditCustomAttributes = "";
-		$this->acc_trans_acc_head_id->EditValue = $this->acc_trans_acc_head_id->CurrentValue;
-		$this->acc_trans_acc_head_id->PlaceHolder = RemoveHtml($this->acc_trans_acc_head_id->caption());
 
 		// acc_trans_narration
 		$this->acc_trans_narration->EditAttrs["class"] = "form-control";

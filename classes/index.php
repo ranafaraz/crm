@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Class for index
@@ -8,7 +8,7 @@ class index
 {
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Messages
 	private $_message = "";
@@ -280,7 +280,81 @@ class index
 		// If session expired, show session expired message
 		if (Get("expired") == "1")
 			$this->setFailureMessage($Language->phrase("SessionExpired"));
-		$this->terminate("acc_headlist.php"); // Exit and go to default page
+		if (!$Security->isLoggedIn())
+			$Security->autoLogin();
+		if ($Security->isLoggedIn())
+			$this->terminate("acc_headlist.php"); // Exit and go to default page
+		if ($Security->isLoggedIn())
+			$this->terminate("acc_naturelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("acc_transactionlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("branchlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("businesslist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("business_naturelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("business_statuslist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("business_typelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("citylist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("countrylist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("cus_supportlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("designationlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("districtlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("divisionlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("employeeslist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("followuplist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("followup_nolist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("invoiceslist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("organizationlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("quotationlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("reference_letterlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("referrallist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("serviceslist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("services_availed_by_customerlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("sms_apilist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("sms_loglist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("sms_packagelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("sms_templatelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("statelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("tehsillist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("userlist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("user_typelist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("userlevelpermissionslist.php");
+		if ($Security->isLoggedIn())
+			$this->terminate("userlevelslist.php");
+		if ($Security->isLoggedIn()) {
+			$this->setFailureMessage(DeniedMessage() . "<br><br><a href=\"logout.php\">" . $Language->phrase("BackToLogin") . "</a>");
+		} else {
+			$this->terminate("login.php"); // Exit and go to login page
+		}
 	}
 
 	// Page Load event

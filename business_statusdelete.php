@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_status_delete = new business_status_delete();
 $business_status_delete->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -75,6 +76,9 @@ $business_status_delete->showMessage();
 <?php if ($business_status_delete->business_status_caption->Visible) { // business_status_caption ?>
 		<th class="<?php echo $business_status_delete->business_status_caption->headerCellClass() ?>"><span id="elh_business_status_business_status_caption" class="business_status_business_status_caption"><?php echo $business_status_delete->business_status_caption->caption() ?></span></th>
 <?php } ?>
+<?php if ($business_status_delete->b_status_desc->Visible) { // b_status_desc ?>
+		<th class="<?php echo $business_status_delete->b_status_desc->headerCellClass() ?>"><span id="elh_business_status_b_status_desc" class="business_status_b_status_desc"><?php echo $business_status_delete->b_status_desc->caption() ?></span></th>
+<?php } ?>
 	</tr>
 	</thead>
 	<tbody>
@@ -107,6 +111,13 @@ while (!$business_status_delete->Recordset->EOF) {
 		<td <?php echo $business_status_delete->business_status_caption->cellAttributes() ?>>
 <span id="el<?php echo $business_status_delete->RowCount ?>_business_status_business_status_caption" class="business_status_business_status_caption">
 <span<?php echo $business_status_delete->business_status_caption->viewAttributes() ?>><?php echo $business_status_delete->business_status_caption->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($business_status_delete->b_status_desc->Visible) { // b_status_desc ?>
+		<td <?php echo $business_status_delete->b_status_desc->cellAttributes() ?>>
+<span id="el<?php echo $business_status_delete->RowCount ?>_business_status_b_status_desc" class="business_status_b_status_desc">
+<span<?php echo $business_status_delete->b_status_desc->viewAttributes() ?>><?php echo $business_status_delete->b_status_desc->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_nature_edit = new business_nature_edit();
 $business_nature_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -147,7 +148,7 @@ $business_nature_edit->showMessage();
 		<label id="elh_business_nature_b_nature_desc" for="x_b_nature_desc" class="<?php echo $business_nature_edit->LeftColumnClass ?>"><?php echo $business_nature_edit->b_nature_desc->caption() ?><?php echo $business_nature_edit->b_nature_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_nature_edit->RightColumnClass ?>"><div <?php echo $business_nature_edit->b_nature_desc->cellAttributes() ?>>
 <span id="el_business_nature_b_nature_desc">
-<input type="text" data-table="business_nature" data-field="x_b_nature_desc" name="x_b_nature_desc" id="x_b_nature_desc" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($business_nature_edit->b_nature_desc->getPlaceHolder()) ?>" value="<?php echo $business_nature_edit->b_nature_desc->EditValue ?>"<?php echo $business_nature_edit->b_nature_desc->editAttributes() ?>>
+<textarea data-table="business_nature" data-field="x_b_nature_desc" name="x_b_nature_desc" id="x_b_nature_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($business_nature_edit->b_nature_desc->getPlaceHolder()) ?>"<?php echo $business_nature_edit->b_nature_desc->editAttributes() ?>><?php echo $business_nature_edit->b_nature_desc->EditValue ?></textarea>
 </span>
 <?php echo $business_nature_edit->b_nature_desc->CustomMsg ?></div></div>
 	</div>

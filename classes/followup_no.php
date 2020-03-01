@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -678,6 +678,7 @@ class followup_no extends DbTable
 		// followup_no_id
 
 		$this->followup_no_id->ViewValue = $this->followup_no_id->CurrentValue;
+		$this->followup_no_id->CssClass = "font-weight-bold";
 		$this->followup_no_id->ViewCustomAttributes = "";
 
 		// followup_no_caption
@@ -713,6 +714,7 @@ class followup_no extends DbTable
 		$this->followup_no_id->EditAttrs["class"] = "form-control";
 		$this->followup_no_id->EditCustomAttributes = "";
 		$this->followup_no_id->EditValue = $this->followup_no_id->CurrentValue;
+		$this->followup_no_id->CssClass = "font-weight-bold";
 		$this->followup_no_id->ViewCustomAttributes = "";
 
 		// followup_no_caption

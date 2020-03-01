@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class branch_delete extends branch
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'branch';
@@ -539,6 +539,18 @@ class branch_delete extends branch
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("branchlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->branch_id->setVisibility();
@@ -568,8 +580,9 @@ class branch_delete extends branch
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->branch_org_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -636,7 +649,7 @@ class branch_delete extends branch
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -687,6 +700,11 @@ class branch_delete extends branch
 			return;
 		$this->branch_id->setDbValue($row['branch_id']);
 		$this->branch_org_id->setDbValue($row['branch_org_id']);
+		if (array_key_exists('EV__branch_org_id', $rs->fields)) {
+			$this->branch_org_id->VirtualValue = $rs->fields('EV__branch_org_id'); // Set up virtual field value
+		} else {
+			$this->branch_org_id->VirtualValue = ""; // Clear value
+		}
 		$this->branch_name->setDbValue($row['branch_name']);
 		$this->branch_manager->setDbValue($row['branch_manager']);
 		$this->branch_contact->setDbValue($row['branch_contact']);
@@ -728,11 +746,33 @@ class branch_delete extends branch
 
 			// branch_id
 			$this->branch_id->ViewValue = $this->branch_id->CurrentValue;
+			$this->branch_id->CssClass = "font-weight-bold";
 			$this->branch_id->ViewCustomAttributes = "";
 
 			// branch_org_id
-			$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
-			$this->branch_org_id->ViewValue = FormatNumber($this->branch_org_id->ViewValue, 0, -2, -2, -2);
+			if ($this->branch_org_id->VirtualValue != "") {
+				$this->branch_org_id->ViewValue = $this->branch_org_id->VirtualValue;
+			} else {
+				$curVal = strval($this->branch_org_id->CurrentValue);
+				if ($curVal != "") {
+					$this->branch_org_id->ViewValue = $this->branch_org_id->lookupCacheOption($curVal);
+					if ($this->branch_org_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`org_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->branch_org_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->branch_org_id->ViewValue = $this->branch_org_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->branch_org_id->ViewValue = NULL;
+				}
+			}
 			$this->branch_org_id->ViewCustomAttributes = "";
 
 			// branch_name
@@ -898,6 +938,8 @@ class branch_delete extends branch
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_branch_org_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -918,6 +960,8 @@ class branch_delete extends branch
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_branch_org_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

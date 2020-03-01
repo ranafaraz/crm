@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $referral_list = new referral_list();
 $referral_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $referral_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$referral_list->isExport() && !$referral->CurrentAction) { ?>
 <form name="freferrallistsrch" id="freferrallistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="freferrallistsrch-search-panel" class="<?php echo $referral_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $referral_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $referral_list->showPageHeader(); ?>
 <?php
 $referral_list->showMessage();
 ?>
 <?php if ($referral_list->TotalRecords > 0 || $referral->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($referral_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> referral">
+<?php if (!$referral_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$referral_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $referral_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $referral_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="freferrallist" id="freferrallist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

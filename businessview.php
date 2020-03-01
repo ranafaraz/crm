@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $business_view = new business_view();
 $business_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -205,7 +206,7 @@ $business_view->showMessage();
 		<td class="<?php echo $business_view->TableLeftColumnClass ?>"><span id="elh_business_b_logo"><?php echo $business_view->b_logo->caption() ?></span></td>
 		<td data-name="b_logo" <?php echo $business_view->b_logo->cellAttributes() ?>>
 <span id="el_business_b_logo">
-<span<?php echo $business_view->b_logo->viewAttributes() ?>><?php echo $business_view->b_logo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($business_view->b_logo, $business_view->b_logo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	</tr>

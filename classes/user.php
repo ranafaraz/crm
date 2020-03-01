@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\project1; ?>
+<?php namespace PHPMaker2020\crm_live; ?>
 <?php
 
 /**
@@ -77,16 +77,23 @@ class user extends DbTable
 		$this->fields['user_id'] = &$this->user_id;
 
 		// user_branch_id
-		$this->user_branch_id = new DbField('user', 'user', 'x_user_branch_id', 'user_branch_id', '`user_branch_id`', '`user_branch_id`', 3, 12, -1, FALSE, '`user_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->user_branch_id = new DbField('user', 'user', 'x_user_branch_id', 'user_branch_id', '`user_branch_id`', '`user_branch_id`', 3, 12, -1, FALSE, '`EV__user_branch_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->user_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->user_branch_id->Required = TRUE; // Required field
 		$this->user_branch_id->Sortable = TRUE; // Allow sort
+		$this->user_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->user_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->user_branch_id->Lookup = new Lookup('user_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->user_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['user_branch_id'] = &$this->user_branch_id;
 
 		// user_type_id
-		$this->user_type_id = new DbField('user', 'user', 'x_user_type_id', 'user_type_id', '`user_type_id`', '`user_type_id`', 3, 12, -1, FALSE, '`user_type_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->user_type_id = new DbField('user', 'user', 'x_user_type_id', 'user_type_id', '`user_type_id`', '`user_type_id`', 3, 12, -1, FALSE, '`EV__user_type_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
+		$this->user_type_id->Required = TRUE; // Required field
 		$this->user_type_id->Sortable = TRUE; // Allow sort
+		$this->user_type_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
+		$this->user_type_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
+		$this->user_type_id->Lookup = new Lookup('user_type_id', 'user_type', FALSE, 'user_type_id', ["user_type_name","","",""], [], [], [], [], [], [], '', '');
 		$this->user_type_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['user_type_id'] = &$this->user_type_id;
 
@@ -98,7 +105,7 @@ class user extends DbTable
 		$this->fields['user_name'] = &$this->user_name;
 
 		// user_password
-		$this->user_password = new DbField('user', 'user', 'x_user_password', 'user_password', '`user_password`', '`user_password`', 200, 255, -1, FALSE, '`user_password`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->user_password = new DbField('user', 'user', 'x_user_password', 'user_password', '`user_password`', '`user_password`', 200, 255, -1, FALSE, '`user_password`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'PASSWORD');
 		$this->user_password->Nullable = FALSE; // NOT NULL field
 		$this->user_password->Required = TRUE; // Required field
 		$this->user_password->Sortable = TRUE; // Allow sort
@@ -119,10 +126,11 @@ class user extends DbTable
 		$this->fields['user_father'] = &$this->user_father;
 
 		// user_photo
-		$this->user_photo = new DbField('user', 'user', 'x_user_photo', 'user_photo', '`user_photo`', '`user_photo`', 201, 65535, -1, FALSE, '`user_photo`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->user_photo = new DbField('user', 'user', 'x_user_photo', 'user_photo', '`user_photo`', '`user_photo`', 201, 500, -1, TRUE, '`user_photo`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
 		$this->user_photo->Nullable = FALSE; // NOT NULL field
 		$this->user_photo->Required = TRUE; // Required field
 		$this->user_photo->Sortable = TRUE; // Allow sort
+		$this->user_photo->ImageResize = TRUE;
 		$this->fields['user_photo'] = &$this->user_photo;
 
 		// user_cnic
@@ -164,9 +172,21 @@ class user extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
+			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	public function getSessionOrderByList()
+	{
+		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
+	}
+	public function setSessionOrderByList($v)
+	{
+		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -193,6 +213,22 @@ class user extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
+	}
+	public function getSqlSelectList() // Select for List page
+	{
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT `branch_name` FROM `branch` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`branch_id` = `user`.`user_branch_id` LIMIT 1) AS `EV__user_branch_id`, (SELECT `user_type_name` FROM `user_type` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`user_type_id` = `user`.`user_type_id` LIMIT 1) AS `EV__user_type_id` FROM `user`" .
+			") `TMP_TABLE`";
+		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
+	}
+	public function sqlSelectList() // For backward compatibility
+	{
+		return $this->getSqlSelectList();
+	}
+	public function setSqlSelectList($v)
+	{
+		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -348,8 +384,13 @@ class user extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		$select = $this->getSqlSelect();
-		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		if ($this->useVirtualFields()) {
+			$select = $this->getSqlSelectList();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		} else {
+			$select = $this->getSqlSelect();
+			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+		}
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -357,8 +398,32 @@ class user extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = $this->getSessionOrderBy();
+		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
+	}
+
+	// Check if virtual fields is used in SQL
+	protected function useVirtualFields()
+	{
+		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+		if ($where != "")
+			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+		if ($orderBy != "")
+			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+		if ($this->user_branch_id->AdvancedSearch->SearchValue != "" ||
+			$this->user_branch_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->user_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->user_branch_id->VirtualExpression . " "))
+			return TRUE;
+		if ($this->user_type_id->AdvancedSearch->SearchValue != "" ||
+			$this->user_type_id->AdvancedSearch->SearchValue2 != "" ||
+			ContainsString($where, " " . $this->user_type_id->VirtualExpression . " "))
+			return TRUE;
+		if (ContainsString($orderBy, " " . $this->user_type_id->VirtualExpression . " "))
+			return TRUE;
+		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -386,7 +451,10 @@ class user extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		if ($this->useVirtualFields())
+			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		else
+			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -491,7 +559,7 @@ class user extends DbTable
 		$this->user_password->DbValue = $row['user_password'];
 		$this->user_email->DbValue = $row['user_email'];
 		$this->user_father->DbValue = $row['user_father'];
-		$this->user_photo->DbValue = $row['user_photo'];
+		$this->user_photo->Upload->DbValue = $row['user_photo'];
 		$this->user_cnic->DbValue = $row['user_cnic'];
 	}
 
@@ -499,6 +567,11 @@ class user extends DbTable
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
+		$oldFiles = EmptyValue($row['user_photo']) ? [] : [$row['user_photo']];
+		foreach ($oldFiles as $oldFile) {
+			if (file_exists($this->user_photo->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->user_photo->oldPhysicalUploadPath() . $oldFile);
+		}
 	}
 
 	// Record filter WHERE clause
@@ -730,7 +803,7 @@ class user extends DbTable
 		$this->user_password->setDbValue($rs->fields('user_password'));
 		$this->user_email->setDbValue($rs->fields('user_email'));
 		$this->user_father->setDbValue($rs->fields('user_father'));
-		$this->user_photo->setDbValue($rs->fields('user_photo'));
+		$this->user_photo->Upload->DbValue = $rs->fields('user_photo');
 		$this->user_cnic->setDbValue($rs->fields('user_cnic'));
 	}
 
@@ -755,16 +828,59 @@ class user extends DbTable
 		// user_id
 
 		$this->user_id->ViewValue = $this->user_id->CurrentValue;
+		$this->user_id->CssClass = "font-weight-bold";
 		$this->user_id->ViewCustomAttributes = "";
 
 		// user_branch_id
-		$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
-		$this->user_branch_id->ViewValue = FormatNumber($this->user_branch_id->ViewValue, 0, -2, -2, -2);
+		if ($this->user_branch_id->VirtualValue != "") {
+			$this->user_branch_id->ViewValue = $this->user_branch_id->VirtualValue;
+		} else {
+			$curVal = strval($this->user_branch_id->CurrentValue);
+			if ($curVal != "") {
+				$this->user_branch_id->ViewValue = $this->user_branch_id->lookupCacheOption($curVal);
+				if ($this->user_branch_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->user_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->user_branch_id->ViewValue = $this->user_branch_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->user_branch_id->ViewValue = NULL;
+			}
+		}
 		$this->user_branch_id->ViewCustomAttributes = "";
 
 		// user_type_id
-		$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
-		$this->user_type_id->ViewValue = FormatNumber($this->user_type_id->ViewValue, 0, -2, -2, -2);
+		if ($this->user_type_id->VirtualValue != "") {
+			$this->user_type_id->ViewValue = $this->user_type_id->VirtualValue;
+		} else {
+			$curVal = strval($this->user_type_id->CurrentValue);
+			if ($curVal != "") {
+				$this->user_type_id->ViewValue = $this->user_type_id->lookupCacheOption($curVal);
+				if ($this->user_type_id->ViewValue === NULL) { // Lookup from database
+					$filterWrk = "`user_type_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+					$sqlWrk = $this->user_type_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+					$rswrk = Conn()->execute($sqlWrk);
+					if ($rswrk && !$rswrk->EOF) { // Lookup values found
+						$arwrk = [];
+						$arwrk[1] = $rswrk->fields('df');
+						$this->user_type_id->ViewValue = $this->user_type_id->displayValue($arwrk);
+						$rswrk->Close();
+					} else {
+						$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
+					}
+				}
+			} else {
+				$this->user_type_id->ViewValue = NULL;
+			}
+		}
 		$this->user_type_id->ViewCustomAttributes = "";
 
 		// user_name
@@ -772,7 +888,7 @@ class user extends DbTable
 		$this->user_name->ViewCustomAttributes = "";
 
 		// user_password
-		$this->user_password->ViewValue = $this->user_password->CurrentValue;
+		$this->user_password->ViewValue = $Language->phrase("PasswordMask");
 		$this->user_password->ViewCustomAttributes = "";
 
 		// user_email
@@ -784,7 +900,14 @@ class user extends DbTable
 		$this->user_father->ViewCustomAttributes = "";
 
 		// user_photo
-		$this->user_photo->ViewValue = $this->user_photo->CurrentValue;
+		if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+			$this->user_photo->ImageWidth = 200;
+			$this->user_photo->ImageHeight = 0;
+			$this->user_photo->ImageAlt = $this->user_photo->alt();
+			$this->user_photo->ViewValue = $this->user_photo->Upload->DbValue;
+		} else {
+			$this->user_photo->ViewValue = "";
+		}
 		$this->user_photo->ViewCustomAttributes = "";
 
 		// user_cnic
@@ -828,8 +951,22 @@ class user extends DbTable
 
 		// user_photo
 		$this->user_photo->LinkCustomAttributes = "";
-		$this->user_photo->HrefValue = "";
+		if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+			$this->user_photo->HrefValue = GetFileUploadUrl($this->user_photo, $this->user_photo->htmlDecode($this->user_photo->Upload->DbValue)); // Add prefix/suffix
+			$this->user_photo->LinkAttrs["target"] = ""; // Add target
+			if ($this->isExport())
+				$this->user_photo->HrefValue = FullUrl($this->user_photo->HrefValue, "href");
+		} else {
+			$this->user_photo->HrefValue = "";
+		}
+		$this->user_photo->ExportHrefValue = $this->user_photo->UploadPath . $this->user_photo->Upload->DbValue;
 		$this->user_photo->TooltipValue = "";
+		if ($this->user_photo->UseColorbox) {
+			if (EmptyValue($this->user_photo->TooltipValue))
+				$this->user_photo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+			$this->user_photo->LinkAttrs["data-rel"] = "user_x_user_photo";
+			$this->user_photo->LinkAttrs->appendClass("ew-lightbox");
+		}
 
 		// user_cnic
 		$this->user_cnic->LinkCustomAttributes = "";
@@ -855,19 +992,14 @@ class user extends DbTable
 		$this->user_id->EditAttrs["class"] = "form-control";
 		$this->user_id->EditCustomAttributes = "";
 		$this->user_id->EditValue = $this->user_id->CurrentValue;
+		$this->user_id->CssClass = "font-weight-bold";
 		$this->user_id->ViewCustomAttributes = "";
 
 		// user_branch_id
-		$this->user_branch_id->EditAttrs["class"] = "form-control";
 		$this->user_branch_id->EditCustomAttributes = "";
-		$this->user_branch_id->EditValue = $this->user_branch_id->CurrentValue;
-		$this->user_branch_id->PlaceHolder = RemoveHtml($this->user_branch_id->caption());
 
 		// user_type_id
-		$this->user_type_id->EditAttrs["class"] = "form-control";
 		$this->user_type_id->EditCustomAttributes = "";
-		$this->user_type_id->EditValue = $this->user_type_id->CurrentValue;
-		$this->user_type_id->PlaceHolder = RemoveHtml($this->user_type_id->caption());
 
 		// user_name
 		$this->user_name->EditAttrs["class"] = "form-control";
@@ -878,10 +1010,8 @@ class user extends DbTable
 		$this->user_name->PlaceHolder = RemoveHtml($this->user_name->caption());
 
 		// user_password
-		$this->user_password->EditAttrs["class"] = "form-control";
+		$this->user_password->EditAttrs["class"] = "form-control ew-password-strength";
 		$this->user_password->EditCustomAttributes = "";
-		if (!$this->user_password->Raw)
-			$this->user_password->CurrentValue = HtmlDecode($this->user_password->CurrentValue);
 		$this->user_password->EditValue = $this->user_password->CurrentValue;
 		$this->user_password->PlaceHolder = RemoveHtml($this->user_password->caption());
 
@@ -904,8 +1034,16 @@ class user extends DbTable
 		// user_photo
 		$this->user_photo->EditAttrs["class"] = "form-control";
 		$this->user_photo->EditCustomAttributes = "";
-		$this->user_photo->EditValue = $this->user_photo->CurrentValue;
-		$this->user_photo->PlaceHolder = RemoveHtml($this->user_photo->caption());
+		if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+			$this->user_photo->ImageWidth = 200;
+			$this->user_photo->ImageHeight = 0;
+			$this->user_photo->ImageAlt = $this->user_photo->alt();
+			$this->user_photo->EditValue = $this->user_photo->Upload->DbValue;
+		} else {
+			$this->user_photo->EditValue = "";
+		}
+		if (!EmptyValue($this->user_photo->CurrentValue))
+				$this->user_photo->Upload->FileName = $this->user_photo->CurrentValue;
 
 		// user_cnic
 		$this->user_cnic->EditAttrs["class"] = "form-control";
@@ -1029,8 +1167,98 @@ class user extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
+		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
+		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// No binary fields
+		// Set up field name / file name field / file type field
+		$fldName = "";
+		$fileNameFld = "";
+		$fileTypeFld = "";
+		if ($fldparm == 'user_photo') {
+			$fldName = "user_photo";
+			$fileNameFld = "user_photo";
+		} else {
+			return FALSE; // Incorrect field
+		}
+
+		// Set up key values
+		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
+		if (count($ar) == 1) {
+			$this->user_id->CurrentValue = $ar[0];
+		} else {
+			return FALSE; // Incorrect key
+		}
+
+		// Set up filter (WHERE Clause)
+		$filter = $this->getRecordFilter();
+		$this->CurrentFilter = $filter;
+		$sql = $this->getCurrentSql();
+		$conn = $this->getConnection();
+		$dbtype = GetConnectionType($this->Dbid);
+		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
+			$val = $rs->fields($fldName);
+			if (!EmptyValue($val)) {
+				$fld = $this->fields[$fldName];
+
+				// Binary data
+				if ($fld->DataType == DATATYPE_BLOB) {
+					if ($dbtype != "MYSQL") {
+						if (is_array($val) || is_object($val)) // Byte array
+							$val = BytesToString($val);
+					}
+					if ($resize)
+						ResizeBinary($val, $width, $height);
+
+					// Write file type
+					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
+						AddHeader("Content-type", $rs->fields($fileTypeFld));
+					} else {
+						AddHeader("Content-type", ContentType($val));
+					}
+
+					// Write file name
+					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
+						$fileName = $rs->fields($fileNameFld);
+						$pathinfo = pathinfo($fileName);
+						$ext = strtolower(@$pathinfo["extension"]);
+						$isPdf = SameText($ext, "pdf");
+						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
+							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
+					}
+
+					// Write file data
+					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
+						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
+						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
+							$val .= "\0\0\0\0";
+					}
+
+					// Clear any debug message
+					if (ob_get_length())
+						ob_end_clean();
+
+					// Write binary data
+					Write($val);
+
+				// Upload to folder
+				} else {
+					if ($fld->UploadMultiple)
+						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
+					else
+						$files = [$val];
+					$data = [];
+					$ar = [];
+					foreach ($files as $file) {
+						if (!EmptyValue($file))
+							$ar[$file] = FullUrl($fld->hrefPath() . $file);
+					}
+					$data[$fld->Param] = $ar;
+					WriteJson($data);
+				}
+			}
+			$rs->close();
+			return TRUE;
+		}
 		return FALSE;
 	}
 

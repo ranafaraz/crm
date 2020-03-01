@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class state_delete extends state
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'state';
@@ -539,6 +539,18 @@ class state_delete extends state
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canDelete()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("statelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->state_id->setVisibility();
@@ -565,8 +577,9 @@ class state_delete extends state
 		$this->createToken();
 
 		// Set up lookup cache
-		// Set up Breadcrumb
+		$this->setupLookupOptions($this->state_country_id);
 
+		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -633,7 +646,7 @@ class state_delete extends state
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -684,6 +697,11 @@ class state_delete extends state
 			return;
 		$this->state_id->setDbValue($row['state_id']);
 		$this->state_country_id->setDbValue($row['state_country_id']);
+		if (array_key_exists('EV__state_country_id', $rs->fields)) {
+			$this->state_country_id->VirtualValue = $rs->fields('EV__state_country_id'); // Set up virtual field value
+		} else {
+			$this->state_country_id->VirtualValue = ""; // Clear value
+		}
 		$this->state_name->setDbValue($row['state_name']);
 	}
 
@@ -716,11 +734,33 @@ class state_delete extends state
 
 			// state_id
 			$this->state_id->ViewValue = $this->state_id->CurrentValue;
+			$this->state_id->CssClass = "font-weight-bold";
 			$this->state_id->ViewCustomAttributes = "";
 
 			// state_country_id
-			$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
-			$this->state_country_id->ViewValue = FormatNumber($this->state_country_id->ViewValue, 0, -2, -2, -2);
+			if ($this->state_country_id->VirtualValue != "") {
+				$this->state_country_id->ViewValue = $this->state_country_id->VirtualValue;
+			} else {
+				$curVal = strval($this->state_country_id->CurrentValue);
+				if ($curVal != "") {
+					$this->state_country_id->ViewValue = $this->state_country_id->lookupCacheOption($curVal);
+					if ($this->state_country_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`country_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->state_country_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->state_country_id->ViewValue = $this->state_country_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->state_country_id->ViewValue = NULL;
+				}
+			}
 			$this->state_country_id->ViewCustomAttributes = "";
 
 			// state_name
@@ -859,6 +899,8 @@ class state_delete extends state
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_state_country_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -879,6 +921,8 @@ class state_delete extends state
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_state_country_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

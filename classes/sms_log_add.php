@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_log_add extends sms_log
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'sms_log';
@@ -540,6 +540,8 @@ class sms_log_add extends sms_log
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class sms_log_add extends sms_log
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("sms_loglist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -662,8 +676,10 @@ class sms_log_add extends sms_log
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->sms_log_branch_id);
+		$this->setupLookupOptions($this->sms_log_sms_api_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -836,7 +852,7 @@ class sms_log_add extends sms_log
 				$this->sms_log_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->sms_log_date->setFormValue($val);
-			$this->sms_log_date->CurrentValue = UnFormatDateTime($this->sms_log_date->CurrentValue, 0);
+			$this->sms_log_date->CurrentValue = UnFormatDateTime($this->sms_log_date->CurrentValue, 2);
 		}
 
 		// Check field name 'sms_log_id' first before field var 'x_sms_log_id'
@@ -852,7 +868,7 @@ class sms_log_add extends sms_log
 		$this->sms_log_message->CurrentValue = $this->sms_log_message->FormValue;
 		$this->sms_log_to->CurrentValue = $this->sms_log_to->FormValue;
 		$this->sms_log_date->CurrentValue = $this->sms_log_date->FormValue;
-		$this->sms_log_date->CurrentValue = UnFormatDateTime($this->sms_log_date->CurrentValue, 0);
+		$this->sms_log_date->CurrentValue = UnFormatDateTime($this->sms_log_date->CurrentValue, 2);
 	}
 
 	// Load row based on key values
@@ -892,7 +908,17 @@ class sms_log_add extends sms_log
 			return;
 		$this->sms_log_id->setDbValue($row['sms_log_id']);
 		$this->sms_log_branch_id->setDbValue($row['sms_log_branch_id']);
+		if (array_key_exists('EV__sms_log_branch_id', $rs->fields)) {
+			$this->sms_log_branch_id->VirtualValue = $rs->fields('EV__sms_log_branch_id'); // Set up virtual field value
+		} else {
+			$this->sms_log_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_log_sms_api_id->setDbValue($row['sms_log_sms_api_id']);
+		if (array_key_exists('EV__sms_log_sms_api_id', $rs->fields)) {
+			$this->sms_log_sms_api_id->VirtualValue = $rs->fields('EV__sms_log_sms_api_id'); // Set up virtual field value
+		} else {
+			$this->sms_log_sms_api_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_log_message->setDbValue($row['sms_log_message']);
 		$this->sms_log_to->setDbValue($row['sms_log_to']);
 		$this->sms_log_date->setDbValue($row['sms_log_date']);
@@ -957,16 +983,59 @@ class sms_log_add extends sms_log
 
 			// sms_log_id
 			$this->sms_log_id->ViewValue = $this->sms_log_id->CurrentValue;
+			$this->sms_log_id->CssClass = "font-weight-bold";
 			$this->sms_log_id->ViewCustomAttributes = "";
 
 			// sms_log_branch_id
-			$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->CurrentValue;
-			$this->sms_log_branch_id->ViewValue = FormatNumber($this->sms_log_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_log_branch_id->VirtualValue != "") {
+				$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_log_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->lookupCacheOption($curVal);
+					if ($this->sms_log_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_log_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_log_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_log_branch_id->ViewCustomAttributes = "";
 
 			// sms_log_sms_api_id
-			$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->CurrentValue;
-			$this->sms_log_sms_api_id->ViewValue = FormatNumber($this->sms_log_sms_api_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_log_sms_api_id->VirtualValue != "") {
+				$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_log_sms_api_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->lookupCacheOption($curVal);
+					if ($this->sms_log_sms_api_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`sms_api_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_log_sms_api_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_log_sms_api_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_log_sms_api_id->ViewCustomAttributes = "";
 
 			// sms_log_message
@@ -979,7 +1048,7 @@ class sms_log_add extends sms_log
 
 			// sms_log_date
 			$this->sms_log_date->ViewValue = $this->sms_log_date->CurrentValue;
-			$this->sms_log_date->ViewValue = FormatDateTime($this->sms_log_date->ViewValue, 0);
+			$this->sms_log_date->ViewValue = FormatDateTime($this->sms_log_date->ViewValue, 2);
 			$this->sms_log_date->ViewCustomAttributes = "";
 
 			// sms_log_branch_id
@@ -1009,16 +1078,68 @@ class sms_log_add extends sms_log
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// sms_log_branch_id
-			$this->sms_log_branch_id->EditAttrs["class"] = "form-control";
 			$this->sms_log_branch_id->EditCustomAttributes = "";
-			$this->sms_log_branch_id->EditValue = HtmlEncode($this->sms_log_branch_id->CurrentValue);
-			$this->sms_log_branch_id->PlaceHolder = RemoveHtml($this->sms_log_branch_id->caption());
+			$curVal = trim(strval($this->sms_log_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->lookupCacheOption($curVal);
+			else
+				$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->Lookup !== NULL && is_array($this->sms_log_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sms_log_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->sms_log_branch_id->EditValue = array_values($this->sms_log_branch_id->Lookup->Options);
+				if ($this->sms_log_branch_id->ViewValue == "")
+					$this->sms_log_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->sms_log_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sms_log_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->displayValue($arwrk);
+				} else {
+					$this->sms_log_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sms_log_branch_id->EditValue = $arwrk;
+			}
 
 			// sms_log_sms_api_id
-			$this->sms_log_sms_api_id->EditAttrs["class"] = "form-control";
 			$this->sms_log_sms_api_id->EditCustomAttributes = "";
-			$this->sms_log_sms_api_id->EditValue = HtmlEncode($this->sms_log_sms_api_id->CurrentValue);
-			$this->sms_log_sms_api_id->PlaceHolder = RemoveHtml($this->sms_log_sms_api_id->caption());
+			$curVal = trim(strval($this->sms_log_sms_api_id->CurrentValue));
+			if ($curVal != "")
+				$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->lookupCacheOption($curVal);
+			else
+				$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->Lookup !== NULL && is_array($this->sms_log_sms_api_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sms_log_sms_api_id->ViewValue !== NULL) { // Load from cache
+				$this->sms_log_sms_api_id->EditValue = array_values($this->sms_log_sms_api_id->Lookup->Options);
+				if ($this->sms_log_sms_api_id->ViewValue == "")
+					$this->sms_log_sms_api_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`sms_api_id`" . SearchString("=", $this->sms_log_sms_api_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sms_log_sms_api_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->displayValue($arwrk);
+				} else {
+					$this->sms_log_sms_api_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sms_log_sms_api_id->EditValue = $arwrk;
+			}
 
 			// sms_log_message
 			$this->sms_log_message->EditAttrs["class"] = "form-control";
@@ -1035,7 +1156,7 @@ class sms_log_add extends sms_log
 			// sms_log_date
 			$this->sms_log_date->EditAttrs["class"] = "form-control";
 			$this->sms_log_date->EditCustomAttributes = "";
-			$this->sms_log_date->EditValue = HtmlEncode(FormatDateTime($this->sms_log_date->CurrentValue, 8));
+			$this->sms_log_date->EditValue = HtmlEncode(FormatDateTime($this->sms_log_date->CurrentValue, 2));
 			$this->sms_log_date->PlaceHolder = RemoveHtml($this->sms_log_date->caption());
 
 			// Add refer script
@@ -1084,16 +1205,10 @@ class sms_log_add extends sms_log
 				AddMessage($FormError, str_replace("%s", $this->sms_log_branch_id->caption(), $this->sms_log_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->sms_log_branch_id->FormValue)) {
-			AddMessage($FormError, $this->sms_log_branch_id->errorMessage());
-		}
 		if ($this->sms_log_sms_api_id->Required) {
 			if (!$this->sms_log_sms_api_id->IsDetailKey && $this->sms_log_sms_api_id->FormValue != NULL && $this->sms_log_sms_api_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->sms_log_sms_api_id->caption(), $this->sms_log_sms_api_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->sms_log_sms_api_id->FormValue)) {
-			AddMessage($FormError, $this->sms_log_sms_api_id->errorMessage());
 		}
 		if ($this->sms_log_message->Required) {
 			if (!$this->sms_log_message->IsDetailKey && $this->sms_log_message->FormValue != NULL && $this->sms_log_message->FormValue == "") {
@@ -1151,7 +1266,7 @@ class sms_log_add extends sms_log
 		$this->sms_log_to->setDbValueDef($rsnew, $this->sms_log_to->CurrentValue, "", FALSE);
 
 		// sms_log_date
-		$this->sms_log_date->setDbValueDef($rsnew, UnFormatDateTime($this->sms_log_date->CurrentValue, 0), CurrentDate(), FALSE);
+		$this->sms_log_date->setDbValueDef($rsnew, UnFormatDateTime($this->sms_log_date->CurrentValue, 2), CurrentDate(), FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1218,6 +1333,10 @@ class sms_log_add extends sms_log
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_sms_log_branch_id":
+					break;
+				case "x_sms_log_sms_api_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1238,6 +1357,10 @@ class sms_log_add extends sms_log
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_sms_log_branch_id":
+							break;
+						case "x_sms_log_sms_api_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

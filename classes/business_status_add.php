@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class business_status_add extends business_status
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'business_status';
@@ -540,6 +540,8 @@ class business_status_add extends business_status
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class business_status_add extends business_status
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("business_statuslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -637,6 +651,7 @@ class business_status_add extends business_status
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->business_status_id->Visible = FALSE;
 		$this->business_status_caption->setVisibility();
+		$this->b_status_desc->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -772,6 +787,8 @@ class business_status_add extends business_status
 		$this->business_status_id->OldValue = $this->business_status_id->CurrentValue;
 		$this->business_status_caption->CurrentValue = NULL;
 		$this->business_status_caption->OldValue = $this->business_status_caption->CurrentValue;
+		$this->b_status_desc->CurrentValue = NULL;
+		$this->b_status_desc->OldValue = $this->b_status_desc->CurrentValue;
 	}
 
 	// Load form values
@@ -790,6 +807,15 @@ class business_status_add extends business_status
 				$this->business_status_caption->setFormValue($val);
 		}
 
+		// Check field name 'b_status_desc' first before field var 'x_b_status_desc'
+		$val = $CurrentForm->hasValue("b_status_desc") ? $CurrentForm->getValue("b_status_desc") : $CurrentForm->getValue("x_b_status_desc");
+		if (!$this->b_status_desc->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->b_status_desc->Visible = FALSE; // Disable update for API request
+			else
+				$this->b_status_desc->setFormValue($val);
+		}
+
 		// Check field name 'business_status_id' first before field var 'x_business_status_id'
 		$val = $CurrentForm->hasValue("business_status_id") ? $CurrentForm->getValue("business_status_id") : $CurrentForm->getValue("x_business_status_id");
 	}
@@ -799,6 +825,7 @@ class business_status_add extends business_status
 	{
 		global $CurrentForm;
 		$this->business_status_caption->CurrentValue = $this->business_status_caption->FormValue;
+		$this->b_status_desc->CurrentValue = $this->b_status_desc->FormValue;
 	}
 
 	// Load row based on key values
@@ -838,6 +865,7 @@ class business_status_add extends business_status
 			return;
 		$this->business_status_id->setDbValue($row['business_status_id']);
 		$this->business_status_caption->setDbValue($row['business_status_caption']);
+		$this->b_status_desc->setDbValue($row['b_status_desc']);
 	}
 
 	// Return a row with default values
@@ -847,6 +875,7 @@ class business_status_add extends business_status
 		$row = [];
 		$row['business_status_id'] = $this->business_status_id->CurrentValue;
 		$row['business_status_caption'] = $this->business_status_caption->CurrentValue;
+		$row['b_status_desc'] = $this->b_status_desc->CurrentValue;
 		return $row;
 	}
 
@@ -886,21 +915,32 @@ class business_status_add extends business_status
 		// Common render codes for all row types
 		// business_status_id
 		// business_status_caption
+		// b_status_desc
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// business_status_id
 			$this->business_status_id->ViewValue = $this->business_status_id->CurrentValue;
+			$this->business_status_id->CssClass = "font-weight-bold";
 			$this->business_status_id->ViewCustomAttributes = "";
 
 			// business_status_caption
 			$this->business_status_caption->ViewValue = $this->business_status_caption->CurrentValue;
 			$this->business_status_caption->ViewCustomAttributes = "";
 
+			// b_status_desc
+			$this->b_status_desc->ViewValue = $this->b_status_desc->CurrentValue;
+			$this->b_status_desc->ViewCustomAttributes = "";
+
 			// business_status_caption
 			$this->business_status_caption->LinkCustomAttributes = "";
 			$this->business_status_caption->HrefValue = "";
 			$this->business_status_caption->TooltipValue = "";
+
+			// b_status_desc
+			$this->b_status_desc->LinkCustomAttributes = "";
+			$this->b_status_desc->HrefValue = "";
+			$this->b_status_desc->TooltipValue = "";
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// business_status_caption
@@ -911,11 +951,21 @@ class business_status_add extends business_status
 			$this->business_status_caption->EditValue = HtmlEncode($this->business_status_caption->CurrentValue);
 			$this->business_status_caption->PlaceHolder = RemoveHtml($this->business_status_caption->caption());
 
+			// b_status_desc
+			$this->b_status_desc->EditAttrs["class"] = "form-control";
+			$this->b_status_desc->EditCustomAttributes = "";
+			$this->b_status_desc->EditValue = HtmlEncode($this->b_status_desc->CurrentValue);
+			$this->b_status_desc->PlaceHolder = RemoveHtml($this->b_status_desc->caption());
+
 			// Add refer script
 			// business_status_caption
 
 			$this->business_status_caption->LinkCustomAttributes = "";
 			$this->business_status_caption->HrefValue = "";
+
+			// b_status_desc
+			$this->b_status_desc->LinkCustomAttributes = "";
+			$this->b_status_desc->HrefValue = "";
 		}
 		if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) // Add/Edit/Search row
 			$this->setupFieldTitles();
@@ -939,6 +989,11 @@ class business_status_add extends business_status
 		if ($this->business_status_caption->Required) {
 			if (!$this->business_status_caption->IsDetailKey && $this->business_status_caption->FormValue != NULL && $this->business_status_caption->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->business_status_caption->caption(), $this->business_status_caption->RequiredErrorMessage));
+			}
+		}
+		if ($this->b_status_desc->Required) {
+			if (!$this->b_status_desc->IsDetailKey && $this->b_status_desc->FormValue != NULL && $this->b_status_desc->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->b_status_desc->caption(), $this->b_status_desc->RequiredErrorMessage));
 			}
 		}
 
@@ -968,6 +1023,9 @@ class business_status_add extends business_status
 
 		// business_status_caption
 		$this->business_status_caption->setDbValueDef($rsnew, $this->business_status_caption->CurrentValue, "", FALSE);
+
+		// b_status_desc
+		$this->b_status_desc->setDbValueDef($rsnew, $this->b_status_desc->CurrentValue, "", FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $acc_nature_list = new acc_nature_list();
 $acc_nature_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $acc_nature_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$acc_nature_list->isExport() && !$acc_nature->CurrentAction) { ?>
 <form name="facc_naturelistsrch" id="facc_naturelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="facc_naturelistsrch-search-panel" class="<?php echo $acc_nature_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $acc_nature_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $acc_nature_list->showPageHeader(); ?>
 <?php
 $acc_nature_list->showMessage();
 ?>
 <?php if ($acc_nature_list->TotalRecords > 0 || $acc_nature->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($acc_nature_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> acc_nature">
+<?php if (!$acc_nature_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$acc_nature_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $acc_nature_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $acc_nature_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="facc_naturelist" id="facc_naturelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

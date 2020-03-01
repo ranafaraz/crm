@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $division_list = new division_list();
 $division_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $division_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$division_list->isExport() && !$division->CurrentAction) { ?>
 <form name="fdivisionlistsrch" id="fdivisionlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fdivisionlistsrch-search-panel" class="<?php echo $division_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $division_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $division_list->showPageHeader(); ?>
 <?php
 $division_list->showMessage();
 ?>
 <?php if ($division_list->TotalRecords > 0 || $division->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($division_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> division">
+<?php if (!$division_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$division_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $division_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $division_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fdivisionlist" id="fdivisionlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -162,15 +178,6 @@ $division_list->ListOptions->render("header", "left");
 	<?php } else { ?>
 		<th data-name="division_name" class="<?php echo $division_list->division_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $division_list->SortUrl($division_list->division_name) ?>', 1);"><div id="elh_division_division_name" class="division_division_name">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $division_list->division_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($division_list->division_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($division_list->division_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-		</div></div></th>
-	<?php } ?>
-<?php } ?>
-<?php if ($division_list->division_desc->Visible) { // division_desc ?>
-	<?php if ($division_list->SortUrl($division_list->division_desc) == "") { ?>
-		<th data-name="division_desc" class="<?php echo $division_list->division_desc->headerCellClass() ?>"><div id="elh_division_division_desc" class="division_division_desc"><div class="ew-table-header-caption"><?php echo $division_list->division_desc->caption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="division_desc" class="<?php echo $division_list->division_desc->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $division_list->SortUrl($division_list->division_desc) ?>', 1);"><div id="elh_division_division_desc" class="division_division_desc">
-			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $division_list->division_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($division_list->division_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($division_list->division_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
@@ -257,13 +264,6 @@ $division_list->ListOptions->render("body", "left", $division_list->RowCount);
 		<td data-name="division_name" <?php echo $division_list->division_name->cellAttributes() ?>>
 <span id="el<?php echo $division_list->RowCount ?>_division_division_name">
 <span<?php echo $division_list->division_name->viewAttributes() ?>><?php echo $division_list->division_name->getViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($division_list->division_desc->Visible) { // division_desc ?>
-		<td data-name="division_desc" <?php echo $division_list->division_desc->cellAttributes() ?>>
-<span id="el<?php echo $division_list->RowCount ?>_division_division_desc">
-<span<?php echo $division_list->division_desc->viewAttributes() ?>><?php echo $division_list->division_desc->getViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>

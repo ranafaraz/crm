@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class user_add extends user
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'user';
@@ -540,6 +540,8 @@ class user_add extends user
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class user_add extends user
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("userlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -665,8 +679,10 @@ class user_add extends user
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->user_branch_id);
+		$this->setupLookupOptions($this->user_type_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -770,6 +786,9 @@ class user_add extends user
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
+		$this->user_photo->Upload->Index = $CurrentForm->Index;
+		$this->user_photo->Upload->uploadFile();
+		$this->user_photo->CurrentValue = $this->user_photo->Upload->FileName;
 	}
 
 	// Load default values
@@ -789,8 +808,9 @@ class user_add extends user
 		$this->user_email->OldValue = $this->user_email->CurrentValue;
 		$this->user_father->CurrentValue = NULL;
 		$this->user_father->OldValue = $this->user_father->CurrentValue;
-		$this->user_photo->CurrentValue = NULL;
-		$this->user_photo->OldValue = $this->user_photo->CurrentValue;
+		$this->user_photo->Upload->DbValue = NULL;
+		$this->user_photo->OldValue = $this->user_photo->Upload->DbValue;
+		$this->user_photo->CurrentValue = NULL; // Clear file related field
 		$this->user_cnic->CurrentValue = NULL;
 		$this->user_cnic->OldValue = $this->user_cnic->CurrentValue;
 	}
@@ -801,6 +821,7 @@ class user_add extends user
 
 		// Load from form
 		global $CurrentForm;
+		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'user_branch_id' first before field var 'x_user_branch_id'
 		$val = $CurrentForm->hasValue("user_branch_id") ? $CurrentForm->getValue("user_branch_id") : $CurrentForm->getValue("x_user_branch_id");
@@ -856,15 +877,6 @@ class user_add extends user
 				$this->user_father->setFormValue($val);
 		}
 
-		// Check field name 'user_photo' first before field var 'x_user_photo'
-		$val = $CurrentForm->hasValue("user_photo") ? $CurrentForm->getValue("user_photo") : $CurrentForm->getValue("x_user_photo");
-		if (!$this->user_photo->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->user_photo->Visible = FALSE; // Disable update for API request
-			else
-				$this->user_photo->setFormValue($val);
-		}
-
 		// Check field name 'user_cnic' first before field var 'x_user_cnic'
 		$val = $CurrentForm->hasValue("user_cnic") ? $CurrentForm->getValue("user_cnic") : $CurrentForm->getValue("x_user_cnic");
 		if (!$this->user_cnic->IsDetailKey) {
@@ -888,7 +900,6 @@ class user_add extends user
 		$this->user_password->CurrentValue = $this->user_password->FormValue;
 		$this->user_email->CurrentValue = $this->user_email->FormValue;
 		$this->user_father->CurrentValue = $this->user_father->FormValue;
-		$this->user_photo->CurrentValue = $this->user_photo->FormValue;
 		$this->user_cnic->CurrentValue = $this->user_cnic->FormValue;
 	}
 
@@ -929,12 +940,23 @@ class user_add extends user
 			return;
 		$this->user_id->setDbValue($row['user_id']);
 		$this->user_branch_id->setDbValue($row['user_branch_id']);
+		if (array_key_exists('EV__user_branch_id', $rs->fields)) {
+			$this->user_branch_id->VirtualValue = $rs->fields('EV__user_branch_id'); // Set up virtual field value
+		} else {
+			$this->user_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->user_type_id->setDbValue($row['user_type_id']);
+		if (array_key_exists('EV__user_type_id', $rs->fields)) {
+			$this->user_type_id->VirtualValue = $rs->fields('EV__user_type_id'); // Set up virtual field value
+		} else {
+			$this->user_type_id->VirtualValue = ""; // Clear value
+		}
 		$this->user_name->setDbValue($row['user_name']);
 		$this->user_password->setDbValue($row['user_password']);
 		$this->user_email->setDbValue($row['user_email']);
 		$this->user_father->setDbValue($row['user_father']);
-		$this->user_photo->setDbValue($row['user_photo']);
+		$this->user_photo->Upload->DbValue = $row['user_photo'];
+		$this->user_photo->setDbValue($this->user_photo->Upload->DbValue);
 		$this->user_cnic->setDbValue($row['user_cnic']);
 	}
 
@@ -950,7 +972,7 @@ class user_add extends user
 		$row['user_password'] = $this->user_password->CurrentValue;
 		$row['user_email'] = $this->user_email->CurrentValue;
 		$row['user_father'] = $this->user_father->CurrentValue;
-		$row['user_photo'] = $this->user_photo->CurrentValue;
+		$row['user_photo'] = $this->user_photo->Upload->DbValue;
 		$row['user_cnic'] = $this->user_cnic->CurrentValue;
 		return $row;
 	}
@@ -1003,16 +1025,59 @@ class user_add extends user
 
 			// user_id
 			$this->user_id->ViewValue = $this->user_id->CurrentValue;
+			$this->user_id->CssClass = "font-weight-bold";
 			$this->user_id->ViewCustomAttributes = "";
 
 			// user_branch_id
-			$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
-			$this->user_branch_id->ViewValue = FormatNumber($this->user_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->user_branch_id->VirtualValue != "") {
+				$this->user_branch_id->ViewValue = $this->user_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->user_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->user_branch_id->ViewValue = $this->user_branch_id->lookupCacheOption($curVal);
+					if ($this->user_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->user_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->user_branch_id->ViewValue = $this->user_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->user_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->user_branch_id->ViewCustomAttributes = "";
 
 			// user_type_id
-			$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
-			$this->user_type_id->ViewValue = FormatNumber($this->user_type_id->ViewValue, 0, -2, -2, -2);
+			if ($this->user_type_id->VirtualValue != "") {
+				$this->user_type_id->ViewValue = $this->user_type_id->VirtualValue;
+			} else {
+				$curVal = strval($this->user_type_id->CurrentValue);
+				if ($curVal != "") {
+					$this->user_type_id->ViewValue = $this->user_type_id->lookupCacheOption($curVal);
+					if ($this->user_type_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`user_type_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->user_type_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->user_type_id->ViewValue = $this->user_type_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->user_type_id->ViewValue = NULL;
+				}
+			}
 			$this->user_type_id->ViewCustomAttributes = "";
 
 			// user_name
@@ -1020,7 +1085,7 @@ class user_add extends user
 			$this->user_name->ViewCustomAttributes = "";
 
 			// user_password
-			$this->user_password->ViewValue = $this->user_password->CurrentValue;
+			$this->user_password->ViewValue = $Language->phrase("PasswordMask");
 			$this->user_password->ViewCustomAttributes = "";
 
 			// user_email
@@ -1032,7 +1097,14 @@ class user_add extends user
 			$this->user_father->ViewCustomAttributes = "";
 
 			// user_photo
-			$this->user_photo->ViewValue = $this->user_photo->CurrentValue;
+			if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+				$this->user_photo->ImageWidth = 200;
+				$this->user_photo->ImageHeight = 0;
+				$this->user_photo->ImageAlt = $this->user_photo->alt();
+				$this->user_photo->ViewValue = $this->user_photo->Upload->DbValue;
+			} else {
+				$this->user_photo->ViewValue = "";
+			}
 			$this->user_photo->ViewCustomAttributes = "";
 
 			// user_cnic
@@ -1071,8 +1143,22 @@ class user_add extends user
 
 			// user_photo
 			$this->user_photo->LinkCustomAttributes = "";
-			$this->user_photo->HrefValue = "";
+			if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+				$this->user_photo->HrefValue = GetFileUploadUrl($this->user_photo, $this->user_photo->htmlDecode($this->user_photo->Upload->DbValue)); // Add prefix/suffix
+				$this->user_photo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->user_photo->HrefValue = FullUrl($this->user_photo->HrefValue, "href");
+			} else {
+				$this->user_photo->HrefValue = "";
+			}
+			$this->user_photo->ExportHrefValue = $this->user_photo->UploadPath . $this->user_photo->Upload->DbValue;
 			$this->user_photo->TooltipValue = "";
+			if ($this->user_photo->UseColorbox) {
+				if (EmptyValue($this->user_photo->TooltipValue))
+					$this->user_photo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
+				$this->user_photo->LinkAttrs["data-rel"] = "user_x_user_photo";
+				$this->user_photo->LinkAttrs->appendClass("ew-lightbox");
+			}
 
 			// user_cnic
 			$this->user_cnic->LinkCustomAttributes = "";
@@ -1081,16 +1167,68 @@ class user_add extends user
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// user_branch_id
-			$this->user_branch_id->EditAttrs["class"] = "form-control";
 			$this->user_branch_id->EditCustomAttributes = "";
-			$this->user_branch_id->EditValue = HtmlEncode($this->user_branch_id->CurrentValue);
-			$this->user_branch_id->PlaceHolder = RemoveHtml($this->user_branch_id->caption());
+			$curVal = trim(strval($this->user_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->user_branch_id->ViewValue = $this->user_branch_id->lookupCacheOption($curVal);
+			else
+				$this->user_branch_id->ViewValue = $this->user_branch_id->Lookup !== NULL && is_array($this->user_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->user_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->user_branch_id->EditValue = array_values($this->user_branch_id->Lookup->Options);
+				if ($this->user_branch_id->ViewValue == "")
+					$this->user_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->user_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->user_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->user_branch_id->ViewValue = $this->user_branch_id->displayValue($arwrk);
+				} else {
+					$this->user_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->user_branch_id->EditValue = $arwrk;
+			}
 
 			// user_type_id
-			$this->user_type_id->EditAttrs["class"] = "form-control";
 			$this->user_type_id->EditCustomAttributes = "";
-			$this->user_type_id->EditValue = HtmlEncode($this->user_type_id->CurrentValue);
-			$this->user_type_id->PlaceHolder = RemoveHtml($this->user_type_id->caption());
+			$curVal = trim(strval($this->user_type_id->CurrentValue));
+			if ($curVal != "")
+				$this->user_type_id->ViewValue = $this->user_type_id->lookupCacheOption($curVal);
+			else
+				$this->user_type_id->ViewValue = $this->user_type_id->Lookup !== NULL && is_array($this->user_type_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->user_type_id->ViewValue !== NULL) { // Load from cache
+				$this->user_type_id->EditValue = array_values($this->user_type_id->Lookup->Options);
+				if ($this->user_type_id->ViewValue == "")
+					$this->user_type_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`user_type_id`" . SearchString("=", $this->user_type_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->user_type_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->user_type_id->ViewValue = $this->user_type_id->displayValue($arwrk);
+				} else {
+					$this->user_type_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->user_type_id->EditValue = $arwrk;
+			}
 
 			// user_name
 			$this->user_name->EditAttrs["class"] = "form-control";
@@ -1101,10 +1239,8 @@ class user_add extends user
 			$this->user_name->PlaceHolder = RemoveHtml($this->user_name->caption());
 
 			// user_password
-			$this->user_password->EditAttrs["class"] = "form-control";
+			$this->user_password->EditAttrs["class"] = "form-control ew-password-strength";
 			$this->user_password->EditCustomAttributes = "";
-			if (!$this->user_password->Raw)
-				$this->user_password->CurrentValue = HtmlDecode($this->user_password->CurrentValue);
 			$this->user_password->EditValue = HtmlEncode($this->user_password->CurrentValue);
 			$this->user_password->PlaceHolder = RemoveHtml($this->user_password->caption());
 
@@ -1127,8 +1263,18 @@ class user_add extends user
 			// user_photo
 			$this->user_photo->EditAttrs["class"] = "form-control";
 			$this->user_photo->EditCustomAttributes = "";
-			$this->user_photo->EditValue = HtmlEncode($this->user_photo->CurrentValue);
-			$this->user_photo->PlaceHolder = RemoveHtml($this->user_photo->caption());
+			if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+				$this->user_photo->ImageWidth = 200;
+				$this->user_photo->ImageHeight = 0;
+				$this->user_photo->ImageAlt = $this->user_photo->alt();
+				$this->user_photo->EditValue = $this->user_photo->Upload->DbValue;
+			} else {
+				$this->user_photo->EditValue = "";
+			}
+			if (!EmptyValue($this->user_photo->CurrentValue))
+					$this->user_photo->Upload->FileName = $this->user_photo->CurrentValue;
+			if ($this->isShow() || $this->isCopy())
+				RenderUploadField($this->user_photo);
 
 			// user_cnic
 			$this->user_cnic->EditAttrs["class"] = "form-control";
@@ -1166,7 +1312,15 @@ class user_add extends user
 
 			// user_photo
 			$this->user_photo->LinkCustomAttributes = "";
-			$this->user_photo->HrefValue = "";
+			if (!EmptyValue($this->user_photo->Upload->DbValue)) {
+				$this->user_photo->HrefValue = GetFileUploadUrl($this->user_photo, $this->user_photo->htmlDecode($this->user_photo->Upload->DbValue)); // Add prefix/suffix
+				$this->user_photo->LinkAttrs["target"] = ""; // Add target
+				if ($this->isExport())
+					$this->user_photo->HrefValue = FullUrl($this->user_photo->HrefValue, "href");
+			} else {
+				$this->user_photo->HrefValue = "";
+			}
+			$this->user_photo->ExportHrefValue = $this->user_photo->UploadPath . $this->user_photo->Upload->DbValue;
 
 			// user_cnic
 			$this->user_cnic->LinkCustomAttributes = "";
@@ -1196,16 +1350,10 @@ class user_add extends user
 				AddMessage($FormError, str_replace("%s", $this->user_branch_id->caption(), $this->user_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->user_branch_id->FormValue)) {
-			AddMessage($FormError, $this->user_branch_id->errorMessage());
-		}
 		if ($this->user_type_id->Required) {
 			if (!$this->user_type_id->IsDetailKey && $this->user_type_id->FormValue != NULL && $this->user_type_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->user_type_id->caption(), $this->user_type_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->user_type_id->FormValue)) {
-			AddMessage($FormError, $this->user_type_id->errorMessage());
 		}
 		if ($this->user_name->Required) {
 			if (!$this->user_name->IsDetailKey && $this->user_name->FormValue != NULL && $this->user_name->FormValue == "") {
@@ -1228,7 +1376,7 @@ class user_add extends user
 			}
 		}
 		if ($this->user_photo->Required) {
-			if (!$this->user_photo->IsDetailKey && $this->user_photo->FormValue != NULL && $this->user_photo->FormValue == "") {
+			if ($this->user_photo->Upload->FileName == "" && !$this->user_photo->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->user_photo->caption(), $this->user_photo->RequiredErrorMessage));
 			}
 		}
@@ -1281,10 +1429,58 @@ class user_add extends user
 		$this->user_father->setDbValueDef($rsnew, $this->user_father->CurrentValue, "", FALSE);
 
 		// user_photo
-		$this->user_photo->setDbValueDef($rsnew, $this->user_photo->CurrentValue, "", FALSE);
+		if ($this->user_photo->Visible && !$this->user_photo->Upload->KeepFile) {
+			$this->user_photo->Upload->DbValue = ""; // No need to delete old file
+			if ($this->user_photo->Upload->FileName == "") {
+				$rsnew['user_photo'] = NULL;
+			} else {
+				$rsnew['user_photo'] = $this->user_photo->Upload->FileName;
+			}
+			$this->user_photo->ImageWidth = 1000; // Resize width
+			$this->user_photo->ImageHeight = 0; // Resize height
+		}
 
 		// user_cnic
 		$this->user_cnic->setDbValueDef($rsnew, $this->user_cnic->CurrentValue, "", FALSE);
+		if ($this->user_photo->Visible && !$this->user_photo->Upload->KeepFile) {
+			$oldFiles = EmptyValue($this->user_photo->Upload->DbValue) ? [] : [$this->user_photo->htmlDecode($this->user_photo->Upload->DbValue)];
+			if (!EmptyValue($this->user_photo->Upload->FileName)) {
+				$newFiles = [$this->user_photo->Upload->FileName];
+				$NewFileCount = count($newFiles);
+				for ($i = 0; $i < $NewFileCount; $i++) {
+					if ($newFiles[$i] != "") {
+						$file = $newFiles[$i];
+						$tempPath = UploadTempPath($this->user_photo, $this->user_photo->Upload->Index);
+						if (file_exists($tempPath . $file)) {
+							if (Config("DELETE_UPLOADED_FILES")) {
+								$oldFileFound = FALSE;
+								$oldFileCount = count($oldFiles);
+								for ($j = 0; $j < $oldFileCount; $j++) {
+									$oldFile = $oldFiles[$j];
+									if ($oldFile == $file) { // Old file found, no need to delete anymore
+										unset($oldFiles[$j]);
+										$oldFileFound = TRUE;
+										break;
+									}
+								}
+								if ($oldFileFound) // No need to check if file exists further
+									continue;
+							}
+							$file1 = UniqueFilename($this->user_photo->physicalUploadPath(), $file); // Get new file name
+							if ($file1 != $file) { // Rename temp file
+								while (file_exists($tempPath . $file1) || file_exists($this->user_photo->physicalUploadPath() . $file1)) // Make sure no file name clash
+									$file1 = UniqueFilename($this->user_photo->physicalUploadPath(), $file1, TRUE); // Use indexed name
+								rename($tempPath . $file, $tempPath . $file1);
+								$newFiles[$i] = $file1;
+							}
+						}
+					}
+				}
+				$this->user_photo->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
+				$this->user_photo->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
+				$this->user_photo->setDbValueDef($rsnew, $this->user_photo->Upload->FileName, "", FALSE);
+			}
+		}
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1294,6 +1490,35 @@ class user_add extends user
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
+				if ($this->user_photo->Visible && !$this->user_photo->Upload->KeepFile) {
+					$oldFiles = EmptyValue($this->user_photo->Upload->DbValue) ? [] : [$this->user_photo->htmlDecode($this->user_photo->Upload->DbValue)];
+					if (!EmptyValue($this->user_photo->Upload->FileName)) {
+						$newFiles = [$this->user_photo->Upload->FileName];
+						$newFiles2 = [$this->user_photo->htmlDecode($rsnew['user_photo'])];
+						$newFileCount = count($newFiles);
+						for ($i = 0; $i < $newFileCount; $i++) {
+							if ($newFiles[$i] != "") {
+								$file = UploadTempPath($this->user_photo, $this->user_photo->Upload->Index) . $newFiles[$i];
+								if (file_exists($file)) {
+									if (@$newFiles2[$i] != "") // Use correct file name
+										$newFiles[$i] = $newFiles2[$i];
+									if (!$this->user_photo->Upload->ResizeAndSaveToFile($this->user_photo->ImageWidth, $this->user_photo->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
+										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
+										return FALSE;
+									}
+								}
+							}
+						}
+					} else {
+						$newFiles = [];
+					}
+					if (Config("DELETE_UPLOADED_FILES")) {
+						foreach ($oldFiles as $oldFile) {
+							if ($oldFile != "" && !in_array($oldFile, $newFiles))
+								@unlink($this->user_photo->oldPhysicalUploadPath() . $oldFile);
+						}
+					}
+				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1316,6 +1541,12 @@ class user_add extends user
 
 		// Clean upload path if any
 		if ($addRow) {
+
+			// user_photo
+			if ($this->user_photo->Upload->FileToken != "")
+				CleanUploadTempPath($this->user_photo->Upload->FileToken, $this->user_photo->Upload->Index);
+			else
+				CleanUploadTempPath($this->user_photo, $this->user_photo->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1351,6 +1582,10 @@ class user_add extends user
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_user_branch_id":
+					break;
+				case "x_user_type_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1371,6 +1606,10 @@ class user_add extends user
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_user_branch_id":
+							break;
+						case "x_user_type_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

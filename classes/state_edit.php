@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class state_edit extends state
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'state';
@@ -540,6 +540,8 @@ class state_edit extends state
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class state_edit extends state
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("statelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -655,8 +669,9 @@ class state_edit extends state
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->state_country_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -839,6 +854,11 @@ class state_edit extends state
 			return;
 		$this->state_id->setDbValue($row['state_id']);
 		$this->state_country_id->setDbValue($row['state_country_id']);
+		if (array_key_exists('EV__state_country_id', $rs->fields)) {
+			$this->state_country_id->VirtualValue = $rs->fields('EV__state_country_id'); // Set up virtual field value
+		} else {
+			$this->state_country_id->VirtualValue = ""; // Clear value
+		}
 		$this->state_name->setDbValue($row['state_name']);
 	}
 
@@ -894,11 +914,33 @@ class state_edit extends state
 
 			// state_id
 			$this->state_id->ViewValue = $this->state_id->CurrentValue;
+			$this->state_id->CssClass = "font-weight-bold";
 			$this->state_id->ViewCustomAttributes = "";
 
 			// state_country_id
-			$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
-			$this->state_country_id->ViewValue = FormatNumber($this->state_country_id->ViewValue, 0, -2, -2, -2);
+			if ($this->state_country_id->VirtualValue != "") {
+				$this->state_country_id->ViewValue = $this->state_country_id->VirtualValue;
+			} else {
+				$curVal = strval($this->state_country_id->CurrentValue);
+				if ($curVal != "") {
+					$this->state_country_id->ViewValue = $this->state_country_id->lookupCacheOption($curVal);
+					if ($this->state_country_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`country_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->state_country_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->state_country_id->ViewValue = $this->state_country_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->state_country_id->ViewValue = NULL;
+				}
+			}
 			$this->state_country_id->ViewCustomAttributes = "";
 
 			// state_name
@@ -925,13 +967,40 @@ class state_edit extends state
 			$this->state_id->EditAttrs["class"] = "form-control";
 			$this->state_id->EditCustomAttributes = "";
 			$this->state_id->EditValue = $this->state_id->CurrentValue;
+			$this->state_id->CssClass = "font-weight-bold";
 			$this->state_id->ViewCustomAttributes = "";
 
 			// state_country_id
-			$this->state_country_id->EditAttrs["class"] = "form-control";
 			$this->state_country_id->EditCustomAttributes = "";
-			$this->state_country_id->EditValue = HtmlEncode($this->state_country_id->CurrentValue);
-			$this->state_country_id->PlaceHolder = RemoveHtml($this->state_country_id->caption());
+			$curVal = trim(strval($this->state_country_id->CurrentValue));
+			if ($curVal != "")
+				$this->state_country_id->ViewValue = $this->state_country_id->lookupCacheOption($curVal);
+			else
+				$this->state_country_id->ViewValue = $this->state_country_id->Lookup !== NULL && is_array($this->state_country_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->state_country_id->ViewValue !== NULL) { // Load from cache
+				$this->state_country_id->EditValue = array_values($this->state_country_id->Lookup->Options);
+				if ($this->state_country_id->ViewValue == "")
+					$this->state_country_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`country_id`" . SearchString("=", $this->state_country_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->state_country_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->state_country_id->ViewValue = $this->state_country_id->displayValue($arwrk);
+				} else {
+					$this->state_country_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->state_country_id->EditValue = $arwrk;
+			}
 
 			// state_name
 			$this->state_name->EditAttrs["class"] = "form-control";
@@ -983,9 +1052,6 @@ class state_edit extends state
 			if (!$this->state_country_id->IsDetailKey && $this->state_country_id->FormValue != NULL && $this->state_country_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->state_country_id->caption(), $this->state_country_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->state_country_id->FormValue)) {
-			AddMessage($FormError, $this->state_country_id->errorMessage());
 		}
 		if ($this->state_name->Required) {
 			if (!$this->state_name->IsDetailKey && $this->state_name->FormValue != NULL && $this->state_name->FormValue == "") {
@@ -1116,6 +1182,8 @@ class state_edit extends state
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_state_country_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1136,6 +1204,8 @@ class state_edit extends state
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_state_country_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

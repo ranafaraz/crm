@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_api_edit extends sms_api
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'sms_api';
@@ -540,6 +540,8 @@ class sms_api_edit extends sms_api
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -626,6 +628,18 @@ class sms_api_edit extends sms_api
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canEdit()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("sms_apilist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -822,7 +836,7 @@ class sms_api_edit extends sms_api
 				$this->sms_api_reg_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->sms_api_reg_date->setFormValue($val);
-			$this->sms_api_reg_date->CurrentValue = UnFormatDateTime($this->sms_api_reg_date->CurrentValue, 0);
+			$this->sms_api_reg_date->CurrentValue = UnFormatDateTime($this->sms_api_reg_date->CurrentValue, 2);
 		}
 
 		// Check field name 'sms_api_expiry_date' first before field var 'x_sms_api_expiry_date'
@@ -832,7 +846,7 @@ class sms_api_edit extends sms_api
 				$this->sms_api_expiry_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->sms_api_expiry_date->setFormValue($val);
-			$this->sms_api_expiry_date->CurrentValue = UnFormatDateTime($this->sms_api_expiry_date->CurrentValue, 0);
+			$this->sms_api_expiry_date->CurrentValue = UnFormatDateTime($this->sms_api_expiry_date->CurrentValue, 2);
 		}
 
 		// Check field name 'sms_api_total_sms' first before field var 'x_sms_api_total_sms'
@@ -855,9 +869,9 @@ class sms_api_edit extends sms_api
 		$this->sms_api_url->CurrentValue = $this->sms_api_url->FormValue;
 		$this->sms_api_mask->CurrentValue = $this->sms_api_mask->FormValue;
 		$this->sms_api_reg_date->CurrentValue = $this->sms_api_reg_date->FormValue;
-		$this->sms_api_reg_date->CurrentValue = UnFormatDateTime($this->sms_api_reg_date->CurrentValue, 0);
+		$this->sms_api_reg_date->CurrentValue = UnFormatDateTime($this->sms_api_reg_date->CurrentValue, 2);
 		$this->sms_api_expiry_date->CurrentValue = $this->sms_api_expiry_date->FormValue;
-		$this->sms_api_expiry_date->CurrentValue = UnFormatDateTime($this->sms_api_expiry_date->CurrentValue, 0);
+		$this->sms_api_expiry_date->CurrentValue = UnFormatDateTime($this->sms_api_expiry_date->CurrentValue, 2);
 		$this->sms_api_total_sms->CurrentValue = $this->sms_api_total_sms->FormValue;
 	}
 
@@ -968,6 +982,7 @@ class sms_api_edit extends sms_api
 
 			// sms_api_id
 			$this->sms_api_id->ViewValue = $this->sms_api_id->CurrentValue;
+			$this->sms_api_id->CssClass = "font-weight-bold";
 			$this->sms_api_id->ViewCustomAttributes = "";
 
 			// sms_api_user
@@ -988,12 +1003,12 @@ class sms_api_edit extends sms_api
 
 			// sms_api_reg_date
 			$this->sms_api_reg_date->ViewValue = $this->sms_api_reg_date->CurrentValue;
-			$this->sms_api_reg_date->ViewValue = FormatDateTime($this->sms_api_reg_date->ViewValue, 0);
+			$this->sms_api_reg_date->ViewValue = FormatDateTime($this->sms_api_reg_date->ViewValue, 2);
 			$this->sms_api_reg_date->ViewCustomAttributes = "";
 
 			// sms_api_expiry_date
 			$this->sms_api_expiry_date->ViewValue = $this->sms_api_expiry_date->CurrentValue;
-			$this->sms_api_expiry_date->ViewValue = FormatDateTime($this->sms_api_expiry_date->ViewValue, 0);
+			$this->sms_api_expiry_date->ViewValue = FormatDateTime($this->sms_api_expiry_date->ViewValue, 2);
 			$this->sms_api_expiry_date->ViewCustomAttributes = "";
 
 			// sms_api_total_sms
@@ -1046,6 +1061,7 @@ class sms_api_edit extends sms_api
 			$this->sms_api_id->EditAttrs["class"] = "form-control";
 			$this->sms_api_id->EditCustomAttributes = "";
 			$this->sms_api_id->EditValue = $this->sms_api_id->CurrentValue;
+			$this->sms_api_id->CssClass = "font-weight-bold";
 			$this->sms_api_id->ViewCustomAttributes = "";
 
 			// sms_api_user
@@ -1083,13 +1099,13 @@ class sms_api_edit extends sms_api
 			// sms_api_reg_date
 			$this->sms_api_reg_date->EditAttrs["class"] = "form-control";
 			$this->sms_api_reg_date->EditCustomAttributes = "";
-			$this->sms_api_reg_date->EditValue = HtmlEncode(FormatDateTime($this->sms_api_reg_date->CurrentValue, 8));
+			$this->sms_api_reg_date->EditValue = HtmlEncode(FormatDateTime($this->sms_api_reg_date->CurrentValue, 2));
 			$this->sms_api_reg_date->PlaceHolder = RemoveHtml($this->sms_api_reg_date->caption());
 
 			// sms_api_expiry_date
 			$this->sms_api_expiry_date->EditAttrs["class"] = "form-control";
 			$this->sms_api_expiry_date->EditCustomAttributes = "";
-			$this->sms_api_expiry_date->EditValue = HtmlEncode(FormatDateTime($this->sms_api_expiry_date->CurrentValue, 8));
+			$this->sms_api_expiry_date->EditValue = HtmlEncode(FormatDateTime($this->sms_api_expiry_date->CurrentValue, 2));
 			$this->sms_api_expiry_date->PlaceHolder = RemoveHtml($this->sms_api_expiry_date->caption());
 
 			// sms_api_total_sms
@@ -1250,10 +1266,10 @@ class sms_api_edit extends sms_api
 			$this->sms_api_mask->setDbValueDef($rsnew, $this->sms_api_mask->CurrentValue, "", $this->sms_api_mask->ReadOnly);
 
 			// sms_api_reg_date
-			$this->sms_api_reg_date->setDbValueDef($rsnew, UnFormatDateTime($this->sms_api_reg_date->CurrentValue, 0), CurrentDate(), $this->sms_api_reg_date->ReadOnly);
+			$this->sms_api_reg_date->setDbValueDef($rsnew, UnFormatDateTime($this->sms_api_reg_date->CurrentValue, 2), CurrentDate(), $this->sms_api_reg_date->ReadOnly);
 
 			// sms_api_expiry_date
-			$this->sms_api_expiry_date->setDbValueDef($rsnew, UnFormatDateTime($this->sms_api_expiry_date->CurrentValue, 0), CurrentDate(), $this->sms_api_expiry_date->ReadOnly);
+			$this->sms_api_expiry_date->setDbValueDef($rsnew, UnFormatDateTime($this->sms_api_expiry_date->CurrentValue, 2), CurrentDate(), $this->sms_api_expiry_date->ReadOnly);
 
 			// sms_api_total_sms
 			$this->sms_api_total_sms->setDbValueDef($rsnew, $this->sms_api_total_sms->CurrentValue, 0, $this->sms_api_total_sms->ReadOnly);

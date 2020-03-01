@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_template_add extends sms_template
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'sms_template';
@@ -540,6 +540,8 @@ class sms_template_add extends sms_template
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class sms_template_add extends sms_template
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("sms_templatelist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -660,8 +674,9 @@ class sms_template_add extends sms_template
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->sms_temp_branch_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -864,6 +879,11 @@ class sms_template_add extends sms_template
 			return;
 		$this->sms_temp_id->setDbValue($row['sms_temp_id']);
 		$this->sms_temp_branch_id->setDbValue($row['sms_temp_branch_id']);
+		if (array_key_exists('EV__sms_temp_branch_id', $rs->fields)) {
+			$this->sms_temp_branch_id->VirtualValue = $rs->fields('EV__sms_temp_branch_id'); // Set up virtual field value
+		} else {
+			$this->sms_temp_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->sms_temp_caption->setDbValue($row['sms_temp_caption']);
 		$this->sms_temp_msg->setDbValue($row['sms_temp_msg']);
 	}
@@ -923,11 +943,33 @@ class sms_template_add extends sms_template
 
 			// sms_temp_id
 			$this->sms_temp_id->ViewValue = $this->sms_temp_id->CurrentValue;
+			$this->sms_temp_id->CssClass = "font-weight-bold";
 			$this->sms_temp_id->ViewCustomAttributes = "";
 
 			// sms_temp_branch_id
-			$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->CurrentValue;
-			$this->sms_temp_branch_id->ViewValue = FormatNumber($this->sms_temp_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sms_temp_branch_id->VirtualValue != "") {
+				$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sms_temp_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->lookupCacheOption($curVal);
+					if ($this->sms_temp_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sms_temp_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sms_temp_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->sms_temp_branch_id->ViewCustomAttributes = "";
 
 			// sms_temp_caption
@@ -955,10 +997,36 @@ class sms_template_add extends sms_template
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// sms_temp_branch_id
-			$this->sms_temp_branch_id->EditAttrs["class"] = "form-control";
 			$this->sms_temp_branch_id->EditCustomAttributes = "";
-			$this->sms_temp_branch_id->EditValue = HtmlEncode($this->sms_temp_branch_id->CurrentValue);
-			$this->sms_temp_branch_id->PlaceHolder = RemoveHtml($this->sms_temp_branch_id->caption());
+			$curVal = trim(strval($this->sms_temp_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->lookupCacheOption($curVal);
+			else
+				$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->Lookup !== NULL && is_array($this->sms_temp_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sms_temp_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->sms_temp_branch_id->EditValue = array_values($this->sms_temp_branch_id->Lookup->Options);
+				if ($this->sms_temp_branch_id->ViewValue == "")
+					$this->sms_temp_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->sms_temp_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sms_temp_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->displayValue($arwrk);
+				} else {
+					$this->sms_temp_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sms_temp_branch_id->EditValue = $arwrk;
+			}
 
 			// sms_temp_caption
 			$this->sms_temp_caption->EditAttrs["class"] = "form-control";
@@ -971,8 +1039,6 @@ class sms_template_add extends sms_template
 			// sms_temp_msg
 			$this->sms_temp_msg->EditAttrs["class"] = "form-control";
 			$this->sms_temp_msg->EditCustomAttributes = "";
-			if (!$this->sms_temp_msg->Raw)
-				$this->sms_temp_msg->CurrentValue = HtmlDecode($this->sms_temp_msg->CurrentValue);
 			$this->sms_temp_msg->EditValue = HtmlEncode($this->sms_temp_msg->CurrentValue);
 			$this->sms_temp_msg->PlaceHolder = RemoveHtml($this->sms_temp_msg->caption());
 
@@ -1013,9 +1079,6 @@ class sms_template_add extends sms_template
 			if (!$this->sms_temp_branch_id->IsDetailKey && $this->sms_temp_branch_id->FormValue != NULL && $this->sms_temp_branch_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->sms_temp_branch_id->caption(), $this->sms_temp_branch_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->sms_temp_branch_id->FormValue)) {
-			AddMessage($FormError, $this->sms_temp_branch_id->errorMessage());
 		}
 		if ($this->sms_temp_caption->Required) {
 			if (!$this->sms_temp_caption->IsDetailKey && $this->sms_temp_caption->FormValue != NULL && $this->sms_temp_caption->FormValue == "") {
@@ -1126,6 +1189,8 @@ class sms_template_add extends sms_template
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_sms_temp_branch_id":
+					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1146,6 +1211,8 @@ class sms_template_add extends sms_template
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_sms_temp_branch_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

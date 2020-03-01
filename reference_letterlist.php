@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $reference_letter_list = new reference_letter_list();
 $reference_letter_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $reference_letter_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$reference_letter_list->isExport() && !$reference_letter->CurrentAction) { ?>
 <form name="freference_letterlistsrch" id="freference_letterlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="freference_letterlistsrch-search-panel" class="<?php echo $reference_letter_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $reference_letter_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $reference_letter_list->showPageHeader(); ?>
 <?php
 $reference_letter_list->showMessage();
 ?>
 <?php if ($reference_letter_list->TotalRecords > 0 || $reference_letter->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($reference_letter_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> reference_letter">
+<?php if (!$reference_letter_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$reference_letter_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $reference_letter_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $reference_letter_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="freference_letterlist" id="freference_letterlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -288,7 +304,7 @@ $reference_letter_list->ListOptions->render("body", "left", $reference_letter_li
 	<?php if ($reference_letter_list->ref_letter_scanned->Visible) { // ref_letter_scanned ?>
 		<td data-name="ref_letter_scanned" <?php echo $reference_letter_list->ref_letter_scanned->cellAttributes() ?>>
 <span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_scanned">
-<span<?php echo $reference_letter_list->ref_letter_scanned->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_scanned->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($reference_letter_list->ref_letter_scanned, $reference_letter_list->ref_letter_scanned->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	<?php } ?>

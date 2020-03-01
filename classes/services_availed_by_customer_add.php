@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_availed_by_customer_add extends services_availed_by_customer
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
+	public $ProjectID = "{BFF6A03D-187E-47A2-84E2-79ECDD25AAA0}";
 
 	// Table name
 	public $TableName = 'services_availed_by_customer';
@@ -540,6 +540,8 @@ class services_availed_by_customer_add extends services_availed_by_customer
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
+		if (!$Security->isLoggedIn()) // Logged in
+			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -630,6 +632,18 @@ class services_availed_by_customer_add extends services_availed_by_customer
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("services_availed_by_customerlist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
 		}
 
 		// Create form object
@@ -664,8 +678,11 @@ class services_availed_by_customer_add extends services_availed_by_customer
 		$this->createToken();
 
 		// Set up lookup cache
-		// Check modal
+		$this->setupLookupOptions($this->sabc_branch_id);
+		$this->setupLookupOptions($this->sabc_business_id);
+		$this->setupLookupOptions($this->sabc_service_id);
 
+		// Check modal
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -860,7 +877,7 @@ class services_availed_by_customer_add extends services_availed_by_customer
 				$this->sabc_signed_on->Visible = FALSE; // Disable update for API request
 			else
 				$this->sabc_signed_on->setFormValue($val);
-			$this->sabc_signed_on->CurrentValue = UnFormatDateTime($this->sabc_signed_on->CurrentValue, 0);
+			$this->sabc_signed_on->CurrentValue = UnFormatDateTime($this->sabc_signed_on->CurrentValue, 2);
 		}
 
 		// Check field name 'sabc_id' first before field var 'x_sabc_id'
@@ -878,7 +895,7 @@ class services_availed_by_customer_add extends services_availed_by_customer
 		$this->sabc_amount->CurrentValue = $this->sabc_amount->FormValue;
 		$this->sabc_desc->CurrentValue = $this->sabc_desc->FormValue;
 		$this->sabc_signed_on->CurrentValue = $this->sabc_signed_on->FormValue;
-		$this->sabc_signed_on->CurrentValue = UnFormatDateTime($this->sabc_signed_on->CurrentValue, 0);
+		$this->sabc_signed_on->CurrentValue = UnFormatDateTime($this->sabc_signed_on->CurrentValue, 2);
 	}
 
 	// Load row based on key values
@@ -918,8 +935,23 @@ class services_availed_by_customer_add extends services_availed_by_customer
 			return;
 		$this->sabc_id->setDbValue($row['sabc_id']);
 		$this->sabc_branch_id->setDbValue($row['sabc_branch_id']);
+		if (array_key_exists('EV__sabc_branch_id', $rs->fields)) {
+			$this->sabc_branch_id->VirtualValue = $rs->fields('EV__sabc_branch_id'); // Set up virtual field value
+		} else {
+			$this->sabc_branch_id->VirtualValue = ""; // Clear value
+		}
 		$this->sabc_business_id->setDbValue($row['sabc_business_id']);
+		if (array_key_exists('EV__sabc_business_id', $rs->fields)) {
+			$this->sabc_business_id->VirtualValue = $rs->fields('EV__sabc_business_id'); // Set up virtual field value
+		} else {
+			$this->sabc_business_id->VirtualValue = ""; // Clear value
+		}
 		$this->sabc_service_id->setDbValue($row['sabc_service_id']);
+		if (array_key_exists('EV__sabc_service_id', $rs->fields)) {
+			$this->sabc_service_id->VirtualValue = $rs->fields('EV__sabc_service_id'); // Set up virtual field value
+		} else {
+			$this->sabc_service_id->VirtualValue = ""; // Clear value
+		}
 		$this->sabc_pkg->setDbValue($row['sabc_pkg']);
 		$this->sabc_amount->setDbValue($row['sabc_amount']);
 		$this->sabc_desc->setDbValue($row['sabc_desc']);
@@ -989,21 +1021,85 @@ class services_availed_by_customer_add extends services_availed_by_customer
 
 			// sabc_id
 			$this->sabc_id->ViewValue = $this->sabc_id->CurrentValue;
+			$this->sabc_id->CssClass = "font-weight-bold";
 			$this->sabc_id->ViewCustomAttributes = "";
 
 			// sabc_branch_id
-			$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
-			$this->sabc_branch_id->ViewValue = FormatNumber($this->sabc_branch_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sabc_branch_id->VirtualValue != "") {
+				$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sabc_branch_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->lookupCacheOption($curVal);
+					if ($this->sabc_branch_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sabc_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sabc_branch_id->ViewValue = NULL;
+				}
+			}
 			$this->sabc_branch_id->ViewCustomAttributes = "";
 
 			// sabc_business_id
-			$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
-			$this->sabc_business_id->ViewValue = FormatNumber($this->sabc_business_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sabc_business_id->VirtualValue != "") {
+				$this->sabc_business_id->ViewValue = $this->sabc_business_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sabc_business_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sabc_business_id->ViewValue = $this->sabc_business_id->lookupCacheOption($curVal);
+					if ($this->sabc_business_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sabc_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sabc_business_id->ViewValue = $this->sabc_business_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sabc_business_id->ViewValue = NULL;
+				}
+			}
 			$this->sabc_business_id->ViewCustomAttributes = "";
 
 			// sabc_service_id
-			$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
-			$this->sabc_service_id->ViewValue = FormatNumber($this->sabc_service_id->ViewValue, 0, -2, -2, -2);
+			if ($this->sabc_service_id->VirtualValue != "") {
+				$this->sabc_service_id->ViewValue = $this->sabc_service_id->VirtualValue;
+			} else {
+				$curVal = strval($this->sabc_service_id->CurrentValue);
+				if ($curVal != "") {
+					$this->sabc_service_id->ViewValue = $this->sabc_service_id->lookupCacheOption($curVal);
+					if ($this->sabc_service_id->ViewValue === NULL) { // Lookup from database
+						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
+						$sqlWrk = $this->sabc_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
+						$rswrk = Conn()->execute($sqlWrk);
+						if ($rswrk && !$rswrk->EOF) { // Lookup values found
+							$arwrk = [];
+							$arwrk[1] = $rswrk->fields('df');
+							$this->sabc_service_id->ViewValue = $this->sabc_service_id->displayValue($arwrk);
+							$rswrk->Close();
+						} else {
+							$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
+						}
+					}
+				} else {
+					$this->sabc_service_id->ViewValue = NULL;
+				}
+			}
 			$this->sabc_service_id->ViewCustomAttributes = "";
 
 			// sabc_pkg
@@ -1025,7 +1121,7 @@ class services_availed_by_customer_add extends services_availed_by_customer
 
 			// sabc_signed_on
 			$this->sabc_signed_on->ViewValue = $this->sabc_signed_on->CurrentValue;
-			$this->sabc_signed_on->ViewValue = FormatDateTime($this->sabc_signed_on->ViewValue, 0);
+			$this->sabc_signed_on->ViewValue = FormatDateTime($this->sabc_signed_on->ViewValue, 2);
 			$this->sabc_signed_on->ViewCustomAttributes = "";
 
 			// sabc_branch_id
@@ -1065,22 +1161,100 @@ class services_availed_by_customer_add extends services_availed_by_customer
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// sabc_branch_id
-			$this->sabc_branch_id->EditAttrs["class"] = "form-control";
 			$this->sabc_branch_id->EditCustomAttributes = "";
-			$this->sabc_branch_id->EditValue = HtmlEncode($this->sabc_branch_id->CurrentValue);
-			$this->sabc_branch_id->PlaceHolder = RemoveHtml($this->sabc_branch_id->caption());
+			$curVal = trim(strval($this->sabc_branch_id->CurrentValue));
+			if ($curVal != "")
+				$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->lookupCacheOption($curVal);
+			else
+				$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->Lookup !== NULL && is_array($this->sabc_branch_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sabc_branch_id->ViewValue !== NULL) { // Load from cache
+				$this->sabc_branch_id->EditValue = array_values($this->sabc_branch_id->Lookup->Options);
+				if ($this->sabc_branch_id->ViewValue == "")
+					$this->sabc_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`branch_id`" . SearchString("=", $this->sabc_branch_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sabc_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->displayValue($arwrk);
+				} else {
+					$this->sabc_branch_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sabc_branch_id->EditValue = $arwrk;
+			}
 
 			// sabc_business_id
-			$this->sabc_business_id->EditAttrs["class"] = "form-control";
 			$this->sabc_business_id->EditCustomAttributes = "";
-			$this->sabc_business_id->EditValue = HtmlEncode($this->sabc_business_id->CurrentValue);
-			$this->sabc_business_id->PlaceHolder = RemoveHtml($this->sabc_business_id->caption());
+			$curVal = trim(strval($this->sabc_business_id->CurrentValue));
+			if ($curVal != "")
+				$this->sabc_business_id->ViewValue = $this->sabc_business_id->lookupCacheOption($curVal);
+			else
+				$this->sabc_business_id->ViewValue = $this->sabc_business_id->Lookup !== NULL && is_array($this->sabc_business_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sabc_business_id->ViewValue !== NULL) { // Load from cache
+				$this->sabc_business_id->EditValue = array_values($this->sabc_business_id->Lookup->Options);
+				if ($this->sabc_business_id->ViewValue == "")
+					$this->sabc_business_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`b_id`" . SearchString("=", $this->sabc_business_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sabc_business_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sabc_business_id->ViewValue = $this->sabc_business_id->displayValue($arwrk);
+				} else {
+					$this->sabc_business_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sabc_business_id->EditValue = $arwrk;
+			}
 
 			// sabc_service_id
-			$this->sabc_service_id->EditAttrs["class"] = "form-control";
 			$this->sabc_service_id->EditCustomAttributes = "";
-			$this->sabc_service_id->EditValue = HtmlEncode($this->sabc_service_id->CurrentValue);
-			$this->sabc_service_id->PlaceHolder = RemoveHtml($this->sabc_service_id->caption());
+			$curVal = trim(strval($this->sabc_service_id->CurrentValue));
+			if ($curVal != "")
+				$this->sabc_service_id->ViewValue = $this->sabc_service_id->lookupCacheOption($curVal);
+			else
+				$this->sabc_service_id->ViewValue = $this->sabc_service_id->Lookup !== NULL && is_array($this->sabc_service_id->Lookup->Options) ? $curVal : NULL;
+			if ($this->sabc_service_id->ViewValue !== NULL) { // Load from cache
+				$this->sabc_service_id->EditValue = array_values($this->sabc_service_id->Lookup->Options);
+				if ($this->sabc_service_id->ViewValue == "")
+					$this->sabc_service_id->ViewValue = $Language->phrase("PleaseSelect");
+			} else { // Lookup from database
+				if ($curVal == "") {
+					$filterWrk = "0=1";
+				} else {
+					$filterWrk = "`service_id`" . SearchString("=", $this->sabc_service_id->CurrentValue, DATATYPE_NUMBER, "");
+				}
+				$sqlWrk = $this->sabc_service_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
+				$rswrk = Conn()->execute($sqlWrk);
+				if ($rswrk && !$rswrk->EOF) { // Lookup values found
+					$arwrk = [];
+					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
+					$this->sabc_service_id->ViewValue = $this->sabc_service_id->displayValue($arwrk);
+				} else {
+					$this->sabc_service_id->ViewValue = $Language->phrase("PleaseSelect");
+				}
+				$arwrk = $rswrk ? $rswrk->getRows() : [];
+				if ($rswrk)
+					$rswrk->close();
+				$this->sabc_service_id->EditValue = $arwrk;
+			}
 
 			// sabc_pkg
 			$this->sabc_pkg->EditCustomAttributes = "";
@@ -1101,7 +1275,7 @@ class services_availed_by_customer_add extends services_availed_by_customer
 			// sabc_signed_on
 			$this->sabc_signed_on->EditAttrs["class"] = "form-control";
 			$this->sabc_signed_on->EditCustomAttributes = "";
-			$this->sabc_signed_on->EditValue = HtmlEncode(FormatDateTime($this->sabc_signed_on->CurrentValue, 8));
+			$this->sabc_signed_on->EditValue = HtmlEncode(FormatDateTime($this->sabc_signed_on->CurrentValue, 2));
 			$this->sabc_signed_on->PlaceHolder = RemoveHtml($this->sabc_signed_on->caption());
 
 			// Add refer script
@@ -1158,24 +1332,15 @@ class services_availed_by_customer_add extends services_availed_by_customer
 				AddMessage($FormError, str_replace("%s", $this->sabc_branch_id->caption(), $this->sabc_branch_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->sabc_branch_id->FormValue)) {
-			AddMessage($FormError, $this->sabc_branch_id->errorMessage());
-		}
 		if ($this->sabc_business_id->Required) {
 			if (!$this->sabc_business_id->IsDetailKey && $this->sabc_business_id->FormValue != NULL && $this->sabc_business_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->sabc_business_id->caption(), $this->sabc_business_id->RequiredErrorMessage));
 			}
 		}
-		if (!CheckInteger($this->sabc_business_id->FormValue)) {
-			AddMessage($FormError, $this->sabc_business_id->errorMessage());
-		}
 		if ($this->sabc_service_id->Required) {
 			if (!$this->sabc_service_id->IsDetailKey && $this->sabc_service_id->FormValue != NULL && $this->sabc_service_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->sabc_service_id->caption(), $this->sabc_service_id->RequiredErrorMessage));
 			}
-		}
-		if (!CheckInteger($this->sabc_service_id->FormValue)) {
-			AddMessage($FormError, $this->sabc_service_id->errorMessage());
 		}
 		if ($this->sabc_pkg->Required) {
 			if ($this->sabc_pkg->FormValue == "") {
@@ -1247,7 +1412,7 @@ class services_availed_by_customer_add extends services_availed_by_customer
 		$this->sabc_desc->setDbValueDef($rsnew, $this->sabc_desc->CurrentValue, "", FALSE);
 
 		// sabc_signed_on
-		$this->sabc_signed_on->setDbValueDef($rsnew, UnFormatDateTime($this->sabc_signed_on->CurrentValue, 0), CurrentDate(), FALSE);
+		$this->sabc_signed_on->setDbValueDef($rsnew, UnFormatDateTime($this->sabc_signed_on->CurrentValue, 2), CurrentDate(), FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1314,6 +1479,12 @@ class services_availed_by_customer_add extends services_availed_by_customer
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
+				case "x_sabc_branch_id":
+					break;
+				case "x_sabc_business_id":
+					break;
+				case "x_sabc_service_id":
+					break;
 				case "x_sabc_pkg":
 					break;
 				default:
@@ -1336,6 +1507,12 @@ class services_availed_by_customer_add extends services_availed_by_customer
 
 					// Format the field values
 					switch ($fld->FieldVar) {
+						case "x_sabc_branch_id":
+							break;
+						case "x_sabc_business_id":
+							break;
+						case "x_sabc_service_id":
+							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

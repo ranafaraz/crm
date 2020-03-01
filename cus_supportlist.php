@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $cus_support_list = new cus_support_list();
 $cus_support_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -73,6 +74,19 @@ $cus_support_list->showMessage();
 ?>
 <?php if ($cus_support_list->TotalRecords > 0 || $cus_support->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($cus_support_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> cus_support">
+<?php if (!$cus_support_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$cus_support_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $cus_support_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $cus_support_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="fcus_supportlist" id="fcus_supportlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">

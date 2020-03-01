@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\project1;
+namespace PHPMaker2020\crm_live;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,6 +23,7 @@ $employees_list = new employees_list();
 $employees_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -85,6 +86,7 @@ loadjs.ready("head", function() {
 <?php
 $employees_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$employees_list->isExport() && !$employees->CurrentAction) { ?>
 <form name="femployeeslistsrch" id="femployeeslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="femployeeslistsrch-search-panel" class="<?php echo $employees_list->SearchPanelClass ?>">
@@ -111,12 +113,26 @@ $employees_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
+<?php } ?>
 <?php $employees_list->showPageHeader(); ?>
 <?php
 $employees_list->showMessage();
 ?>
 <?php if ($employees_list->TotalRecords > 0 || $employees->CurrentAction) { ?>
 <div class="card ew-card ew-grid<?php if ($employees_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> employees">
+<?php if (!$employees_list->isExport()) { ?>
+<div class="card-header ew-grid-upper-panel">
+<?php if (!$employees_list->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $employees_list->Pager->render() ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $employees_list->OtherOptions->render("body") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 <form name="femployeeslist" id="femployeeslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -375,7 +391,7 @@ $employees_list->ListOptions->render("body", "left", $employees_list->RowCount);
 	<?php if ($employees_list->emp_photo->Visible) { // emp_photo ?>
 		<td data-name="emp_photo" <?php echo $employees_list->emp_photo->cellAttributes() ?>>
 <span id="el<?php echo $employees_list->RowCount ?>_employees_emp_photo">
-<span<?php echo $employees_list->emp_photo->viewAttributes() ?>><?php echo $employees_list->emp_photo->getViewValue() ?></span>
+<span><?php echo GetFileViewTag($employees_list->emp_photo, $employees_list->emp_photo->getViewValue(), FALSE) ?></span>
 </span>
 </td>
 	<?php } ?>
