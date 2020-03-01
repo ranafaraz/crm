@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $business_delete = new business_delete();
 $business_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -79,11 +78,11 @@ $business_delete->showMessage();
 <?php if ($business_delete->b_b_type_id->Visible) { // b_b_type_id ?>
 		<th class="<?php echo $business_delete->b_b_type_id->headerCellClass() ?>"><span id="elh_business_b_b_type_id" class="business_b_b_type_id"><?php echo $business_delete->b_b_type_id->caption() ?></span></th>
 <?php } ?>
-<?php if ($business_delete->b_b_nature_id->Visible) { // b_b_nature_id ?>
-		<th class="<?php echo $business_delete->b_b_nature_id->headerCellClass() ?>"><span id="elh_business_b_b_nature_id" class="business_b_b_nature_id"><?php echo $business_delete->b_b_nature_id->caption() ?></span></th>
-<?php } ?>
 <?php if ($business_delete->b_b_status_id->Visible) { // b_b_status_id ?>
 		<th class="<?php echo $business_delete->b_b_status_id->headerCellClass() ?>"><span id="elh_business_b_b_status_id" class="business_b_b_status_id"><?php echo $business_delete->b_b_status_id->caption() ?></span></th>
+<?php } ?>
+<?php if ($business_delete->b_b_nature_id->Visible) { // b_b_nature_id ?>
+		<th class="<?php echo $business_delete->b_b_nature_id->headerCellClass() ?>"><span id="elh_business_b_b_nature_id" class="business_b_b_nature_id"><?php echo $business_delete->b_b_nature_id->caption() ?></span></th>
 <?php } ?>
 <?php if ($business_delete->b_city_id->Visible) { // b_city_id ?>
 		<th class="<?php echo $business_delete->b_city_id->headerCellClass() ?>"><span id="elh_business_b_city_id" class="business_b_city_id"><?php echo $business_delete->b_city_id->caption() ?></span></th>
@@ -169,17 +168,17 @@ while (!$business_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($business_delete->b_b_nature_id->Visible) { // b_b_nature_id ?>
-		<td <?php echo $business_delete->b_b_nature_id->cellAttributes() ?>>
-<span id="el<?php echo $business_delete->RowCount ?>_business_b_b_nature_id" class="business_b_b_nature_id">
-<span<?php echo $business_delete->b_b_nature_id->viewAttributes() ?>><?php echo $business_delete->b_b_nature_id->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($business_delete->b_b_status_id->Visible) { // b_b_status_id ?>
 		<td <?php echo $business_delete->b_b_status_id->cellAttributes() ?>>
 <span id="el<?php echo $business_delete->RowCount ?>_business_b_b_status_id" class="business_b_b_status_id">
 <span<?php echo $business_delete->b_b_status_id->viewAttributes() ?>><?php echo $business_delete->b_b_status_id->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($business_delete->b_b_nature_id->Visible) { // b_b_nature_id ?>
+		<td <?php echo $business_delete->b_b_nature_id->cellAttributes() ?>>
+<span id="el<?php echo $business_delete->RowCount ?>_business_b_b_nature_id" class="business_b_b_nature_id">
+<span<?php echo $business_delete->b_b_nature_id->viewAttributes() ?>><?php echo $business_delete->b_b_nature_id->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>
@@ -242,7 +241,7 @@ while (!$business_delete->Recordset->EOF) {
 <?php if ($business_delete->b_logo->Visible) { // b_logo ?>
 		<td <?php echo $business_delete->b_logo->cellAttributes() ?>>
 <span id="el<?php echo $business_delete->RowCount ?>_business_b_logo" class="business_b_logo">
-<span><?php echo GetFileViewTag($business_delete->b_logo, $business_delete->b_logo->getViewValue(), FALSE) ?></span>
+<span<?php echo $business_delete->b_logo->viewAttributes() ?>><?php echo $business_delete->b_logo->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

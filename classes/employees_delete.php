@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class employees_delete extends employees
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'employees';
@@ -325,7 +325,6 @@ class employees_delete extends employees
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class employees_delete extends employees
 			$GLOBALS["Table"] = &$GLOBALS["employees"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class employees_delete extends employees
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class employees_delete extends employees
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,32 +539,16 @@ class employees_delete extends employees
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("employeeslist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->emp_id->setVisibility();
 		$this->emp_branch_id->setVisibility();
 		$this->emp_designation_id->setVisibility();
+		$this->emp_city_id->setVisibility();
 		$this->emp_name->setVisibility();
 		$this->emp_father->setVisibility();
 		$this->emp_cnic->setVisibility();
 		$this->emp_address->setVisibility();
-		$this->emp_city_id->setVisibility();
 		$this->emp_contact->setVisibility();
 		$this->emp_email->setVisibility();
 		$this->emp_photo->setVisibility();
@@ -600,11 +573,8 @@ class employees_delete extends employees
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->emp_branch_id);
-		$this->setupLookupOptions($this->emp_designation_id);
-		$this->setupLookupOptions($this->emp_city_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -671,7 +641,7 @@ class employees_delete extends employees
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -723,20 +693,14 @@ class employees_delete extends employees
 		$this->emp_id->setDbValue($row['emp_id']);
 		$this->emp_branch_id->setDbValue($row['emp_branch_id']);
 		$this->emp_designation_id->setDbValue($row['emp_designation_id']);
+		$this->emp_city_id->setDbValue($row['emp_city_id']);
 		$this->emp_name->setDbValue($row['emp_name']);
 		$this->emp_father->setDbValue($row['emp_father']);
 		$this->emp_cnic->setDbValue($row['emp_cnic']);
 		$this->emp_address->setDbValue($row['emp_address']);
-		$this->emp_city_id->setDbValue($row['emp_city_id']);
-		if (array_key_exists('EV__emp_city_id', $rs->fields)) {
-			$this->emp_city_id->VirtualValue = $rs->fields('EV__emp_city_id'); // Set up virtual field value
-		} else {
-			$this->emp_city_id->VirtualValue = ""; // Clear value
-		}
 		$this->emp_contact->setDbValue($row['emp_contact']);
 		$this->emp_email->setDbValue($row['emp_email']);
-		$this->emp_photo->Upload->DbValue = $row['emp_photo'];
-		$this->emp_photo->setDbValue($this->emp_photo->Upload->DbValue);
+		$this->emp_photo->setDbValue($row['emp_photo']);
 	}
 
 	// Return a row with default values
@@ -746,11 +710,11 @@ class employees_delete extends employees
 		$row['emp_id'] = NULL;
 		$row['emp_branch_id'] = NULL;
 		$row['emp_designation_id'] = NULL;
+		$row['emp_city_id'] = NULL;
 		$row['emp_name'] = NULL;
 		$row['emp_father'] = NULL;
 		$row['emp_cnic'] = NULL;
 		$row['emp_address'] = NULL;
-		$row['emp_city_id'] = NULL;
 		$row['emp_contact'] = NULL;
 		$row['emp_email'] = NULL;
 		$row['emp_photo'] = NULL;
@@ -771,11 +735,11 @@ class employees_delete extends employees
 		// emp_id
 		// emp_branch_id
 		// emp_designation_id
+		// emp_city_id
 		// emp_name
 		// emp_father
 		// emp_cnic
 		// emp_address
-		// emp_city_id
 		// emp_contact
 		// emp_email
 		// emp_photo
@@ -784,52 +748,22 @@ class employees_delete extends employees
 
 			// emp_id
 			$this->emp_id->ViewValue = $this->emp_id->CurrentValue;
-			$this->emp_id->CssClass = "font-weight-bold";
 			$this->emp_id->ViewCustomAttributes = "";
 
 			// emp_branch_id
-			$curVal = strval($this->emp_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->emp_branch_id->ViewValue = $this->emp_branch_id->lookupCacheOption($curVal);
-				if ($this->emp_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->emp_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->emp_branch_id->ViewValue = $this->emp_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->emp_branch_id->ViewValue = $this->emp_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->emp_branch_id->ViewValue = NULL;
-			}
+			$this->emp_branch_id->ViewValue = $this->emp_branch_id->CurrentValue;
+			$this->emp_branch_id->ViewValue = FormatNumber($this->emp_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->emp_branch_id->ViewCustomAttributes = "";
 
 			// emp_designation_id
-			$curVal = strval($this->emp_designation_id->CurrentValue);
-			if ($curVal != "") {
-				$this->emp_designation_id->ViewValue = $this->emp_designation_id->lookupCacheOption($curVal);
-				if ($this->emp_designation_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`designation_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->emp_designation_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->emp_designation_id->ViewValue = $this->emp_designation_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->emp_designation_id->ViewValue = $this->emp_designation_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->emp_designation_id->ViewValue = NULL;
-			}
+			$this->emp_designation_id->ViewValue = $this->emp_designation_id->CurrentValue;
+			$this->emp_designation_id->ViewValue = FormatNumber($this->emp_designation_id->ViewValue, 0, -2, -2, -2);
 			$this->emp_designation_id->ViewCustomAttributes = "";
+
+			// emp_city_id
+			$this->emp_city_id->ViewValue = $this->emp_city_id->CurrentValue;
+			$this->emp_city_id->ViewValue = FormatNumber($this->emp_city_id->ViewValue, 0, -2, -2, -2);
+			$this->emp_city_id->ViewCustomAttributes = "";
 
 			// emp_name
 			$this->emp_name->ViewValue = $this->emp_name->CurrentValue;
@@ -847,32 +781,6 @@ class employees_delete extends employees
 			$this->emp_address->ViewValue = $this->emp_address->CurrentValue;
 			$this->emp_address->ViewCustomAttributes = "";
 
-			// emp_city_id
-			if ($this->emp_city_id->VirtualValue != "") {
-				$this->emp_city_id->ViewValue = $this->emp_city_id->VirtualValue;
-			} else {
-				$curVal = strval($this->emp_city_id->CurrentValue);
-				if ($curVal != "") {
-					$this->emp_city_id->ViewValue = $this->emp_city_id->lookupCacheOption($curVal);
-					if ($this->emp_city_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->emp_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->emp_city_id->ViewValue = $this->emp_city_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->emp_city_id->ViewValue = $this->emp_city_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->emp_city_id->ViewValue = NULL;
-				}
-			}
-			$this->emp_city_id->ViewCustomAttributes = "";
-
 			// emp_contact
 			$this->emp_contact->ViewValue = $this->emp_contact->CurrentValue;
 			$this->emp_contact->ViewCustomAttributes = "";
@@ -882,14 +790,7 @@ class employees_delete extends employees
 			$this->emp_email->ViewCustomAttributes = "";
 
 			// emp_photo
-			if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
-				$this->emp_photo->ImageWidth = 200;
-				$this->emp_photo->ImageHeight = 0;
-				$this->emp_photo->ImageAlt = $this->emp_photo->alt();
-				$this->emp_photo->ViewValue = $this->emp_photo->Upload->DbValue;
-			} else {
-				$this->emp_photo->ViewValue = "";
-			}
+			$this->emp_photo->ViewValue = $this->emp_photo->CurrentValue;
 			$this->emp_photo->ViewCustomAttributes = "";
 
 			// emp_id
@@ -906,6 +807,11 @@ class employees_delete extends employees
 			$this->emp_designation_id->LinkCustomAttributes = "";
 			$this->emp_designation_id->HrefValue = "";
 			$this->emp_designation_id->TooltipValue = "";
+
+			// emp_city_id
+			$this->emp_city_id->LinkCustomAttributes = "";
+			$this->emp_city_id->HrefValue = "";
+			$this->emp_city_id->TooltipValue = "";
 
 			// emp_name
 			$this->emp_name->LinkCustomAttributes = "";
@@ -927,11 +833,6 @@ class employees_delete extends employees
 			$this->emp_address->HrefValue = "";
 			$this->emp_address->TooltipValue = "";
 
-			// emp_city_id
-			$this->emp_city_id->LinkCustomAttributes = "";
-			$this->emp_city_id->HrefValue = "";
-			$this->emp_city_id->TooltipValue = "";
-
 			// emp_contact
 			$this->emp_contact->LinkCustomAttributes = "";
 			$this->emp_contact->HrefValue = "";
@@ -944,22 +845,8 @@ class employees_delete extends employees
 
 			// emp_photo
 			$this->emp_photo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
-				$this->emp_photo->HrefValue = GetFileUploadUrl($this->emp_photo, $this->emp_photo->htmlDecode($this->emp_photo->Upload->DbValue)); // Add prefix/suffix
-				$this->emp_photo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->emp_photo->HrefValue = FullUrl($this->emp_photo->HrefValue, "href");
-			} else {
-				$this->emp_photo->HrefValue = "";
-			}
-			$this->emp_photo->ExportHrefValue = $this->emp_photo->UploadPath . $this->emp_photo->Upload->DbValue;
+			$this->emp_photo->HrefValue = "";
 			$this->emp_photo->TooltipValue = "";
-			if ($this->emp_photo->UseColorbox) {
-				if (EmptyValue($this->emp_photo->TooltipValue))
-					$this->emp_photo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->emp_photo->LinkAttrs["data-rel"] = "employees_x_emp_photo";
-				$this->emp_photo->LinkAttrs->appendClass("ew-lightbox");
-			}
 		}
 
 		// Call Row Rendered event
@@ -971,10 +858,6 @@ class employees_delete extends employees
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -1082,12 +965,6 @@ class employees_delete extends employees
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_emp_branch_id":
-					break;
-				case "x_emp_designation_id":
-					break;
-				case "x_emp_city_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1108,12 +985,6 @@ class employees_delete extends employees
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_emp_branch_id":
-							break;
-						case "x_emp_designation_id":
-							break;
-						case "x_emp_city_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

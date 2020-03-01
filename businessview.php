@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $business_view = new business_view();
 $business_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $business_view->showMessage();
 ?>
-<?php if (!$business_view->IsModal) { ?>
-<?php if (!$business_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $business_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fbusinessview" id="fbusinessview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -109,22 +100,22 @@ $business_view->showMessage();
 </td>
 	</tr>
 <?php } ?>
-<?php if ($business_view->b_b_nature_id->Visible) { // b_b_nature_id ?>
-	<tr id="r_b_b_nature_id">
-		<td class="<?php echo $business_view->TableLeftColumnClass ?>"><span id="elh_business_b_b_nature_id"><?php echo $business_view->b_b_nature_id->caption() ?></span></td>
-		<td data-name="b_b_nature_id" <?php echo $business_view->b_b_nature_id->cellAttributes() ?>>
-<span id="el_business_b_b_nature_id">
-<span<?php echo $business_view->b_b_nature_id->viewAttributes() ?>><?php echo $business_view->b_b_nature_id->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
 <?php if ($business_view->b_b_status_id->Visible) { // b_b_status_id ?>
 	<tr id="r_b_b_status_id">
 		<td class="<?php echo $business_view->TableLeftColumnClass ?>"><span id="elh_business_b_b_status_id"><?php echo $business_view->b_b_status_id->caption() ?></span></td>
 		<td data-name="b_b_status_id" <?php echo $business_view->b_b_status_id->cellAttributes() ?>>
 <span id="el_business_b_b_status_id">
 <span<?php echo $business_view->b_b_status_id->viewAttributes() ?>><?php echo $business_view->b_b_status_id->getViewValue() ?></span>
+</span>
+</td>
+	</tr>
+<?php } ?>
+<?php if ($business_view->b_b_nature_id->Visible) { // b_b_nature_id ?>
+	<tr id="r_b_b_nature_id">
+		<td class="<?php echo $business_view->TableLeftColumnClass ?>"><span id="elh_business_b_b_nature_id"><?php echo $business_view->b_b_nature_id->caption() ?></span></td>
+		<td data-name="b_b_nature_id" <?php echo $business_view->b_b_nature_id->cellAttributes() ?>>
+<span id="el_business_b_b_nature_id">
+<span<?php echo $business_view->b_b_nature_id->viewAttributes() ?>><?php echo $business_view->b_b_nature_id->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -214,7 +205,7 @@ $business_view->showMessage();
 		<td class="<?php echo $business_view->TableLeftColumnClass ?>"><span id="elh_business_b_logo"><?php echo $business_view->b_logo->caption() ?></span></td>
 		<td data-name="b_logo" <?php echo $business_view->b_logo->cellAttributes() ?>>
 <span id="el_business_b_logo">
-<span><?php echo GetFileViewTag($business_view->b_logo, $business_view->b_logo->getViewValue(), FALSE) ?></span>
+<span<?php echo $business_view->b_logo->viewAttributes() ?>><?php echo $business_view->b_logo->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -270,12 +261,6 @@ $business_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$business_view->IsModal) { ?>
-<?php if (!$business_view->isExport()) { ?>
-<?php echo $business_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $business_view->showPageFooter();

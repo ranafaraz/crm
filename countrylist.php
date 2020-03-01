@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $country_list = new country_list();
 $country_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $country_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$country_list->isExport() && !$country->CurrentAction) { ?>
 <form name="fcountrylistsrch" id="fcountrylistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fcountrylistsrch-search-panel" class="<?php echo $country_list->SearchPanelClass ?>">
@@ -113,33 +111,59 @@ $country_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $country_list->showPageHeader(); ?>
 <?php
 $country_list->showMessage();
 ?>
 <?php if ($country_list->TotalRecords > 0 || $country->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$country_list->isExport()) { ?>
-<div>
-<?php if (!$country_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $country_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $country_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fcountrylist" id="fcountrylist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($country_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> country">
+<form name="fcountrylist" id="fcountrylist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="country">
-<div class="row ew-multi-column-row">
+<div id="gmp_country" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($country_list->TotalRecords > 0 || $country_list->isGridEdit()) { ?>
+<table id="tbl_countrylist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$country->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$country_list->renderListOptions();
+
+// Render list options (header, left)
+$country_list->ListOptions->render("header", "left");
+?>
+<?php if ($country_list->country_id->Visible) { // country_id ?>
+	<?php if ($country_list->SortUrl($country_list->country_id) == "") { ?>
+		<th data-name="country_id" class="<?php echo $country_list->country_id->headerCellClass() ?>"><div id="elh_country_country_id" class="country_country_id"><div class="ew-table-header-caption"><?php echo $country_list->country_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="country_id" class="<?php echo $country_list->country_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $country_list->SortUrl($country_list->country_id) ?>', 1);"><div id="elh_country_country_id" class="country_country_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $country_list->country_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($country_list->country_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($country_list->country_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($country_list->country_name->Visible) { // country_name ?>
+	<?php if ($country_list->SortUrl($country_list->country_name) == "") { ?>
+		<th data-name="country_name" class="<?php echo $country_list->country_name->headerCellClass() ?>"><div id="elh_country_country_name" class="country_country_name"><div class="ew-table-header-caption"><?php echo $country_list->country_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="country_name" class="<?php echo $country_list->country_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $country_list->SortUrl($country_list->country_name) ?>', 1);"><div id="elh_country_country_name" class="country_country_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $country_list->country_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($country_list->country_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($country_list->country_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$country_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($country_list->ExportAll && $country_list->isExport()) {
 	$country_list->StopRecord = $country_list->TotalRecords;
@@ -160,6 +184,11 @@ if ($country_list->Recordset && !$country_list->Recordset->EOF) {
 } elseif (!$country->AllowAddDeleteRow && $country_list->StopRecord == 0) {
 	$country_list->StopRecord = $country->GridAddRowCount;
 }
+
+// Initialize aggregate
+$country->RowType = ROWTYPE_AGGREGATEINIT;
+$country->resetAttributes();
+$country_list->renderRow();
 while ($country_list->RecordCount < $country_list->StopRecord) {
 	$country_list->RecordCount++;
 	if ($country_list->RecordCount >= $country_list->StartRecord) {
@@ -186,96 +215,42 @@ while ($country_list->RecordCount < $country_list->StopRecord) {
 		// Render list options
 		$country_list->renderListOptions();
 ?>
-<div class="<?php echo $country_list->getMultiColumnClass() ?>" <?php echo $country->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($country->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($country_list->country_id->Visible) { // country_id ?>
-		<?php if ($country->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $country_list->TableLeftColumnClass ?>"><span class="country_country_id">
-<?php if ($country_list->isExport() || $country_list->SortUrl($country_list->country_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $country_list->country_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $country_list->SortUrl($country_list->country_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $country_list->country_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($country_list->country_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($country_list->country_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $country_list->country_id->cellAttributes() ?>>
-<span id="el<?php echo $country_list->RowCount ?>_country_country_id">
-<span<?php echo $country_list->country_id->viewAttributes() ?>><?php echo $country_list->country_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row country_country_id">
-			<label class="<?php echo $country_list->LeftColumnClass ?>"><?php echo $country_list->country_id->caption() ?></label>
-			<div class="<?php echo $country_list->RightColumnClass ?>"><div <?php echo $country_list->country_id->cellAttributes() ?>>
-<span id="el<?php echo $country_list->RowCount ?>_country_country_id">
-<span<?php echo $country_list->country_id->viewAttributes() ?>><?php echo $country_list->country_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($country_list->country_name->Visible) { // country_name ?>
-		<?php if ($country->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $country_list->TableLeftColumnClass ?>"><span class="country_country_name">
-<?php if ($country_list->isExport() || $country_list->SortUrl($country_list->country_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $country_list->country_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $country_list->SortUrl($country_list->country_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $country_list->country_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($country_list->country_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($country_list->country_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $country_list->country_name->cellAttributes() ?>>
-<span id="el<?php echo $country_list->RowCount ?>_country_country_name">
-<span<?php echo $country_list->country_name->viewAttributes() ?>><?php echo $country_list->country_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row country_country_name">
-			<label class="<?php echo $country_list->LeftColumnClass ?>"><?php echo $country_list->country_name->caption() ?></label>
-			<div class="<?php echo $country_list->RightColumnClass ?>"><div <?php echo $country_list->country_name->cellAttributes() ?>>
-<span id="el<?php echo $country_list->RowCount ?>_country_country_name">
-<span<?php echo $country_list->country_name->viewAttributes() ?>><?php echo $country_list->country_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($country->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$country_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $country->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$country_list->ListOptions->render("body", "bottom", $country_list->RowCount);
+// Render list options (body, left)
+$country_list->ListOptions->render("body", "left", $country_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($country_list->country_id->Visible) { // country_id ?>
+		<td data-name="country_id" <?php echo $country_list->country_id->cellAttributes() ?>>
+<span id="el<?php echo $country_list->RowCount ?>_country_country_id">
+<span<?php echo $country_list->country_id->viewAttributes() ?>><?php echo $country_list->country_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($country_list->country_name->Visible) { // country_name ?>
+		<td data-name="country_name" <?php echo $country_list->country_name->cellAttributes() ?>>
+<span id="el<?php echo $country_list->RowCount ?>_country_country_name">
+<span<?php echo $country_list->country_name->viewAttributes() ?>><?php echo $country_list->country_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$country_list->ListOptions->render("body", "right", $country_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$country_list->isGridAdd())
 		$country_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$country->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -287,7 +262,7 @@ if ($country_list->Recordset)
 	$country_list->Recordset->Close();
 ?>
 <?php if (!$country_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$country_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $country_list->Pager->render() ?>
@@ -299,7 +274,7 @@ if ($country_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($country_list->TotalRecords == 0 && !$country->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

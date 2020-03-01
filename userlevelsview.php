@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $userlevels_view = new userlevels_view();
 $userlevels_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $userlevels_view->showMessage();
 ?>
-<?php if (!$userlevels_view->IsModal) { ?>
-<?php if (!$userlevels_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $userlevels_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fuserlevelsview" id="fuserlevelsview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -100,12 +91,6 @@ $userlevels_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$userlevels_view->IsModal) { ?>
-<?php if (!$userlevels_view->isExport()) { ?>
-<?php echo $userlevels_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $userlevels_view->showPageFooter();

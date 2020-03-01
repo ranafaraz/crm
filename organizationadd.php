@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $organization_add = new organization_add();
 $organization_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -61,6 +60,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $organization_add->org_city_id->caption(), $organization_add->org_city_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_org_city_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($organization_add->org_city_id->errorMessage()) ?>");
 			<?php if ($organization_add->org_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_org_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -82,10 +84,9 @@ loadjs.ready("head", function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $organization_add->org_contact_no->caption(), $organization_add->org_contact_no->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($organization_add->org_logo->Required) { ?>
-				felm = this.getElements("x" + infix + "_org_logo");
-				elm = this.getElements("fn_x" + infix + "_org_logo");
-				if (felm && elm && !ew.hasValue(elm))
-					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $organization_add->org_logo->caption(), $organization_add->org_logo->RequiredErrorMessage)) ?>");
+				elm = this.getElements("x" + infix + "_org_logo");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $organization_add->org_logo->caption(), $organization_add->org_logo->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($organization_add->org_bank_acc->Required) { ?>
 				elm = this.getElements("x" + infix + "_org_bank_acc");
@@ -135,8 +136,6 @@ loadjs.ready("head", function() {
 	forganizationadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	forganizationadd.lists["x_org_city_id"] = <?php echo $organization_add->org_city_id->Lookup->toClientList($organization_add) ?>;
-	forganizationadd.lists["x_org_city_id"].options = <?php echo JsonEncode($organization_add->org_city_id->lookupOptions()) ?>;
 	loadjs.done("forganizationadd");
 });
 </script>
@@ -165,23 +164,7 @@ $organization_add->showMessage();
 		<label id="elh_organization_org_city_id" for="x_org_city_id" class="<?php echo $organization_add->LeftColumnClass ?>"><?php echo $organization_add->org_city_id->caption() ?><?php echo $organization_add->org_city_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $organization_add->RightColumnClass ?>"><div <?php echo $organization_add->org_city_id->cellAttributes() ?>>
 <span id="el_organization_org_city_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($organization_add->org_city_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $organization_add->org_city_id->ViewValue ?></button>
-		<div id="dsl_x_org_city_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $organization_add->org_city_id->radioButtonListHtml(TRUE, "x_org_city_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_org_city_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="organization" data-field="x_org_city_id" data-value-separator="<?php echo $organization_add->org_city_id->displayValueSeparatorAttribute() ?>" name="x_org_city_id" id="x_org_city_id" value="{value}"<?php echo $organization_add->org_city_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$organization_add->org_city_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $organization_add->org_city_id->Lookup->getParamTag($organization_add, "p_x_org_city_id") ?>
+<input type="text" data-table="organization" data-field="x_org_city_id" name="x_org_city_id" id="x_org_city_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($organization_add->org_city_id->getPlaceHolder()) ?>" value="<?php echo $organization_add->org_city_id->EditValue ?>"<?php echo $organization_add->org_city_id->editAttributes() ?>>
 </span>
 <?php echo $organization_add->org_city_id->CustomMsg ?></div></div>
 	</div>
@@ -228,23 +211,10 @@ $organization_add->showMessage();
 <?php } ?>
 <?php if ($organization_add->org_logo->Visible) { // org_logo ?>
 	<div id="r_org_logo" class="form-group row">
-		<label id="elh_organization_org_logo" class="<?php echo $organization_add->LeftColumnClass ?>"><?php echo $organization_add->org_logo->caption() ?><?php echo $organization_add->org_logo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_organization_org_logo" for="x_org_logo" class="<?php echo $organization_add->LeftColumnClass ?>"><?php echo $organization_add->org_logo->caption() ?><?php echo $organization_add->org_logo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $organization_add->RightColumnClass ?>"><div <?php echo $organization_add->org_logo->cellAttributes() ?>>
 <span id="el_organization_org_logo">
-<div id="fd_x_org_logo">
-<div class="input-group">
-	<div class="custom-file">
-		<input type="file" class="custom-file-input" title="<?php echo $organization_add->org_logo->title() ?>" data-table="organization" data-field="x_org_logo" name="x_org_logo" id="x_org_logo" lang="<?php echo CurrentLanguageID() ?>"<?php echo $organization_add->org_logo->editAttributes() ?><?php if ($organization_add->org_logo->ReadOnly || $organization_add->org_logo->Disabled) echo " disabled"; ?>>
-		<label class="custom-file-label ew-file-label" for="x_org_logo"><?php echo $Language->phrase("ChooseFile") ?></label>
-	</div>
-</div>
-<input type="hidden" name="fn_x_org_logo" id= "fn_x_org_logo" value="<?php echo $organization_add->org_logo->Upload->FileName ?>">
-<input type="hidden" name="fa_x_org_logo" id= "fa_x_org_logo" value="0">
-<input type="hidden" name="fs_x_org_logo" id= "fs_x_org_logo" value="200">
-<input type="hidden" name="fx_x_org_logo" id= "fx_x_org_logo" value="<?php echo $organization_add->org_logo->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_org_logo" id= "fm_x_org_logo" value="<?php echo $organization_add->org_logo->UploadMaxFileSize ?>">
-</div>
-<table id="ft_x_org_logo" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<input type="text" data-table="organization" data-field="x_org_logo" name="x_org_logo" id="x_org_logo" size="30" maxlength="200" placeholder="<?php echo HtmlEncode($organization_add->org_logo->getPlaceHolder()) ?>" value="<?php echo $organization_add->org_logo->EditValue ?>"<?php echo $organization_add->org_logo->editAttributes() ?>>
 </span>
 <?php echo $organization_add->org_logo->CustomMsg ?></div></div>
 	</div>

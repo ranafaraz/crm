@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'services_availed_by_customer';
@@ -325,7 +325,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 			$GLOBALS["Table"] = &$GLOBALS["services_availed_by_customer"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("services_availed_by_customerlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->sabc_id->setVisibility();
@@ -574,7 +547,7 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 		$this->sabc_service_id->setVisibility();
 		$this->sabc_pkg->setVisibility();
 		$this->sabc_amount->setVisibility();
-		$this->sabc_desc->setVisibility();
+		$this->sabc_desc->Visible = FALSE;
 		$this->sabc_signed_on->setVisibility();
 		$this->hideFieldsForAddEdit();
 
@@ -597,11 +570,8 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->sabc_branch_id);
-		$this->setupLookupOptions($this->sabc_business_id);
-		$this->setupLookupOptions($this->sabc_service_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -668,7 +638,7 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -720,17 +690,7 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 		$this->sabc_id->setDbValue($row['sabc_id']);
 		$this->sabc_branch_id->setDbValue($row['sabc_branch_id']);
 		$this->sabc_business_id->setDbValue($row['sabc_business_id']);
-		if (array_key_exists('EV__sabc_business_id', $rs->fields)) {
-			$this->sabc_business_id->VirtualValue = $rs->fields('EV__sabc_business_id'); // Set up virtual field value
-		} else {
-			$this->sabc_business_id->VirtualValue = ""; // Clear value
-		}
 		$this->sabc_service_id->setDbValue($row['sabc_service_id']);
-		if (array_key_exists('EV__sabc_service_id', $rs->fields)) {
-			$this->sabc_service_id->VirtualValue = $rs->fields('EV__sabc_service_id'); // Set up virtual field value
-		} else {
-			$this->sabc_service_id->VirtualValue = ""; // Clear value
-		}
 		$this->sabc_pkg->setDbValue($row['sabc_pkg']);
 		$this->sabc_amount->setDbValue($row['sabc_amount']);
 		$this->sabc_desc->setDbValue($row['sabc_desc']);
@@ -779,77 +739,18 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 			$this->sabc_id->ViewCustomAttributes = "";
 
 			// sabc_branch_id
-			$curVal = strval($this->sabc_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->lookupCacheOption($curVal);
-				if ($this->sabc_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->sabc_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->sabc_branch_id->ViewValue = NULL;
-			}
+			$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
+			$this->sabc_branch_id->ViewValue = FormatNumber($this->sabc_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->sabc_branch_id->ViewCustomAttributes = "";
 
 			// sabc_business_id
-			if ($this->sabc_business_id->VirtualValue != "") {
-				$this->sabc_business_id->ViewValue = $this->sabc_business_id->VirtualValue;
-			} else {
-				$curVal = strval($this->sabc_business_id->CurrentValue);
-				if ($curVal != "") {
-					$this->sabc_business_id->ViewValue = $this->sabc_business_id->lookupCacheOption($curVal);
-					if ($this->sabc_business_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->sabc_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->sabc_business_id->ViewValue = $this->sabc_business_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->sabc_business_id->ViewValue = NULL;
-				}
-			}
+			$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
+			$this->sabc_business_id->ViewValue = FormatNumber($this->sabc_business_id->ViewValue, 0, -2, -2, -2);
 			$this->sabc_business_id->ViewCustomAttributes = "";
 
 			// sabc_service_id
-			if ($this->sabc_service_id->VirtualValue != "") {
-				$this->sabc_service_id->ViewValue = $this->sabc_service_id->VirtualValue;
-			} else {
-				$curVal = strval($this->sabc_service_id->CurrentValue);
-				if ($curVal != "") {
-					$this->sabc_service_id->ViewValue = $this->sabc_service_id->lookupCacheOption($curVal);
-					if ($this->sabc_service_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->sabc_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->sabc_service_id->ViewValue = $this->sabc_service_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->sabc_service_id->ViewValue = NULL;
-				}
-			}
+			$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
+			$this->sabc_service_id->ViewValue = FormatNumber($this->sabc_service_id->ViewValue, 0, -2, -2, -2);
 			$this->sabc_service_id->ViewCustomAttributes = "";
 
 			// sabc_pkg
@@ -864,10 +765,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 			$this->sabc_amount->ViewValue = $this->sabc_amount->CurrentValue;
 			$this->sabc_amount->ViewValue = FormatNumber($this->sabc_amount->ViewValue, 0, -2, -2, -2);
 			$this->sabc_amount->ViewCustomAttributes = "";
-
-			// sabc_desc
-			$this->sabc_desc->ViewValue = $this->sabc_desc->CurrentValue;
-			$this->sabc_desc->ViewCustomAttributes = "";
 
 			// sabc_signed_on
 			$this->sabc_signed_on->ViewValue = $this->sabc_signed_on->CurrentValue;
@@ -904,11 +801,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 			$this->sabc_amount->HrefValue = "";
 			$this->sabc_amount->TooltipValue = "";
 
-			// sabc_desc
-			$this->sabc_desc->LinkCustomAttributes = "";
-			$this->sabc_desc->HrefValue = "";
-			$this->sabc_desc->TooltipValue = "";
-
 			// sabc_signed_on
 			$this->sabc_signed_on->LinkCustomAttributes = "";
 			$this->sabc_signed_on->HrefValue = "";
@@ -924,10 +816,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -1035,12 +923,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_sabc_branch_id":
-					break;
-				case "x_sabc_business_id":
-					break;
-				case "x_sabc_service_id":
-					break;
 				case "x_sabc_pkg":
 					break;
 				default:
@@ -1063,12 +945,6 @@ class services_availed_by_customer_delete extends services_availed_by_customer
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_sabc_branch_id":
-							break;
-						case "x_sabc_business_id":
-							break;
-						case "x_sabc_service_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

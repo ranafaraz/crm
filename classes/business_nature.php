@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -356,7 +356,7 @@ class business_nature extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -689,7 +689,6 @@ class business_nature extends DbTable
 		// b_nature_id
 
 		$this->b_nature_id->ViewValue = $this->b_nature_id->CurrentValue;
-		$this->b_nature_id->CssClass = "font-weight-bold";
 		$this->b_nature_id->ViewCustomAttributes = "";
 
 		// b_nature_caption
@@ -734,7 +733,6 @@ class business_nature extends DbTable
 		$this->b_nature_id->EditAttrs["class"] = "form-control";
 		$this->b_nature_id->EditCustomAttributes = "";
 		$this->b_nature_id->EditValue = $this->b_nature_id->CurrentValue;
-		$this->b_nature_id->CssClass = "font-weight-bold";
 		$this->b_nature_id->ViewCustomAttributes = "";
 
 		// b_nature_caption

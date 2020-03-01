@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -77,24 +77,18 @@ class cus_support extends DbTable
 		$this->fields['cus_sup_id'] = &$this->cus_sup_id;
 
 		// cus_sup_branch_id
-		$this->cus_sup_branch_id = new DbField('cus_support', 'cus_support', 'x_cus_sup_branch_id', 'cus_sup_branch_id', '`cus_sup_branch_id`', '`cus_sup_branch_id`', 3, 12, -1, FALSE, '`cus_sup_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->cus_sup_branch_id = new DbField('cus_support', 'cus_support', 'x_cus_sup_branch_id', 'cus_sup_branch_id', '`cus_sup_branch_id`', '`cus_sup_branch_id`', 3, 12, -1, FALSE, '`cus_sup_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->cus_sup_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->cus_sup_branch_id->Required = TRUE; // Required field
 		$this->cus_sup_branch_id->Sortable = TRUE; // Allow sort
-		$this->cus_sup_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->cus_sup_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->cus_sup_branch_id->Lookup = new Lookup('cus_sup_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->cus_sup_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['cus_sup_branch_id'] = &$this->cus_sup_branch_id;
 
 		// cus_sup_emp_id
-		$this->cus_sup_emp_id = new DbField('cus_support', 'cus_support', 'x_cus_sup_emp_id', 'cus_sup_emp_id', '`cus_sup_emp_id`', '`cus_sup_emp_id`', 3, 12, -1, FALSE, '`EV__cus_sup_emp_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
+		$this->cus_sup_emp_id = new DbField('cus_support', 'cus_support', 'x_cus_sup_emp_id', 'cus_sup_emp_id', '`cus_sup_emp_id`', '`cus_sup_emp_id`', 3, 12, -1, FALSE, '`cus_sup_emp_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->cus_sup_emp_id->Nullable = FALSE; // NOT NULL field
 		$this->cus_sup_emp_id->Required = TRUE; // Required field
 		$this->cus_sup_emp_id->Sortable = TRUE; // Allow sort
-		$this->cus_sup_emp_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->cus_sup_emp_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->cus_sup_emp_id->Lookup = new Lookup('cus_sup_emp_id', 'employees', FALSE, 'emp_id', ["emp_name","","",""], [], [], [], [], [], [], '', '');
 		$this->cus_sup_emp_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['cus_sup_emp_id'] = &$this->cus_sup_emp_id;
 
@@ -106,18 +100,14 @@ class cus_support extends DbTable
 		$this->fields['cus_sup_query'] = &$this->cus_sup_query;
 
 		// cus_sup_screen_shots
-		$this->cus_sup_screen_shots = new DbField('cus_support', 'cus_support', 'x_cus_sup_screen_shots', 'cus_sup_screen_shots', '`cus_sup_screen_shots`', '`cus_sup_screen_shots`', 201, 65535, -1, TRUE, '`cus_sup_screen_shots`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
+		$this->cus_sup_screen_shots = new DbField('cus_support', 'cus_support', 'x_cus_sup_screen_shots', 'cus_sup_screen_shots', '`cus_sup_screen_shots`', '`cus_sup_screen_shots`', 201, 65535, -1, FALSE, '`cus_sup_screen_shots`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->cus_sup_screen_shots->Nullable = FALSE; // NOT NULL field
 		$this->cus_sup_screen_shots->Required = TRUE; // Required field
 		$this->cus_sup_screen_shots->Sortable = TRUE; // Allow sort
-		$this->cus_sup_screen_shots->ImageResize = TRUE;
-		$this->cus_sup_screen_shots->UploadMultiple = TRUE;
-		$this->cus_sup_screen_shots->Upload->UploadMultiple = TRUE;
-		$this->cus_sup_screen_shots->UploadMaxFileCount = 0;
 		$this->fields['cus_sup_screen_shots'] = &$this->cus_sup_screen_shots;
 
 		// cus_sup_date
-		$this->cus_sup_date = new DbField('cus_support', 'cus_support', 'x_cus_sup_date', 'cus_sup_date', '`cus_sup_date`', CastDateFieldForLike("`cus_sup_date`", 1, "DB"), 135, 19, 1, FALSE, '`cus_sup_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->cus_sup_date = new DbField('cus_support', 'cus_support', 'x_cus_sup_date', 'cus_sup_date', '`cus_sup_date`', CastDateFieldForLike("`cus_sup_date`", 0, "DB"), 135, 19, 0, FALSE, '`cus_sup_date`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->cus_sup_date->Nullable = FALSE; // NOT NULL field
 		$this->cus_sup_date->Required = TRUE; // Required field
 		$this->cus_sup_date->Sortable = TRUE; // Allow sort
@@ -125,7 +115,7 @@ class cus_support extends DbTable
 		$this->fields['cus_sup_date'] = &$this->cus_sup_date;
 
 		// cus_sup_status
-		$this->cus_sup_status = new DbField('cus_support', 'cus_support', 'x_cus_sup_status', 'cus_sup_status', '`cus_sup_status`', '`cus_sup_status`', 202, 21, -1, FALSE, '`cus_sup_status`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
+		$this->cus_sup_status = new DbField('cus_support', 'cus_support', 'x_cus_sup_status', 'cus_sup_status', '`cus_sup_status`', '`cus_sup_status`', 202, 63, -1, FALSE, '`cus_sup_status`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
 		$this->cus_sup_status->Nullable = FALSE; // NOT NULL field
 		$this->cus_sup_status->Required = TRUE; // Required field
 		$this->cus_sup_status->Sortable = TRUE; // Allow sort
@@ -141,7 +131,7 @@ class cus_support extends DbTable
 		$this->fields['cus_sup_comments'] = &$this->cus_sup_comments;
 
 		// cus_sup_resolved_on
-		$this->cus_sup_resolved_on = new DbField('cus_support', 'cus_support', 'x_cus_sup_resolved_on', 'cus_sup_resolved_on', '`cus_sup_resolved_on`', CastDateFieldForLike("`cus_sup_resolved_on`", 1, "DB"), 135, 19, 1, FALSE, '`cus_sup_resolved_on`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->cus_sup_resolved_on = new DbField('cus_support', 'cus_support', 'x_cus_sup_resolved_on', 'cus_sup_resolved_on', '`cus_sup_resolved_on`', CastDateFieldForLike("`cus_sup_resolved_on`", 0, "DB"), 135, 19, 0, FALSE, '`cus_sup_resolved_on`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->cus_sup_resolved_on->Nullable = FALSE; // NOT NULL field
 		$this->cus_sup_resolved_on->Required = TRUE; // Required field
 		$this->cus_sup_resolved_on->Sortable = TRUE; // Allow sort
@@ -180,21 +170,9 @@ class cus_support extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
-			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
-			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
-	}
-
-	// Session ORDER BY for List page
-	public function getSessionOrderByList()
-	{
-		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
-	}
-	public function setSessionOrderByList($v)
-	{
-		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -221,22 +199,6 @@ class cus_support extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
-	}
-	public function getSqlSelectList() // Select for List page
-	{
-		$select = "";
-		$select = "SELECT * FROM (" .
-			"SELECT *, (SELECT `emp_name` FROM `employees` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`emp_id` = `cus_support`.`cus_sup_emp_id` LIMIT 1) AS `EV__cus_sup_emp_id` FROM `cus_support`" .
-			") `TMP_TABLE`";
-		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
-	}
-	public function sqlSelectList() // For backward compatibility
-	{
-		return $this->getSqlSelectList();
-	}
-	public function setSqlSelectList($v)
-	{
-		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -392,13 +354,8 @@ class cus_support extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		if ($this->useVirtualFields()) {
-			$select = $this->getSqlSelectList();
-			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-		} else {
-			$select = $this->getSqlSelect();
-			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
-		}
+		$select = $this->getSqlSelect();
+		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -406,26 +363,8 @@ class cus_support extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
+		$sort = $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
-	}
-
-	// Check if virtual fields is used in SQL
-	protected function useVirtualFields()
-	{
-		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
-		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-		if ($where != "")
-			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
-		if ($orderBy != "")
-			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
-		if ($this->cus_sup_emp_id->AdvancedSearch->SearchValue != "" ||
-			$this->cus_sup_emp_id->AdvancedSearch->SearchValue2 != "" ||
-			ContainsString($where, " " . $this->cus_sup_emp_id->VirtualExpression . " "))
-			return TRUE;
-		if (ContainsString($orderBy, " " . $this->cus_sup_emp_id->VirtualExpression . " "))
-			return TRUE;
-		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -453,10 +392,7 @@ class cus_support extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		if ($this->useVirtualFields())
-			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
-		else
-			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -474,7 +410,7 @@ class cus_support extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -558,7 +494,7 @@ class cus_support extends DbTable
 		$this->cus_sup_branch_id->DbValue = $row['cus_sup_branch_id'];
 		$this->cus_sup_emp_id->DbValue = $row['cus_sup_emp_id'];
 		$this->cus_sup_query->DbValue = $row['cus_sup_query'];
-		$this->cus_sup_screen_shots->Upload->DbValue = $row['cus_sup_screen_shots'];
+		$this->cus_sup_screen_shots->DbValue = $row['cus_sup_screen_shots'];
 		$this->cus_sup_date->DbValue = $row['cus_sup_date'];
 		$this->cus_sup_status->DbValue = $row['cus_sup_status'];
 		$this->cus_sup_comments->DbValue = $row['cus_sup_comments'];
@@ -569,11 +505,6 @@ class cus_support extends DbTable
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
-		$oldFiles = EmptyValue($row['cus_sup_screen_shots']) ? [] : explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $row['cus_sup_screen_shots']);
-		foreach ($oldFiles as $oldFile) {
-			if (file_exists($this->cus_sup_screen_shots->oldPhysicalUploadPath() . $oldFile))
-				@unlink($this->cus_sup_screen_shots->oldPhysicalUploadPath() . $oldFile);
-		}
 	}
 
 	// Record filter WHERE clause
@@ -802,7 +733,7 @@ class cus_support extends DbTable
 		$this->cus_sup_branch_id->setDbValue($rs->fields('cus_sup_branch_id'));
 		$this->cus_sup_emp_id->setDbValue($rs->fields('cus_sup_emp_id'));
 		$this->cus_sup_query->setDbValue($rs->fields('cus_sup_query'));
-		$this->cus_sup_screen_shots->Upload->DbValue = $rs->fields('cus_sup_screen_shots');
+		$this->cus_sup_screen_shots->setDbValue($rs->fields('cus_sup_screen_shots'));
 		$this->cus_sup_date->setDbValue($rs->fields('cus_sup_date'));
 		$this->cus_sup_status->setDbValue($rs->fields('cus_sup_status'));
 		$this->cus_sup_comments->setDbValue($rs->fields('cus_sup_comments'));
@@ -830,55 +761,16 @@ class cus_support extends DbTable
 		// cus_sup_id
 
 		$this->cus_sup_id->ViewValue = $this->cus_sup_id->CurrentValue;
-		$this->cus_sup_id->CssClass = "font-weight-bold";
 		$this->cus_sup_id->ViewCustomAttributes = "";
 
 		// cus_sup_branch_id
-		$curVal = strval($this->cus_sup_branch_id->CurrentValue);
-		if ($curVal != "") {
-			$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->lookupCacheOption($curVal);
-			if ($this->cus_sup_branch_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->cus_sup_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->cus_sup_branch_id->ViewValue = NULL;
-		}
+		$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
+		$this->cus_sup_branch_id->ViewValue = FormatNumber($this->cus_sup_branch_id->ViewValue, 0, -2, -2, -2);
 		$this->cus_sup_branch_id->ViewCustomAttributes = "";
 
 		// cus_sup_emp_id
-		if ($this->cus_sup_emp_id->VirtualValue != "") {
-			$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->VirtualValue;
-		} else {
-			$curVal = strval($this->cus_sup_emp_id->CurrentValue);
-			if ($curVal != "") {
-				$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->lookupCacheOption($curVal);
-				if ($this->cus_sup_emp_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`emp_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->cus_sup_emp_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->cus_sup_emp_id->ViewValue = NULL;
-			}
-		}
+		$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
+		$this->cus_sup_emp_id->ViewValue = FormatNumber($this->cus_sup_emp_id->ViewValue, 0, -2, -2, -2);
 		$this->cus_sup_emp_id->ViewCustomAttributes = "";
 
 		// cus_sup_query
@@ -886,19 +778,12 @@ class cus_support extends DbTable
 		$this->cus_sup_query->ViewCustomAttributes = "";
 
 		// cus_sup_screen_shots
-		if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-			$this->cus_sup_screen_shots->ImageWidth = 200;
-			$this->cus_sup_screen_shots->ImageHeight = 0;
-			$this->cus_sup_screen_shots->ImageAlt = $this->cus_sup_screen_shots->alt();
-			$this->cus_sup_screen_shots->ViewValue = $this->cus_sup_screen_shots->Upload->DbValue;
-		} else {
-			$this->cus_sup_screen_shots->ViewValue = "";
-		}
+		$this->cus_sup_screen_shots->ViewValue = $this->cus_sup_screen_shots->CurrentValue;
 		$this->cus_sup_screen_shots->ViewCustomAttributes = "";
 
 		// cus_sup_date
 		$this->cus_sup_date->ViewValue = $this->cus_sup_date->CurrentValue;
-		$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 1);
+		$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 0);
 		$this->cus_sup_date->ViewCustomAttributes = "";
 
 		// cus_sup_status
@@ -915,7 +800,7 @@ class cus_support extends DbTable
 
 		// cus_sup_resolved_on
 		$this->cus_sup_resolved_on->ViewValue = $this->cus_sup_resolved_on->CurrentValue;
-		$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 1);
+		$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 0);
 		$this->cus_sup_resolved_on->ViewCustomAttributes = "";
 
 		// cus_sup_id
@@ -940,22 +825,8 @@ class cus_support extends DbTable
 
 		// cus_sup_screen_shots
 		$this->cus_sup_screen_shots->LinkCustomAttributes = "";
-		if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-			$this->cus_sup_screen_shots->HrefValue = "%u"; // Add prefix/suffix
-			$this->cus_sup_screen_shots->LinkAttrs["target"] = ""; // Add target
-			if ($this->isExport())
-				$this->cus_sup_screen_shots->HrefValue = FullUrl($this->cus_sup_screen_shots->HrefValue, "href");
-		} else {
-			$this->cus_sup_screen_shots->HrefValue = "";
-		}
-		$this->cus_sup_screen_shots->ExportHrefValue = $this->cus_sup_screen_shots->UploadPath . $this->cus_sup_screen_shots->Upload->DbValue;
+		$this->cus_sup_screen_shots->HrefValue = "";
 		$this->cus_sup_screen_shots->TooltipValue = "";
-		if ($this->cus_sup_screen_shots->UseColorbox) {
-			if (EmptyValue($this->cus_sup_screen_shots->TooltipValue))
-				$this->cus_sup_screen_shots->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-			$this->cus_sup_screen_shots->LinkAttrs["data-rel"] = "cus_support_x_cus_sup_screen_shots";
-			$this->cus_sup_screen_shots->LinkAttrs->appendClass("ew-lightbox");
-		}
 
 		// cus_sup_date
 		$this->cus_sup_date->LinkCustomAttributes = "";
@@ -996,15 +867,19 @@ class cus_support extends DbTable
 		$this->cus_sup_id->EditAttrs["class"] = "form-control";
 		$this->cus_sup_id->EditCustomAttributes = "";
 		$this->cus_sup_id->EditValue = $this->cus_sup_id->CurrentValue;
-		$this->cus_sup_id->CssClass = "font-weight-bold";
 		$this->cus_sup_id->ViewCustomAttributes = "";
 
 		// cus_sup_branch_id
+		$this->cus_sup_branch_id->EditAttrs["class"] = "form-control";
 		$this->cus_sup_branch_id->EditCustomAttributes = "";
+		$this->cus_sup_branch_id->EditValue = $this->cus_sup_branch_id->CurrentValue;
+		$this->cus_sup_branch_id->PlaceHolder = RemoveHtml($this->cus_sup_branch_id->caption());
 
 		// cus_sup_emp_id
 		$this->cus_sup_emp_id->EditAttrs["class"] = "form-control";
 		$this->cus_sup_emp_id->EditCustomAttributes = "";
+		$this->cus_sup_emp_id->EditValue = $this->cus_sup_emp_id->CurrentValue;
+		$this->cus_sup_emp_id->PlaceHolder = RemoveHtml($this->cus_sup_emp_id->caption());
 
 		// cus_sup_query
 		$this->cus_sup_query->EditAttrs["class"] = "form-control";
@@ -1015,16 +890,8 @@ class cus_support extends DbTable
 		// cus_sup_screen_shots
 		$this->cus_sup_screen_shots->EditAttrs["class"] = "form-control";
 		$this->cus_sup_screen_shots->EditCustomAttributes = "";
-		if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-			$this->cus_sup_screen_shots->ImageWidth = 200;
-			$this->cus_sup_screen_shots->ImageHeight = 0;
-			$this->cus_sup_screen_shots->ImageAlt = $this->cus_sup_screen_shots->alt();
-			$this->cus_sup_screen_shots->EditValue = $this->cus_sup_screen_shots->Upload->DbValue;
-		} else {
-			$this->cus_sup_screen_shots->EditValue = "";
-		}
-		if (!EmptyValue($this->cus_sup_screen_shots->CurrentValue))
-				$this->cus_sup_screen_shots->Upload->FileName = $this->cus_sup_screen_shots->CurrentValue;
+		$this->cus_sup_screen_shots->EditValue = $this->cus_sup_screen_shots->CurrentValue;
+		$this->cus_sup_screen_shots->PlaceHolder = RemoveHtml($this->cus_sup_screen_shots->caption());
 
 		// cus_sup_date
 		$this->cus_sup_date->EditAttrs["class"] = "form-control";
@@ -1090,7 +957,6 @@ class cus_support extends DbTable
 					$doc->exportCaption($this->cus_sup_id);
 					$doc->exportCaption($this->cus_sup_branch_id);
 					$doc->exportCaption($this->cus_sup_emp_id);
-					$doc->exportCaption($this->cus_sup_query);
 					$doc->exportCaption($this->cus_sup_date);
 					$doc->exportCaption($this->cus_sup_status);
 					$doc->exportCaption($this->cus_sup_resolved_on);
@@ -1138,7 +1004,6 @@ class cus_support extends DbTable
 						$doc->exportField($this->cus_sup_id);
 						$doc->exportField($this->cus_sup_branch_id);
 						$doc->exportField($this->cus_sup_emp_id);
-						$doc->exportField($this->cus_sup_query);
 						$doc->exportField($this->cus_sup_date);
 						$doc->exportField($this->cus_sup_status);
 						$doc->exportField($this->cus_sup_resolved_on);
@@ -1160,98 +1025,8 @@ class cus_support extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
-		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
-		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// Set up field name / file name field / file type field
-		$fldName = "";
-		$fileNameFld = "";
-		$fileTypeFld = "";
-		if ($fldparm == 'cus_sup_screen_shots') {
-			$fldName = "cus_sup_screen_shots";
-			$fileNameFld = "cus_sup_screen_shots";
-		} else {
-			return FALSE; // Incorrect field
-		}
-
-		// Set up key values
-		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
-		if (count($ar) == 1) {
-			$this->cus_sup_id->CurrentValue = $ar[0];
-		} else {
-			return FALSE; // Incorrect key
-		}
-
-		// Set up filter (WHERE Clause)
-		$filter = $this->getRecordFilter();
-		$this->CurrentFilter = $filter;
-		$sql = $this->getCurrentSql();
-		$conn = $this->getConnection();
-		$dbtype = GetConnectionType($this->Dbid);
-		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
-			$val = $rs->fields($fldName);
-			if (!EmptyValue($val)) {
-				$fld = $this->fields[$fldName];
-
-				// Binary data
-				if ($fld->DataType == DATATYPE_BLOB) {
-					if ($dbtype != "MYSQL") {
-						if (is_array($val) || is_object($val)) // Byte array
-							$val = BytesToString($val);
-					}
-					if ($resize)
-						ResizeBinary($val, $width, $height);
-
-					// Write file type
-					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
-						AddHeader("Content-type", $rs->fields($fileTypeFld));
-					} else {
-						AddHeader("Content-type", ContentType($val));
-					}
-
-					// Write file name
-					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
-						$fileName = $rs->fields($fileNameFld);
-						$pathinfo = pathinfo($fileName);
-						$ext = strtolower(@$pathinfo["extension"]);
-						$isPdf = SameText($ext, "pdf");
-						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
-							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
-					}
-
-					// Write file data
-					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
-						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
-						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
-							$val .= "\0\0\0\0";
-					}
-
-					// Clear any debug message
-					if (ob_get_length())
-						ob_end_clean();
-
-					// Write binary data
-					Write($val);
-
-				// Upload to folder
-				} else {
-					if ($fld->UploadMultiple)
-						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
-					else
-						$files = [$val];
-					$data = [];
-					$ar = [];
-					foreach ($files as $file) {
-						if (!EmptyValue($file))
-							$ar[$file] = FullUrl($fld->hrefPath() . $file);
-					}
-					$data[$fld->Param] = $ar;
-					WriteJson($data);
-				}
-			}
-			$rs->close();
-			return TRUE;
-		}
+		// No binary fields
 		return FALSE;
 	}
 

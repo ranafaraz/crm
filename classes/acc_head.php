@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -72,13 +72,10 @@ class acc_head extends DbTable
 		$this->fields['acc_head_id'] = &$this->acc_head_id;
 
 		// acc_head_acc_nature_id
-		$this->acc_head_acc_nature_id = new DbField('acc_head', 'acc_head', 'x_acc_head_acc_nature_id', 'acc_head_acc_nature_id', '`acc_head_acc_nature_id`', '`acc_head_acc_nature_id`', 3, 12, -1, FALSE, '`acc_head_acc_nature_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->acc_head_acc_nature_id = new DbField('acc_head', 'acc_head', 'x_acc_head_acc_nature_id', 'acc_head_acc_nature_id', '`acc_head_acc_nature_id`', '`acc_head_acc_nature_id`', 3, 12, -1, FALSE, '`acc_head_acc_nature_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->acc_head_acc_nature_id->Nullable = FALSE; // NOT NULL field
 		$this->acc_head_acc_nature_id->Required = TRUE; // Required field
 		$this->acc_head_acc_nature_id->Sortable = TRUE; // Allow sort
-		$this->acc_head_acc_nature_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->acc_head_acc_nature_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->acc_head_acc_nature_id->Lookup = new Lookup('acc_head_acc_nature_id', 'acc_nature', FALSE, 'acc_nature_id', ["acc_nature_name","","",""], [], [], [], [], [], [], '', '');
 		$this->acc_head_acc_nature_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['acc_head_acc_nature_id'] = &$this->acc_head_acc_nature_id;
 
@@ -90,7 +87,7 @@ class acc_head extends DbTable
 		$this->fields['acc_head_caption'] = &$this->acc_head_caption;
 
 		// acc_head_desc
-		$this->acc_head_desc = new DbField('acc_head', 'acc_head', 'x_acc_head_desc', 'acc_head_desc', '`acc_head_desc`', '`acc_head_desc`', 200, 100, -1, FALSE, '`acc_head_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->acc_head_desc = new DbField('acc_head', 'acc_head', 'x_acc_head_desc', 'acc_head_desc', '`acc_head_desc`', '`acc_head_desc`', 200, 100, -1, FALSE, '`acc_head_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->acc_head_desc->Nullable = FALSE; // NOT NULL field
 		$this->acc_head_desc->Required = TRUE; // Required field
 		$this->acc_head_desc->Sortable = TRUE; // Allow sort
@@ -368,7 +365,7 @@ class acc_head extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -704,29 +701,11 @@ class acc_head extends DbTable
 		// acc_head_id
 
 		$this->acc_head_id->ViewValue = $this->acc_head_id->CurrentValue;
-		$this->acc_head_id->CssClass = "font-weight-bold";
 		$this->acc_head_id->ViewCustomAttributes = "";
 
 		// acc_head_acc_nature_id
-		$curVal = strval($this->acc_head_acc_nature_id->CurrentValue);
-		if ($curVal != "") {
-			$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->lookupCacheOption($curVal);
-			if ($this->acc_head_acc_nature_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`acc_nature_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->acc_head_acc_nature_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->acc_head_acc_nature_id->ViewValue = NULL;
-		}
+		$this->acc_head_acc_nature_id->ViewValue = $this->acc_head_acc_nature_id->CurrentValue;
+		$this->acc_head_acc_nature_id->ViewValue = FormatNumber($this->acc_head_acc_nature_id->ViewValue, 0, -2, -2, -2);
 		$this->acc_head_acc_nature_id->ViewCustomAttributes = "";
 
 		// acc_head_caption
@@ -776,11 +755,13 @@ class acc_head extends DbTable
 		$this->acc_head_id->EditAttrs["class"] = "form-control";
 		$this->acc_head_id->EditCustomAttributes = "";
 		$this->acc_head_id->EditValue = $this->acc_head_id->CurrentValue;
-		$this->acc_head_id->CssClass = "font-weight-bold";
 		$this->acc_head_id->ViewCustomAttributes = "";
 
 		// acc_head_acc_nature_id
+		$this->acc_head_acc_nature_id->EditAttrs["class"] = "form-control";
 		$this->acc_head_acc_nature_id->EditCustomAttributes = "";
+		$this->acc_head_acc_nature_id->EditValue = $this->acc_head_acc_nature_id->CurrentValue;
+		$this->acc_head_acc_nature_id->PlaceHolder = RemoveHtml($this->acc_head_acc_nature_id->caption());
 
 		// acc_head_caption
 		$this->acc_head_caption->EditAttrs["class"] = "form-control";
@@ -793,6 +774,8 @@ class acc_head extends DbTable
 		// acc_head_desc
 		$this->acc_head_desc->EditAttrs["class"] = "form-control";
 		$this->acc_head_desc->EditCustomAttributes = "";
+		if (!$this->acc_head_desc->Raw)
+			$this->acc_head_desc->CurrentValue = HtmlDecode($this->acc_head_desc->CurrentValue);
 		$this->acc_head_desc->EditValue = $this->acc_head_desc->CurrentValue;
 		$this->acc_head_desc->PlaceHolder = RemoveHtml($this->acc_head_desc->caption());
 

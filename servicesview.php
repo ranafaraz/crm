@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_view = new services_view();
 $services_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $services_view->showMessage();
 ?>
-<?php if (!$services_view->IsModal) { ?>
-<?php if (!$services_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $services_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fservicesview" id="fservicesview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -124,18 +115,12 @@ $services_view->showMessage();
 		<td class="<?php echo $services_view->TableLeftColumnClass ?>"><span id="elh_services_service_logo"><?php echo $services_view->service_logo->caption() ?></span></td>
 		<td data-name="service_logo" <?php echo $services_view->service_logo->cellAttributes() ?>>
 <span id="el_services_service_logo">
-<span><?php echo GetFileViewTag($services_view->service_logo, $services_view->service_logo->getViewValue(), FALSE) ?></span>
+<span<?php echo $services_view->service_logo->viewAttributes() ?>><?php echo $services_view->service_logo->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$services_view->IsModal) { ?>
-<?php if (!$services_view->isExport()) { ?>
-<?php echo $services_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $services_view->showPageFooter();

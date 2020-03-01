@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_availed_by_customer_delete = new services_availed_by_customer_delete()
 $services_availed_by_customer_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -88,9 +87,6 @@ $services_availed_by_customer_delete->showMessage();
 <?php if ($services_availed_by_customer_delete->sabc_amount->Visible) { // sabc_amount ?>
 		<th class="<?php echo $services_availed_by_customer_delete->sabc_amount->headerCellClass() ?>"><span id="elh_services_availed_by_customer_sabc_amount" class="services_availed_by_customer_sabc_amount"><?php echo $services_availed_by_customer_delete->sabc_amount->caption() ?></span></th>
 <?php } ?>
-<?php if ($services_availed_by_customer_delete->sabc_desc->Visible) { // sabc_desc ?>
-		<th class="<?php echo $services_availed_by_customer_delete->sabc_desc->headerCellClass() ?>"><span id="elh_services_availed_by_customer_sabc_desc" class="services_availed_by_customer_sabc_desc"><?php echo $services_availed_by_customer_delete->sabc_desc->caption() ?></span></th>
-<?php } ?>
 <?php if ($services_availed_by_customer_delete->sabc_signed_on->Visible) { // sabc_signed_on ?>
 		<th class="<?php echo $services_availed_by_customer_delete->sabc_signed_on->headerCellClass() ?>"><span id="elh_services_availed_by_customer_sabc_signed_on" class="services_availed_by_customer_sabc_signed_on"><?php echo $services_availed_by_customer_delete->sabc_signed_on->caption() ?></span></th>
 <?php } ?>
@@ -154,13 +150,6 @@ while (!$services_availed_by_customer_delete->Recordset->EOF) {
 		<td <?php echo $services_availed_by_customer_delete->sabc_amount->cellAttributes() ?>>
 <span id="el<?php echo $services_availed_by_customer_delete->RowCount ?>_services_availed_by_customer_sabc_amount" class="services_availed_by_customer_sabc_amount">
 <span<?php echo $services_availed_by_customer_delete->sabc_amount->viewAttributes() ?>><?php echo $services_availed_by_customer_delete->sabc_amount->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($services_availed_by_customer_delete->sabc_desc->Visible) { // sabc_desc ?>
-		<td <?php echo $services_availed_by_customer_delete->sabc_desc->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_delete->RowCount ?>_services_availed_by_customer_sabc_desc" class="services_availed_by_customer_sabc_desc">
-<span<?php echo $services_availed_by_customer_delete->sabc_desc->viewAttributes() ?>><?php echo $services_availed_by_customer_delete->sabc_desc->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

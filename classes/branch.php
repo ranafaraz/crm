@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -74,13 +74,10 @@ class branch extends DbTable
 		$this->fields['branch_id'] = &$this->branch_id;
 
 		// branch_org_id
-		$this->branch_org_id = new DbField('branch', 'branch', 'x_branch_org_id', 'branch_org_id', '`branch_org_id`', '`branch_org_id`', 3, 12, -1, FALSE, '`branch_org_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->branch_org_id = new DbField('branch', 'branch', 'x_branch_org_id', 'branch_org_id', '`branch_org_id`', '`branch_org_id`', 3, 12, -1, FALSE, '`branch_org_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->branch_org_id->Nullable = FALSE; // NOT NULL field
 		$this->branch_org_id->Required = TRUE; // Required field
 		$this->branch_org_id->Sortable = TRUE; // Allow sort
-		$this->branch_org_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->branch_org_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->branch_org_id->Lookup = new Lookup('branch_org_id', 'organization', FALSE, 'org_id', ["org_name","","",""], [], [], [], [], [], [], '', '');
 		$this->branch_org_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['branch_org_id'] = &$this->branch_org_id;
 
@@ -106,7 +103,7 @@ class branch extends DbTable
 		$this->fields['branch_contact'] = &$this->branch_contact;
 
 		// branch_address
-		$this->branch_address = new DbField('branch', 'branch', 'x_branch_address', 'branch_address', '`branch_address`', '`branch_address`', 200, 100, -1, FALSE, '`branch_address`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->branch_address = new DbField('branch', 'branch', 'x_branch_address', 'branch_address', '`branch_address`', '`branch_address`', 200, 100, -1, FALSE, '`branch_address`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->branch_address->Nullable = FALSE; // NOT NULL field
 		$this->branch_address->Required = TRUE; // Required field
 		$this->branch_address->Sortable = TRUE; // Allow sort
@@ -384,7 +381,7 @@ class branch extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -726,29 +723,11 @@ class branch extends DbTable
 		// branch_id
 
 		$this->branch_id->ViewValue = $this->branch_id->CurrentValue;
-		$this->branch_id->CssClass = "font-weight-bold";
 		$this->branch_id->ViewCustomAttributes = "";
 
 		// branch_org_id
-		$curVal = strval($this->branch_org_id->CurrentValue);
-		if ($curVal != "") {
-			$this->branch_org_id->ViewValue = $this->branch_org_id->lookupCacheOption($curVal);
-			if ($this->branch_org_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`org_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->branch_org_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->branch_org_id->ViewValue = $this->branch_org_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->branch_org_id->ViewValue = NULL;
-		}
+		$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
+		$this->branch_org_id->ViewValue = FormatNumber($this->branch_org_id->ViewValue, 0, -2, -2, -2);
 		$this->branch_org_id->ViewCustomAttributes = "";
 
 		// branch_name
@@ -816,11 +795,13 @@ class branch extends DbTable
 		$this->branch_id->EditAttrs["class"] = "form-control";
 		$this->branch_id->EditCustomAttributes = "";
 		$this->branch_id->EditValue = $this->branch_id->CurrentValue;
-		$this->branch_id->CssClass = "font-weight-bold";
 		$this->branch_id->ViewCustomAttributes = "";
 
 		// branch_org_id
+		$this->branch_org_id->EditAttrs["class"] = "form-control";
 		$this->branch_org_id->EditCustomAttributes = "";
+		$this->branch_org_id->EditValue = $this->branch_org_id->CurrentValue;
+		$this->branch_org_id->PlaceHolder = RemoveHtml($this->branch_org_id->caption());
 
 		// branch_name
 		$this->branch_name->EditAttrs["class"] = "form-control";
@@ -849,6 +830,8 @@ class branch extends DbTable
 		// branch_address
 		$this->branch_address->EditAttrs["class"] = "form-control";
 		$this->branch_address->EditCustomAttributes = "";
+		if (!$this->branch_address->Raw)
+			$this->branch_address->CurrentValue = HtmlDecode($this->branch_address->CurrentValue);
 		$this->branch_address->EditValue = $this->branch_address->CurrentValue;
 		$this->branch_address->PlaceHolder = RemoveHtml($this->branch_address->caption());
 

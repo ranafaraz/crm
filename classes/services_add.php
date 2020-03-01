@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_add extends services
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'services';
@@ -325,7 +325,6 @@ class services_add extends services
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class services_add extends services
 			$GLOBALS["Table"] = &$GLOBALS["services"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'add');
@@ -369,9 +364,6 @@ class services_add extends services
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class services_add extends services
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class services_add extends services
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -644,22 +630,6 @@ class services_add extends services
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canAdd()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("serviceslist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -691,9 +661,8 @@ class services_add extends services
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->service_branch_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -797,9 +766,6 @@ class services_add extends services
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
-		$this->service_logo->Upload->Index = $CurrentForm->Index;
-		$this->service_logo->Upload->uploadFile();
-		$this->service_logo->CurrentValue = $this->service_logo->Upload->FileName;
 	}
 
 	// Load default values
@@ -813,9 +779,8 @@ class services_add extends services
 		$this->service_caption->OldValue = $this->service_caption->CurrentValue;
 		$this->service_desc->CurrentValue = NULL;
 		$this->service_desc->OldValue = $this->service_desc->CurrentValue;
-		$this->service_logo->Upload->DbValue = NULL;
-		$this->service_logo->OldValue = $this->service_logo->Upload->DbValue;
-		$this->service_logo->CurrentValue = NULL; // Clear file related field
+		$this->service_logo->CurrentValue = NULL;
+		$this->service_logo->OldValue = $this->service_logo->CurrentValue;
 	}
 
 	// Load form values
@@ -824,7 +789,6 @@ class services_add extends services
 
 		// Load from form
 		global $CurrentForm;
-		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'service_branch_id' first before field var 'x_service_branch_id'
 		$val = $CurrentForm->hasValue("service_branch_id") ? $CurrentForm->getValue("service_branch_id") : $CurrentForm->getValue("x_service_branch_id");
@@ -853,6 +817,15 @@ class services_add extends services
 				$this->service_desc->setFormValue($val);
 		}
 
+		// Check field name 'service_logo' first before field var 'x_service_logo'
+		$val = $CurrentForm->hasValue("service_logo") ? $CurrentForm->getValue("service_logo") : $CurrentForm->getValue("x_service_logo");
+		if (!$this->service_logo->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->service_logo->Visible = FALSE; // Disable update for API request
+			else
+				$this->service_logo->setFormValue($val);
+		}
+
 		// Check field name 'service_id' first before field var 'x_service_id'
 		$val = $CurrentForm->hasValue("service_id") ? $CurrentForm->getValue("service_id") : $CurrentForm->getValue("x_service_id");
 	}
@@ -864,6 +837,7 @@ class services_add extends services
 		$this->service_branch_id->CurrentValue = $this->service_branch_id->FormValue;
 		$this->service_caption->CurrentValue = $this->service_caption->FormValue;
 		$this->service_desc->CurrentValue = $this->service_desc->FormValue;
+		$this->service_logo->CurrentValue = $this->service_logo->FormValue;
 	}
 
 	// Load row based on key values
@@ -905,8 +879,7 @@ class services_add extends services
 		$this->service_branch_id->setDbValue($row['service_branch_id']);
 		$this->service_caption->setDbValue($row['service_caption']);
 		$this->service_desc->setDbValue($row['service_desc']);
-		$this->service_logo->Upload->DbValue = $row['service_logo'];
-		$this->service_logo->setDbValue($this->service_logo->Upload->DbValue);
+		$this->service_logo->setDbValue($row['service_logo']);
 	}
 
 	// Return a row with default values
@@ -918,7 +891,7 @@ class services_add extends services
 		$row['service_branch_id'] = $this->service_branch_id->CurrentValue;
 		$row['service_caption'] = $this->service_caption->CurrentValue;
 		$row['service_desc'] = $this->service_desc->CurrentValue;
-		$row['service_logo'] = $this->service_logo->Upload->DbValue;
+		$row['service_logo'] = $this->service_logo->CurrentValue;
 		return $row;
 	}
 
@@ -966,29 +939,11 @@ class services_add extends services
 
 			// service_id
 			$this->service_id->ViewValue = $this->service_id->CurrentValue;
-			$this->service_id->CssClass = "font-weight-bold";
 			$this->service_id->ViewCustomAttributes = "";
 
 			// service_branch_id
-			$curVal = strval($this->service_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->service_branch_id->ViewValue = $this->service_branch_id->lookupCacheOption($curVal);
-				if ($this->service_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->service_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->service_branch_id->ViewValue = $this->service_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->service_branch_id->ViewValue = NULL;
-			}
+			$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
+			$this->service_branch_id->ViewValue = FormatNumber($this->service_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->service_branch_id->ViewCustomAttributes = "";
 
 			// service_caption
@@ -1000,14 +955,7 @@ class services_add extends services
 			$this->service_desc->ViewCustomAttributes = "";
 
 			// service_logo
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->ImageWidth = 200;
-				$this->service_logo->ImageHeight = 0;
-				$this->service_logo->ImageAlt = $this->service_logo->alt();
-				$this->service_logo->ViewValue = $this->service_logo->Upload->DbValue;
-			} else {
-				$this->service_logo->ViewValue = "";
-			}
+			$this->service_logo->ViewValue = $this->service_logo->CurrentValue;
 			$this->service_logo->ViewCustomAttributes = "";
 
 			// service_branch_id
@@ -1027,55 +975,15 @@ class services_add extends services
 
 			// service_logo
 			$this->service_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->HrefValue = GetFileUploadUrl($this->service_logo, $this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->service_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->service_logo->HrefValue = FullUrl($this->service_logo->HrefValue, "href");
-			} else {
-				$this->service_logo->HrefValue = "";
-			}
-			$this->service_logo->ExportHrefValue = $this->service_logo->UploadPath . $this->service_logo->Upload->DbValue;
+			$this->service_logo->HrefValue = "";
 			$this->service_logo->TooltipValue = "";
-			if ($this->service_logo->UseColorbox) {
-				if (EmptyValue($this->service_logo->TooltipValue))
-					$this->service_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->service_logo->LinkAttrs["data-rel"] = "services_x_service_logo";
-				$this->service_logo->LinkAttrs->appendClass("ew-lightbox");
-			}
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// service_branch_id
+			$this->service_branch_id->EditAttrs["class"] = "form-control";
 			$this->service_branch_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->service_branch_id->CurrentValue));
-			if ($curVal != "")
-				$this->service_branch_id->ViewValue = $this->service_branch_id->lookupCacheOption($curVal);
-			else
-				$this->service_branch_id->ViewValue = $this->service_branch_id->Lookup !== NULL && is_array($this->service_branch_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->service_branch_id->ViewValue !== NULL) { // Load from cache
-				$this->service_branch_id->EditValue = array_values($this->service_branch_id->Lookup->Options);
-				if ($this->service_branch_id->ViewValue == "")
-					$this->service_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`branch_id`" . SearchString("=", $this->service_branch_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->service_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->service_branch_id->ViewValue = $this->service_branch_id->displayValue($arwrk);
-				} else {
-					$this->service_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->service_branch_id->EditValue = $arwrk;
-			}
+			$this->service_branch_id->EditValue = HtmlEncode($this->service_branch_id->CurrentValue);
+			$this->service_branch_id->PlaceHolder = RemoveHtml($this->service_branch_id->caption());
 
 			// service_caption
 			$this->service_caption->EditAttrs["class"] = "form-control";
@@ -1094,18 +1002,10 @@ class services_add extends services
 			// service_logo
 			$this->service_logo->EditAttrs["class"] = "form-control";
 			$this->service_logo->EditCustomAttributes = "";
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->ImageWidth = 200;
-				$this->service_logo->ImageHeight = 0;
-				$this->service_logo->ImageAlt = $this->service_logo->alt();
-				$this->service_logo->EditValue = $this->service_logo->Upload->DbValue;
-			} else {
-				$this->service_logo->EditValue = "";
-			}
-			if (!EmptyValue($this->service_logo->CurrentValue))
-					$this->service_logo->Upload->FileName = $this->service_logo->CurrentValue;
-			if ($this->isShow() || $this->isCopy())
-				RenderUploadField($this->service_logo);
+			if (!$this->service_logo->Raw)
+				$this->service_logo->CurrentValue = HtmlDecode($this->service_logo->CurrentValue);
+			$this->service_logo->EditValue = HtmlEncode($this->service_logo->CurrentValue);
+			$this->service_logo->PlaceHolder = RemoveHtml($this->service_logo->caption());
 
 			// Add refer script
 			// service_branch_id
@@ -1123,15 +1023,7 @@ class services_add extends services
 
 			// service_logo
 			$this->service_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->HrefValue = GetFileUploadUrl($this->service_logo, $this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->service_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->service_logo->HrefValue = FullUrl($this->service_logo->HrefValue, "href");
-			} else {
-				$this->service_logo->HrefValue = "";
-			}
-			$this->service_logo->ExportHrefValue = $this->service_logo->UploadPath . $this->service_logo->Upload->DbValue;
+			$this->service_logo->HrefValue = "";
 		}
 		if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) // Add/Edit/Search row
 			$this->setupFieldTitles();
@@ -1157,6 +1049,9 @@ class services_add extends services
 				AddMessage($FormError, str_replace("%s", $this->service_branch_id->caption(), $this->service_branch_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->service_branch_id->FormValue)) {
+			AddMessage($FormError, $this->service_branch_id->errorMessage());
+		}
 		if ($this->service_caption->Required) {
 			if (!$this->service_caption->IsDetailKey && $this->service_caption->FormValue != NULL && $this->service_caption->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->service_caption->caption(), $this->service_caption->RequiredErrorMessage));
@@ -1168,7 +1063,7 @@ class services_add extends services
 			}
 		}
 		if ($this->service_logo->Required) {
-			if ($this->service_logo->Upload->FileName == "" && !$this->service_logo->Upload->KeepFile) {
+			if (!$this->service_logo->IsDetailKey && $this->service_logo->FormValue != NULL && $this->service_logo->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->service_logo->caption(), $this->service_logo->RequiredErrorMessage));
 			}
 		}
@@ -1207,55 +1102,7 @@ class services_add extends services
 		$this->service_desc->setDbValueDef($rsnew, $this->service_desc->CurrentValue, "", FALSE);
 
 		// service_logo
-		if ($this->service_logo->Visible && !$this->service_logo->Upload->KeepFile) {
-			$this->service_logo->Upload->DbValue = ""; // No need to delete old file
-			if ($this->service_logo->Upload->FileName == "") {
-				$rsnew['service_logo'] = NULL;
-			} else {
-				$rsnew['service_logo'] = $this->service_logo->Upload->FileName;
-			}
-			$this->service_logo->ImageWidth = 1000; // Resize width
-			$this->service_logo->ImageHeight = 0; // Resize height
-		}
-		if ($this->service_logo->Visible && !$this->service_logo->Upload->KeepFile) {
-			$oldFiles = EmptyValue($this->service_logo->Upload->DbValue) ? [] : [$this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)];
-			if (!EmptyValue($this->service_logo->Upload->FileName)) {
-				$newFiles = [$this->service_logo->Upload->FileName];
-				$NewFileCount = count($newFiles);
-				for ($i = 0; $i < $NewFileCount; $i++) {
-					if ($newFiles[$i] != "") {
-						$file = $newFiles[$i];
-						$tempPath = UploadTempPath($this->service_logo, $this->service_logo->Upload->Index);
-						if (file_exists($tempPath . $file)) {
-							if (Config("DELETE_UPLOADED_FILES")) {
-								$oldFileFound = FALSE;
-								$oldFileCount = count($oldFiles);
-								for ($j = 0; $j < $oldFileCount; $j++) {
-									$oldFile = $oldFiles[$j];
-									if ($oldFile == $file) { // Old file found, no need to delete anymore
-										unset($oldFiles[$j]);
-										$oldFileFound = TRUE;
-										break;
-									}
-								}
-								if ($oldFileFound) // No need to check if file exists further
-									continue;
-							}
-							$file1 = UniqueFilename($this->service_logo->physicalUploadPath(), $file); // Get new file name
-							if ($file1 != $file) { // Rename temp file
-								while (file_exists($tempPath . $file1) || file_exists($this->service_logo->physicalUploadPath() . $file1)) // Make sure no file name clash
-									$file1 = UniqueFilename($this->service_logo->physicalUploadPath(), $file1, TRUE); // Use indexed name
-								rename($tempPath . $file, $tempPath . $file1);
-								$newFiles[$i] = $file1;
-							}
-						}
-					}
-				}
-				$this->service_logo->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
-				$this->service_logo->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
-				$this->service_logo->setDbValueDef($rsnew, $this->service_logo->Upload->FileName, "", FALSE);
-			}
-		}
+		$this->service_logo->setDbValueDef($rsnew, $this->service_logo->CurrentValue, "", FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1265,35 +1112,6 @@ class services_add extends services
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
-				if ($this->service_logo->Visible && !$this->service_logo->Upload->KeepFile) {
-					$oldFiles = EmptyValue($this->service_logo->Upload->DbValue) ? [] : [$this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)];
-					if (!EmptyValue($this->service_logo->Upload->FileName)) {
-						$newFiles = [$this->service_logo->Upload->FileName];
-						$newFiles2 = [$this->service_logo->htmlDecode($rsnew['service_logo'])];
-						$newFileCount = count($newFiles);
-						for ($i = 0; $i < $newFileCount; $i++) {
-							if ($newFiles[$i] != "") {
-								$file = UploadTempPath($this->service_logo, $this->service_logo->Upload->Index) . $newFiles[$i];
-								if (file_exists($file)) {
-									if (@$newFiles2[$i] != "") // Use correct file name
-										$newFiles[$i] = $newFiles2[$i];
-									if (!$this->service_logo->Upload->ResizeAndSaveToFile($this->service_logo->ImageWidth, $this->service_logo->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
-										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
-										return FALSE;
-									}
-								}
-							}
-						}
-					} else {
-						$newFiles = [];
-					}
-					if (Config("DELETE_UPLOADED_FILES")) {
-						foreach ($oldFiles as $oldFile) {
-							if ($oldFile != "" && !in_array($oldFile, $newFiles))
-								@unlink($this->service_logo->oldPhysicalUploadPath() . $oldFile);
-						}
-					}
-				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1316,12 +1134,6 @@ class services_add extends services
 
 		// Clean upload path if any
 		if ($addRow) {
-
-			// service_logo
-			if ($this->service_logo->Upload->FileToken != "")
-				CleanUploadTempPath($this->service_logo->Upload->FileToken, $this->service_logo->Upload->Index);
-			else
-				CleanUploadTempPath($this->service_logo, $this->service_logo->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1357,8 +1169,6 @@ class services_add extends services
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_service_branch_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1379,8 +1189,6 @@ class services_add extends services
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_service_branch_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

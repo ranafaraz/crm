@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class user_delete extends user
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'user';
@@ -325,7 +325,6 @@ class user_delete extends user
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -365,9 +364,6 @@ class user_delete extends user
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -516,9 +512,6 @@ class user_delete extends user
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -546,22 +539,6 @@ class user_delete extends user
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("userlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->user_id->setVisibility();
@@ -570,9 +547,9 @@ class user_delete extends user
 		$this->user_name->setVisibility();
 		$this->user_password->setVisibility();
 		$this->user_email->setVisibility();
-		$this->user_cnic->setVisibility();
 		$this->user_father->setVisibility();
 		$this->user_photo->Visible = FALSE;
+		$this->user_cnic->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -594,10 +571,8 @@ class user_delete extends user
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->user_branch_id);
-		$this->setupLookupOptions($this->user_type_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -719,10 +694,9 @@ class user_delete extends user
 		$this->user_name->setDbValue($row['user_name']);
 		$this->user_password->setDbValue($row['user_password']);
 		$this->user_email->setDbValue($row['user_email']);
-		$this->user_cnic->setDbValue($row['user_cnic']);
 		$this->user_father->setDbValue($row['user_father']);
-		$this->user_photo->Upload->DbValue = $row['user_photo'];
-		$this->user_photo->setDbValue($this->user_photo->Upload->DbValue);
+		$this->user_photo->setDbValue($row['user_photo']);
+		$this->user_cnic->setDbValue($row['user_cnic']);
 	}
 
 	// Return a row with default values
@@ -735,9 +709,9 @@ class user_delete extends user
 		$row['user_name'] = NULL;
 		$row['user_password'] = NULL;
 		$row['user_email'] = NULL;
-		$row['user_cnic'] = NULL;
 		$row['user_father'] = NULL;
 		$row['user_photo'] = NULL;
+		$row['user_cnic'] = NULL;
 		return $row;
 	}
 
@@ -758,9 +732,9 @@ class user_delete extends user
 		// user_name
 		// user_password
 		// user_email
-		// user_cnic
 		// user_father
 		// user_photo
+		// user_cnic
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
@@ -769,47 +743,13 @@ class user_delete extends user
 			$this->user_id->ViewCustomAttributes = "";
 
 			// user_branch_id
-			$curVal = strval($this->user_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->user_branch_id->ViewValue = $this->user_branch_id->lookupCacheOption($curVal);
-				if ($this->user_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->user_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->user_branch_id->ViewValue = $this->user_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->user_branch_id->ViewValue = NULL;
-			}
+			$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
+			$this->user_branch_id->ViewValue = FormatNumber($this->user_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->user_branch_id->ViewCustomAttributes = "";
 
 			// user_type_id
-			$curVal = strval($this->user_type_id->CurrentValue);
-			if ($curVal != "") {
-				$this->user_type_id->ViewValue = $this->user_type_id->lookupCacheOption($curVal);
-				if ($this->user_type_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`userlevelid`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->user_type_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->user_type_id->ViewValue = $this->user_type_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->user_type_id->ViewValue = NULL;
-			}
+			$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
+			$this->user_type_id->ViewValue = FormatNumber($this->user_type_id->ViewValue, 0, -2, -2, -2);
 			$this->user_type_id->ViewCustomAttributes = "";
 
 			// user_name
@@ -817,20 +757,20 @@ class user_delete extends user
 			$this->user_name->ViewCustomAttributes = "";
 
 			// user_password
-			$this->user_password->ViewValue = $Language->phrase("PasswordMask");
+			$this->user_password->ViewValue = $this->user_password->CurrentValue;
 			$this->user_password->ViewCustomAttributes = "";
 
 			// user_email
 			$this->user_email->ViewValue = $this->user_email->CurrentValue;
 			$this->user_email->ViewCustomAttributes = "";
 
-			// user_cnic
-			$this->user_cnic->ViewValue = $this->user_cnic->CurrentValue;
-			$this->user_cnic->ViewCustomAttributes = "";
-
 			// user_father
 			$this->user_father->ViewValue = $this->user_father->CurrentValue;
 			$this->user_father->ViewCustomAttributes = "";
+
+			// user_cnic
+			$this->user_cnic->ViewValue = $this->user_cnic->CurrentValue;
+			$this->user_cnic->ViewCustomAttributes = "";
 
 			// user_id
 			$this->user_id->LinkCustomAttributes = "";
@@ -862,15 +802,15 @@ class user_delete extends user
 			$this->user_email->HrefValue = "";
 			$this->user_email->TooltipValue = "";
 
-			// user_cnic
-			$this->user_cnic->LinkCustomAttributes = "";
-			$this->user_cnic->HrefValue = "";
-			$this->user_cnic->TooltipValue = "";
-
 			// user_father
 			$this->user_father->LinkCustomAttributes = "";
 			$this->user_father->HrefValue = "";
 			$this->user_father->TooltipValue = "";
+
+			// user_cnic
+			$this->user_cnic->LinkCustomAttributes = "";
+			$this->user_cnic->HrefValue = "";
+			$this->user_cnic->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
@@ -882,10 +822,6 @@ class user_delete extends user
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -993,10 +929,6 @@ class user_delete extends user
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_user_branch_id":
-					break;
-				case "x_user_type_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1017,10 +949,6 @@ class user_delete extends user
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_user_branch_id":
-							break;
-						case "x_user_type_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class branch_delete extends branch
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'branch';
@@ -325,7 +325,6 @@ class branch_delete extends branch
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class branch_delete extends branch
 			$GLOBALS["Table"] = &$GLOBALS["branch"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class branch_delete extends branch
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class branch_delete extends branch
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class branch_delete extends branch
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("branchlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->branch_id->setVisibility();
@@ -595,9 +568,8 @@ class branch_delete extends branch
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->branch_org_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -756,29 +728,11 @@ class branch_delete extends branch
 
 			// branch_id
 			$this->branch_id->ViewValue = $this->branch_id->CurrentValue;
-			$this->branch_id->CssClass = "font-weight-bold";
 			$this->branch_id->ViewCustomAttributes = "";
 
 			// branch_org_id
-			$curVal = strval($this->branch_org_id->CurrentValue);
-			if ($curVal != "") {
-				$this->branch_org_id->ViewValue = $this->branch_org_id->lookupCacheOption($curVal);
-				if ($this->branch_org_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`org_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->branch_org_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->branch_org_id->ViewValue = $this->branch_org_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->branch_org_id->ViewValue = NULL;
-			}
+			$this->branch_org_id->ViewValue = $this->branch_org_id->CurrentValue;
+			$this->branch_org_id->ViewValue = FormatNumber($this->branch_org_id->ViewValue, 0, -2, -2, -2);
 			$this->branch_org_id->ViewCustomAttributes = "";
 
 			// branch_name
@@ -837,10 +791,6 @@ class branch_delete extends branch
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -948,8 +898,6 @@ class branch_delete extends branch
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_branch_org_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -970,8 +918,6 @@ class branch_delete extends branch
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_branch_org_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

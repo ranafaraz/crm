@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_list extends services
 	public $PageID = "list";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'services';
@@ -365,7 +365,6 @@ class services_list extends services
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -402,10 +401,6 @@ class services_list extends services
 		$this->MultiDeleteUrl = "servicesdelete.php";
 		$this->MultiUpdateUrl = "servicesupdate.php";
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'list');
@@ -424,9 +419,6 @@ class services_list extends services
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 
 		// List options
 		$this->ListOptions = new ListOptions();
@@ -616,9 +608,6 @@ class services_list extends services
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -677,9 +666,6 @@ class services_list extends services
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -716,7 +702,7 @@ class services_list extends services
 	public $KeyCount = 0; // Key count
 	public $RowAction = ""; // Row action
 	public $RowOldKey = ""; // Row old key (for copy)
-	public $MultiColumnClass = "col-sm-6";
+	public $MultiColumnClass = "col-sm";
 	public $MultiColumnEditClass = "w-100";
 	public $DbMasterFilter = ""; // Master filter
 	public $DbDetailFilter = ""; // Detail filter
@@ -742,56 +728,7 @@ class services_list extends services
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canList()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				$this->terminate(GetUrl("index.php"));
-				return;
-			}
 		}
-
-		// Get export parameters
-		$custom = "";
-		if (Param("export") !== NULL) {
-			$this->Export = Param("export");
-			$custom = Param("custom", "");
-		} elseif (IsPost()) {
-			if (Post("exporttype") !== NULL)
-				$this->Export = Post("exporttype");
-			$custom = Post("custom", "");
-		} elseif (Get("cmd") == "json") {
-			$this->Export = Get("cmd");
-		} else {
-			$this->setExportReturnUrl(CurrentUrl());
-		}
-		$ExportFileName = $this->TableVar; // Get export file, used in header
-
-		// Get custom export parameters
-		if ($this->isExport() && $custom != "") {
-			$this->CustomExport = $this->Export;
-			$this->Export = "print";
-		}
-		$CustomExportType = $this->CustomExport;
-		$ExportType = $this->Export; // Get export parameter, used in header
-
-		// Update Export URLs
-		if (Config("USE_PHPEXCEL"))
-			$this->ExportExcelCustom = FALSE;
-		if ($this->ExportExcelCustom)
-			$this->ExportExcelUrl .= "&amp;custom=1";
-		if (Config("USE_PHPWORD"))
-			$this->ExportWordCustom = FALSE;
-		if ($this->ExportWordCustom)
-			$this->ExportWordUrl .= "&amp;custom=1";
-		if ($this->ExportPdfCustom)
-			$this->ExportPdfUrl .= "&amp;custom=1";
 		$this->CurrentAction = Param("action"); // Set up current action
 
 		// Get grid add count
@@ -801,13 +738,10 @@ class services_list extends services
 
 		// Set up list options
 		$this->setupListOptions();
-
-		// Setup export options
-		$this->setupExportOptions();
 		$this->service_id->setVisibility();
 		$this->service_branch_id->setVisibility();
 		$this->service_caption->setVisibility();
-		$this->service_desc->setVisibility();
+		$this->service_desc->Visible = FALSE;
 		$this->service_logo->setVisibility();
 		$this->hideFieldsForAddEdit();
 
@@ -842,9 +776,8 @@ class services_list extends services
 		}
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->service_branch_id);
-
 		// Search filters
+
 		$srchAdvanced = ""; // Advanced search filter
 		$srchBasic = ""; // Basic search filter
 		$filter = "";
@@ -953,8 +886,6 @@ class services_list extends services
 
 		// Build filter
 		$filter = "";
-		if (!$Security->canList())
-			$filter = "(0=1)"; // Filter all records
 		AddFilter($filter, $this->DbDetailFilter);
 		AddFilter($filter, $this->SearchWhere);
 
@@ -965,12 +896,6 @@ class services_list extends services
 		} else {
 			$this->setSessionWhere($filter);
 			$this->CurrentFilter = "";
-		}
-
-		// Export data only
-		if (!$this->CustomExport && in_array($this->Export, array_keys(Config("EXPORT_CLASSES")))) {
-			$this->exportData();
-			$this->terminate();
 		}
 		if ($this->isGridAdd()) {
 			$this->CurrentFilter = "0=1";
@@ -996,8 +921,6 @@ class services_list extends services
 
 			// Set no record found message
 			if (!$this->CurrentAction && $this->TotalRecords == 0) {
-				if (!$Security->canList())
-					$this->setWarningMessage(DeniedMessage());
 				if ($this->SearchWhere == "0=101")
 					$this->setWarningMessage($Language->phrase("EnterSearchCriteria"));
 				else
@@ -1021,7 +944,7 @@ class services_list extends services
 		}
 
 		// Set up pager
-		$this->Pager = new NumericPager($this->StartRecord, $this->getRecordsPerPage(), $this->TotalRecords, $this->PageSizes, $this->RecordRange, $this->AutoHidePager, $this->AutoHidePageSizeSelector);
+		$this->Pager = new PrevNextPager($this->StartRecord, $this->getRecordsPerPage(), $this->TotalRecords, $this->PageSizes, $this->RecordRange, $this->AutoHidePager, $this->AutoHidePageSizeSelector);
 	}
 
 	// Set up number of records displayed per page
@@ -1264,8 +1187,6 @@ class services_list extends services
 	{
 		global $Security;
 		$searchStr = "";
-		if (!$Security->canSearch())
-			return "";
 		$searchKeyword = ($default) ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
 		$searchType = ($default) ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
 
@@ -1349,7 +1270,6 @@ class services_list extends services
 			$this->updateSort($this->service_id); // service_id
 			$this->updateSort($this->service_branch_id); // service_branch_id
 			$this->updateSort($this->service_caption); // service_caption
-			$this->updateSort($this->service_desc); // service_desc
 			$this->updateSort($this->service_logo); // service_logo
 			$this->setStartRecordNumber(1); // Reset start position
 		}
@@ -1389,7 +1309,6 @@ class services_list extends services
 				$this->service_id->setSort("");
 				$this->service_branch_id->setSort("");
 				$this->service_caption->setSort("");
-				$this->service_desc->setSort("");
 				$this->service_logo->setSort("");
 			}
 
@@ -1413,25 +1332,25 @@ class services_list extends services
 		// "view"
 		$item = &$this->ListOptions->add("view");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canView();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// "edit"
 		$item = &$this->ListOptions->add("edit");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canEdit();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// "copy"
 		$item = &$this->ListOptions->add("copy");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canAdd();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// "delete"
 		$item = &$this->ListOptions->add("delete");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canDelete();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// List actions
@@ -1478,7 +1397,7 @@ class services_list extends services
 		// "view"
 		$opt = $this->ListOptions["view"];
 		$viewcaption = HtmlTitle($Language->phrase("ViewLink"));
-		if ($Security->canView()) {
+		if (TRUE) {
 			$opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode($this->ViewUrl) . "\">" . $Language->phrase("ViewLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1487,7 +1406,7 @@ class services_list extends services
 		// "edit"
 		$opt = $this->ListOptions["edit"];
 		$editcaption = HtmlTitle($Language->phrase("EditLink"));
-		if ($Security->canEdit()) {
+		if (TRUE) {
 			$opt->Body = "<a class=\"ew-row-link ew-edit\" title=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("EditLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1496,7 +1415,7 @@ class services_list extends services
 		// "copy"
 		$opt = $this->ListOptions["copy"];
 		$copycaption = HtmlTitle($Language->phrase("CopyLink"));
-		if ($Security->canAdd()) {
+		if (TRUE) {
 			$opt->Body = "<a class=\"ew-row-link ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode($this->CopyUrl) . "\">" . $Language->phrase("CopyLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1504,7 +1423,7 @@ class services_list extends services
 
 		// "delete"
 		$opt = $this->ListOptions["delete"];
-		if ($Security->canDelete())
+		if (TRUE)
 			$opt->Body = "<a class=\"ew-row-link ew-delete\"" . "" . " title=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" href=\"" . HtmlEncode($this->DeleteUrl) . "\">" . $Language->phrase("DeleteLink") . "</a>";
 		else
 			$opt->Body = "";
@@ -1540,7 +1459,7 @@ class services_list extends services
 
 		// "checkbox"
 		$opt = $this->ListOptions["checkbox"];
-		$opt->Body = "<div class=\"custom-control custom-checkbox d-inline-block\"><input type=\"checkbox\" id=\"key_m_" . $this->RowCount . "\" name=\"key_m[]\" class=\"custom-control-input ew-multi-select\" value=\"" . HtmlEncode($this->service_id->CurrentValue) . "\"><label class=\"custom-control-label\" for=\"key_m_" . $this->RowCount . "\"></label></div>";
+		$opt->Body = "<div class=\"custom-control custom-checkbox d-inline-block\"><input type=\"checkbox\" id=\"key_m_" . $this->RowCount . "\" name=\"key_m[]\" class=\"custom-control-input ew-multi-select\" value=\"" . HtmlEncode($this->service_id->CurrentValue) . "\" onclick=\"ew.clickMultiCheckbox(event);\"><label class=\"custom-control-label\" for=\"key_m_" . $this->RowCount . "\"></label></div>";
 		$this->renderListOptionsExt();
 
 		// Call ListOptions_Rendered event
@@ -1558,7 +1477,7 @@ class services_list extends services
 		$item = &$option->add("add");
 		$addcaption = HtmlTitle($Language->phrase("AddLink"));
 		$item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("AddLink") . "</a>";
-		$item->Visible = $this->AddUrl != "" && $Security->canAdd();
+		$item->Visible = $this->AddUrl != "";
 		$option = $options["action"];
 
 		// Set up options default
@@ -1702,14 +1621,6 @@ class services_list extends services
 		return FALSE; // Not ajax request
 	}
 
-	// Get multi column CSS class for record DIV
-	public function getMultiColumnClass()
-	{
-		if ($this->isGridAdd() || $this->isGridEdit() || $this->isInlineActionRow())
-			return "p-3 " . $this->MultiColumnEditClass; // Occupy a whole row
-		return $this->MultiColumnClass; // Occupy a column only
-	}
-
 	// Set up list options (extended codes)
 	protected function setupListOptionsExt()
 	{
@@ -1795,8 +1706,7 @@ class services_list extends services
 		$this->service_branch_id->setDbValue($row['service_branch_id']);
 		$this->service_caption->setDbValue($row['service_caption']);
 		$this->service_desc->setDbValue($row['service_desc']);
-		$this->service_logo->Upload->DbValue = $row['service_logo'];
-		$this->service_logo->setDbValue($this->service_logo->Upload->DbValue);
+		$this->service_logo->setDbValue($row['service_logo']);
 	}
 
 	// Return a row with default values
@@ -1861,48 +1771,19 @@ class services_list extends services
 
 			// service_id
 			$this->service_id->ViewValue = $this->service_id->CurrentValue;
-			$this->service_id->CssClass = "font-weight-bold";
 			$this->service_id->ViewCustomAttributes = "";
 
 			// service_branch_id
-			$curVal = strval($this->service_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->service_branch_id->ViewValue = $this->service_branch_id->lookupCacheOption($curVal);
-				if ($this->service_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->service_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->service_branch_id->ViewValue = $this->service_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->service_branch_id->ViewValue = NULL;
-			}
+			$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
+			$this->service_branch_id->ViewValue = FormatNumber($this->service_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->service_branch_id->ViewCustomAttributes = "";
 
 			// service_caption
 			$this->service_caption->ViewValue = $this->service_caption->CurrentValue;
 			$this->service_caption->ViewCustomAttributes = "";
 
-			// service_desc
-			$this->service_desc->ViewValue = $this->service_desc->CurrentValue;
-			$this->service_desc->ViewCustomAttributes = "";
-
 			// service_logo
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->ImageWidth = 200;
-				$this->service_logo->ImageHeight = 0;
-				$this->service_logo->ImageAlt = $this->service_logo->alt();
-				$this->service_logo->ViewValue = $this->service_logo->Upload->DbValue;
-			} else {
-				$this->service_logo->ViewValue = "";
-			}
+			$this->service_logo->ViewValue = $this->service_logo->CurrentValue;
 			$this->service_logo->ViewCustomAttributes = "";
 
 			// service_id
@@ -1920,125 +1801,15 @@ class services_list extends services
 			$this->service_caption->HrefValue = "";
 			$this->service_caption->TooltipValue = "";
 
-			// service_desc
-			$this->service_desc->LinkCustomAttributes = "";
-			$this->service_desc->HrefValue = "";
-			$this->service_desc->TooltipValue = "";
-
 			// service_logo
 			$this->service_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->HrefValue = GetFileUploadUrl($this->service_logo, $this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->service_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->service_logo->HrefValue = FullUrl($this->service_logo->HrefValue, "href");
-			} else {
-				$this->service_logo->HrefValue = "";
-			}
-			$this->service_logo->ExportHrefValue = $this->service_logo->UploadPath . $this->service_logo->Upload->DbValue;
+			$this->service_logo->HrefValue = "";
 			$this->service_logo->TooltipValue = "";
-			if ($this->service_logo->UseColorbox) {
-				if (EmptyValue($this->service_logo->TooltipValue))
-					$this->service_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->service_logo->LinkAttrs["data-rel"] = "services_x" . $this->RowCount . "_service_logo";
-				$this->service_logo->LinkAttrs->appendClass("ew-lightbox");
-			}
 		}
 
 		// Call Row Rendered event
 		if ($this->RowType != ROWTYPE_AGGREGATEINIT)
 			$this->Row_Rendered();
-	}
-
-	// Get export HTML tag
-	protected function getExportTag($type, $custom = FALSE)
-	{
-		global $Language;
-		if (SameText($type, "excel")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" onclick=\"return ew.export(document.fserviceslist, '" . $this->ExportExcelUrl . "', 'excel', true);\">" . $Language->phrase("ExportToExcel") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportExcelUrl . "\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\">" . $Language->phrase("ExportToExcel") . "</a>";
-		} elseif (SameText($type, "word")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" onclick=\"return ew.export(document.fserviceslist, '" . $this->ExportWordUrl . "', 'word', true);\">" . $Language->phrase("ExportToWord") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportWordUrl . "\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\">" . $Language->phrase("ExportToWord") . "</a>";
-		} elseif (SameText($type, "pdf")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" onclick=\"return ew.export(document.fserviceslist, '" . $this->ExportPdfUrl . "', 'pdf', true);\">" . $Language->phrase("ExportToPDF") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportPdfUrl . "\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\">" . $Language->phrase("ExportToPDF") . "</a>";
-		} elseif (SameText($type, "html")) {
-			return "<a href=\"" . $this->ExportHtmlUrl . "\" class=\"ew-export-link ew-html\" title=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\">" . $Language->phrase("ExportToHtml") . "</a>";
-		} elseif (SameText($type, "xml")) {
-			return "<a href=\"" . $this->ExportXmlUrl . "\" class=\"ew-export-link ew-xml\" title=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\">" . $Language->phrase("ExportToXml") . "</a>";
-		} elseif (SameText($type, "csv")) {
-			return "<a href=\"" . $this->ExportCsvUrl . "\" class=\"ew-export-link ew-csv\" title=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\">" . $Language->phrase("ExportToCsv") . "</a>";
-		} elseif (SameText($type, "email")) {
-			$url = $custom ? ",url:'" . $this->pageUrl() . "export=email&amp;custom=1'" : "";
-			return '<button id="emf_services" class="ew-export-link ew-email" title="' . $Language->phrase("ExportToEmailText") . '" data-caption="' . $Language->phrase("ExportToEmailText") . '" onclick="ew.emailDialogShow({lnk:\'emf_services\', hdr:ew.language.phrase(\'ExportToEmailText\'), f:document.fserviceslist, sel:false' . $url . '});">' . $Language->phrase("ExportToEmail") . '</button>';
-		} elseif (SameText($type, "print")) {
-			return "<a href=\"" . $this->ExportPrintUrl . "\" class=\"ew-export-link ew-print\" title=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\">" . $Language->phrase("PrinterFriendly") . "</a>";
-		}
-	}
-
-	// Set up export options
-	protected function setupExportOptions()
-	{
-		global $Language;
-
-		// Printer friendly
-		$item = &$this->ExportOptions->add("print");
-		$item->Body = $this->getExportTag("print");
-		$item->Visible = TRUE;
-
-		// Export to Excel
-		$item = &$this->ExportOptions->add("excel");
-		$item->Body = $this->getExportTag("excel");
-		$item->Visible = TRUE;
-
-		// Export to Word
-		$item = &$this->ExportOptions->add("word");
-		$item->Body = $this->getExportTag("word");
-		$item->Visible = FALSE;
-
-		// Export to Html
-		$item = &$this->ExportOptions->add("html");
-		$item->Body = $this->getExportTag("html");
-		$item->Visible = FALSE;
-
-		// Export to Xml
-		$item = &$this->ExportOptions->add("xml");
-		$item->Body = $this->getExportTag("xml");
-		$item->Visible = FALSE;
-
-		// Export to Csv
-		$item = &$this->ExportOptions->add("csv");
-		$item->Body = $this->getExportTag("csv");
-		$item->Visible = FALSE;
-
-		// Export to Pdf
-		$item = &$this->ExportOptions->add("pdf");
-		$item->Body = $this->getExportTag("pdf");
-		$item->Visible = FALSE;
-
-		// Export to Email
-		$item = &$this->ExportOptions->add("email");
-		$item->Body = $this->getExportTag("email");
-		$item->Visible = FALSE;
-
-		// Drop down button for export
-		$this->ExportOptions->UseButtonGroup = TRUE;
-		$this->ExportOptions->UseDropDownButton = FALSE;
-		if ($this->ExportOptions->UseButtonGroup && IsMobile())
-			$this->ExportOptions->UseDropDownButton = TRUE;
-		$this->ExportOptions->DropDownButtonPhrase = $Language->phrase("ButtonExport");
-
-		// Add group option item
-		$item = &$this->ExportOptions->add($this->ExportOptions->GroupOptionName);
-		$item->Body = "";
-		$item->Visible = FALSE;
 	}
 
 	// Set up search options
@@ -2072,114 +1843,6 @@ class services_list extends services
 		// Hide search options
 		if ($this->isExport() || $this->CurrentAction)
 			$this->SearchOptions->hideAllOptions();
-		global $Security;
-		if (!$Security->canSearch()) {
-			$this->SearchOptions->hideAllOptions();
-			$this->FilterOptions->hideAllOptions();
-		}
-	}
-
-	/**
-	 * Export data in HTML/CSV/Word/Excel/XML/Email/PDF format
-	 *
-	 * @param boolean $return Return the data rather than output it
-	 * @return mixed
-	 */
-	public function exportData($return = FALSE)
-	{
-		global $Language;
-		$utf8 = SameText(Config("PROJECT_CHARSET"), "utf-8");
-		$selectLimit = $this->UseSelectLimit;
-
-		// Load recordset
-		if ($selectLimit) {
-			$this->TotalRecords = $this->listRecordCount();
-		} else {
-			if (!$this->Recordset)
-				$this->Recordset = $this->loadRecordset();
-			$rs = &$this->Recordset;
-			if ($rs)
-				$this->TotalRecords = $rs->RecordCount();
-		}
-		$this->StartRecord = 1;
-
-		// Export all
-		if ($this->ExportAll) {
-			set_time_limit(Config("EXPORT_ALL_TIME_LIMIT"));
-			$this->DisplayRecords = $this->TotalRecords;
-			$this->StopRecord = $this->TotalRecords;
-		} else { // Export one page only
-			$this->setupStartRecord(); // Set up start record position
-
-			// Set the last record to display
-			if ($this->DisplayRecords <= 0) {
-				$this->StopRecord = $this->TotalRecords;
-			} else {
-				$this->StopRecord = $this->StartRecord + $this->DisplayRecords - 1;
-			}
-		}
-		if ($selectLimit)
-			$rs = $this->loadRecordset($this->StartRecord - 1, $this->DisplayRecords <= 0 ? $this->TotalRecords : $this->DisplayRecords);
-		$this->ExportDoc = GetExportDocument($this, "h");
-		$doc = &$this->ExportDoc;
-		if (!$doc)
-			$this->setFailureMessage($Language->phrase("ExportClassNotFound")); // Export class not found
-		if (!$rs || !$doc) {
-			RemoveHeader("Content-Type"); // Remove header
-			RemoveHeader("Content-Disposition");
-			$this->showMessage();
-			return;
-		}
-		if ($selectLimit) {
-			$this->StartRecord = 1;
-			$this->StopRecord = $this->DisplayRecords <= 0 ? $this->TotalRecords : $this->DisplayRecords;
-		}
-
-		// Call Page Exporting server event
-		$this->ExportDoc->ExportCustom = !$this->Page_Exporting();
-		$header = $this->PageHeader;
-		$this->Page_DataRendering($header);
-		$doc->Text .= $header;
-		$this->exportDocument($doc, $rs, $this->StartRecord, $this->StopRecord, "");
-		$footer = $this->PageFooter;
-		$this->Page_DataRendered($footer);
-		$doc->Text .= $footer;
-
-		// Close recordset
-		$rs->close();
-
-		// Call Page Exported server event
-		$this->Page_Exported();
-
-		// Export header and footer
-		$doc->exportHeaderAndFooter();
-
-		// Clean output buffer (without destroying output buffer)
-		$buffer = ob_get_contents(); // Save the output buffer
-		if (!Config("DEBUG") && $buffer)
-			ob_clean();
-
-		// Write debug message if enabled
-		if (Config("DEBUG") && !$this->isExport("pdf"))
-			echo GetDebugMessage();
-
-		// Output data
-		if ($this->isExport("email")) {
-
-			// Export-to-email disabled
-		} else {
-			$doc->export();
-			if ($return) {
-				RemoveHeader("Content-Type"); // Remove header
-				RemoveHeader("Content-Disposition");
-				$content = ob_get_contents();
-				if ($content)
-					ob_clean();
-				if ($buffer)
-					echo $buffer; // Resume the output buffer
-				return $content;
-			}
-		}
 	}
 
 	// Set up Breadcrumb
@@ -2206,8 +1869,6 @@ class services_list extends services
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_service_branch_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -2228,8 +1889,6 @@ class services_list extends services
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_service_branch_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

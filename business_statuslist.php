@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $business_status_list = new business_status_list();
 $business_status_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $business_status_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$business_status_list->isExport() && !$business_status->CurrentAction) { ?>
 <form name="fbusiness_statuslistsrch" id="fbusiness_statuslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fbusiness_statuslistsrch-search-panel" class="<?php echo $business_status_list->SearchPanelClass ?>">
@@ -113,33 +111,59 @@ $business_status_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $business_status_list->showPageHeader(); ?>
 <?php
 $business_status_list->showMessage();
 ?>
 <?php if ($business_status_list->TotalRecords > 0 || $business_status->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$business_status_list->isExport()) { ?>
-<div>
-<?php if (!$business_status_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $business_status_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $business_status_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fbusiness_statuslist" id="fbusiness_statuslist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($business_status_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> business_status">
+<form name="fbusiness_statuslist" id="fbusiness_statuslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="business_status">
-<div class="row ew-multi-column-row">
+<div id="gmp_business_status" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($business_status_list->TotalRecords > 0 || $business_status_list->isGridEdit()) { ?>
+<table id="tbl_business_statuslist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$business_status->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$business_status_list->renderListOptions();
+
+// Render list options (header, left)
+$business_status_list->ListOptions->render("header", "left");
+?>
+<?php if ($business_status_list->business_status_id->Visible) { // business_status_id ?>
+	<?php if ($business_status_list->SortUrl($business_status_list->business_status_id) == "") { ?>
+		<th data-name="business_status_id" class="<?php echo $business_status_list->business_status_id->headerCellClass() ?>"><div id="elh_business_status_business_status_id" class="business_status_business_status_id"><div class="ew-table-header-caption"><?php echo $business_status_list->business_status_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="business_status_id" class="<?php echo $business_status_list->business_status_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $business_status_list->SortUrl($business_status_list->business_status_id) ?>', 1);"><div id="elh_business_status_business_status_id" class="business_status_business_status_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $business_status_list->business_status_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($business_status_list->business_status_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($business_status_list->business_status_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($business_status_list->business_status_caption->Visible) { // business_status_caption ?>
+	<?php if ($business_status_list->SortUrl($business_status_list->business_status_caption) == "") { ?>
+		<th data-name="business_status_caption" class="<?php echo $business_status_list->business_status_caption->headerCellClass() ?>"><div id="elh_business_status_business_status_caption" class="business_status_business_status_caption"><div class="ew-table-header-caption"><?php echo $business_status_list->business_status_caption->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="business_status_caption" class="<?php echo $business_status_list->business_status_caption->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $business_status_list->SortUrl($business_status_list->business_status_caption) ?>', 1);"><div id="elh_business_status_business_status_caption" class="business_status_business_status_caption">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $business_status_list->business_status_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($business_status_list->business_status_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($business_status_list->business_status_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$business_status_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($business_status_list->ExportAll && $business_status_list->isExport()) {
 	$business_status_list->StopRecord = $business_status_list->TotalRecords;
@@ -160,6 +184,11 @@ if ($business_status_list->Recordset && !$business_status_list->Recordset->EOF) 
 } elseif (!$business_status->AllowAddDeleteRow && $business_status_list->StopRecord == 0) {
 	$business_status_list->StopRecord = $business_status->GridAddRowCount;
 }
+
+// Initialize aggregate
+$business_status->RowType = ROWTYPE_AGGREGATEINIT;
+$business_status->resetAttributes();
+$business_status_list->renderRow();
 while ($business_status_list->RecordCount < $business_status_list->StopRecord) {
 	$business_status_list->RecordCount++;
 	if ($business_status_list->RecordCount >= $business_status_list->StartRecord) {
@@ -186,96 +215,42 @@ while ($business_status_list->RecordCount < $business_status_list->StopRecord) {
 		// Render list options
 		$business_status_list->renderListOptions();
 ?>
-<div class="<?php echo $business_status_list->getMultiColumnClass() ?>" <?php echo $business_status->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($business_status->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($business_status_list->business_status_id->Visible) { // business_status_id ?>
-		<?php if ($business_status->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $business_status_list->TableLeftColumnClass ?>"><span class="business_status_business_status_id">
-<?php if ($business_status_list->isExport() || $business_status_list->SortUrl($business_status_list->business_status_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $business_status_list->business_status_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $business_status_list->SortUrl($business_status_list->business_status_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $business_status_list->business_status_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($business_status_list->business_status_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($business_status_list->business_status_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $business_status_list->business_status_id->cellAttributes() ?>>
-<span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_id">
-<span<?php echo $business_status_list->business_status_id->viewAttributes() ?>><?php echo $business_status_list->business_status_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row business_status_business_status_id">
-			<label class="<?php echo $business_status_list->LeftColumnClass ?>"><?php echo $business_status_list->business_status_id->caption() ?></label>
-			<div class="<?php echo $business_status_list->RightColumnClass ?>"><div <?php echo $business_status_list->business_status_id->cellAttributes() ?>>
-<span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_id">
-<span<?php echo $business_status_list->business_status_id->viewAttributes() ?>><?php echo $business_status_list->business_status_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($business_status_list->business_status_caption->Visible) { // business_status_caption ?>
-		<?php if ($business_status->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $business_status_list->TableLeftColumnClass ?>"><span class="business_status_business_status_caption">
-<?php if ($business_status_list->isExport() || $business_status_list->SortUrl($business_status_list->business_status_caption) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $business_status_list->business_status_caption->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $business_status_list->SortUrl($business_status_list->business_status_caption) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $business_status_list->business_status_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($business_status_list->business_status_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($business_status_list->business_status_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $business_status_list->business_status_caption->cellAttributes() ?>>
-<span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_caption">
-<span<?php echo $business_status_list->business_status_caption->viewAttributes() ?>><?php echo $business_status_list->business_status_caption->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row business_status_business_status_caption">
-			<label class="<?php echo $business_status_list->LeftColumnClass ?>"><?php echo $business_status_list->business_status_caption->caption() ?></label>
-			<div class="<?php echo $business_status_list->RightColumnClass ?>"><div <?php echo $business_status_list->business_status_caption->cellAttributes() ?>>
-<span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_caption">
-<span<?php echo $business_status_list->business_status_caption->viewAttributes() ?>><?php echo $business_status_list->business_status_caption->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($business_status->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$business_status_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $business_status->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$business_status_list->ListOptions->render("body", "bottom", $business_status_list->RowCount);
+// Render list options (body, left)
+$business_status_list->ListOptions->render("body", "left", $business_status_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($business_status_list->business_status_id->Visible) { // business_status_id ?>
+		<td data-name="business_status_id" <?php echo $business_status_list->business_status_id->cellAttributes() ?>>
+<span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_id">
+<span<?php echo $business_status_list->business_status_id->viewAttributes() ?>><?php echo $business_status_list->business_status_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($business_status_list->business_status_caption->Visible) { // business_status_caption ?>
+		<td data-name="business_status_caption" <?php echo $business_status_list->business_status_caption->cellAttributes() ?>>
+<span id="el<?php echo $business_status_list->RowCount ?>_business_status_business_status_caption">
+<span<?php echo $business_status_list->business_status_caption->viewAttributes() ?>><?php echo $business_status_list->business_status_caption->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$business_status_list->ListOptions->render("body", "right", $business_status_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$business_status_list->isGridAdd())
 		$business_status_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$business_status->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -287,7 +262,7 @@ if ($business_status_list->Recordset)
 	$business_status_list->Recordset->Close();
 ?>
 <?php if (!$business_status_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$business_status_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $business_status_list->Pager->render() ?>
@@ -299,7 +274,7 @@ if ($business_status_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($business_status_list->TotalRecords == 0 && !$business_status->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $acc_nature_list = new acc_nature_list();
 $acc_nature_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $acc_nature_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$acc_nature_list->isExport() && !$acc_nature->CurrentAction) { ?>
 <form name="facc_naturelistsrch" id="facc_naturelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="facc_naturelistsrch-search-panel" class="<?php echo $acc_nature_list->SearchPanelClass ?>">
@@ -113,33 +111,59 @@ $acc_nature_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $acc_nature_list->showPageHeader(); ?>
 <?php
 $acc_nature_list->showMessage();
 ?>
 <?php if ($acc_nature_list->TotalRecords > 0 || $acc_nature->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$acc_nature_list->isExport()) { ?>
-<div>
-<?php if (!$acc_nature_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $acc_nature_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $acc_nature_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="facc_naturelist" id="facc_naturelist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($acc_nature_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> acc_nature">
+<form name="facc_naturelist" id="facc_naturelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="acc_nature">
-<div class="row ew-multi-column-row">
+<div id="gmp_acc_nature" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($acc_nature_list->TotalRecords > 0 || $acc_nature_list->isGridEdit()) { ?>
+<table id="tbl_acc_naturelist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$acc_nature->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$acc_nature_list->renderListOptions();
+
+// Render list options (header, left)
+$acc_nature_list->ListOptions->render("header", "left");
+?>
+<?php if ($acc_nature_list->acc_nature_id->Visible) { // acc_nature_id ?>
+	<?php if ($acc_nature_list->SortUrl($acc_nature_list->acc_nature_id) == "") { ?>
+		<th data-name="acc_nature_id" class="<?php echo $acc_nature_list->acc_nature_id->headerCellClass() ?>"><div id="elh_acc_nature_acc_nature_id" class="acc_nature_acc_nature_id"><div class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="acc_nature_id" class="<?php echo $acc_nature_list->acc_nature_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_nature_list->SortUrl($acc_nature_list->acc_nature_id) ?>', 1);"><div id="elh_acc_nature_acc_nature_id" class="acc_nature_acc_nature_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($acc_nature_list->acc_nature_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_nature_list->acc_nature_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($acc_nature_list->acc_nature_name->Visible) { // acc_nature_name ?>
+	<?php if ($acc_nature_list->SortUrl($acc_nature_list->acc_nature_name) == "") { ?>
+		<th data-name="acc_nature_name" class="<?php echo $acc_nature_list->acc_nature_name->headerCellClass() ?>"><div id="elh_acc_nature_acc_nature_name" class="acc_nature_acc_nature_name"><div class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="acc_nature_name" class="<?php echo $acc_nature_list->acc_nature_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_nature_list->SortUrl($acc_nature_list->acc_nature_name) ?>', 1);"><div id="elh_acc_nature_acc_nature_name" class="acc_nature_acc_nature_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($acc_nature_list->acc_nature_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_nature_list->acc_nature_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$acc_nature_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($acc_nature_list->ExportAll && $acc_nature_list->isExport()) {
 	$acc_nature_list->StopRecord = $acc_nature_list->TotalRecords;
@@ -160,6 +184,11 @@ if ($acc_nature_list->Recordset && !$acc_nature_list->Recordset->EOF) {
 } elseif (!$acc_nature->AllowAddDeleteRow && $acc_nature_list->StopRecord == 0) {
 	$acc_nature_list->StopRecord = $acc_nature->GridAddRowCount;
 }
+
+// Initialize aggregate
+$acc_nature->RowType = ROWTYPE_AGGREGATEINIT;
+$acc_nature->resetAttributes();
+$acc_nature_list->renderRow();
 while ($acc_nature_list->RecordCount < $acc_nature_list->StopRecord) {
 	$acc_nature_list->RecordCount++;
 	if ($acc_nature_list->RecordCount >= $acc_nature_list->StartRecord) {
@@ -186,96 +215,42 @@ while ($acc_nature_list->RecordCount < $acc_nature_list->StopRecord) {
 		// Render list options
 		$acc_nature_list->renderListOptions();
 ?>
-<div class="<?php echo $acc_nature_list->getMultiColumnClass() ?>" <?php echo $acc_nature->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($acc_nature->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($acc_nature_list->acc_nature_id->Visible) { // acc_nature_id ?>
-		<?php if ($acc_nature->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $acc_nature_list->TableLeftColumnClass ?>"><span class="acc_nature_acc_nature_id">
-<?php if ($acc_nature_list->isExport() || $acc_nature_list->SortUrl($acc_nature_list->acc_nature_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_nature_list->SortUrl($acc_nature_list->acc_nature_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($acc_nature_list->acc_nature_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_nature_list->acc_nature_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $acc_nature_list->acc_nature_id->cellAttributes() ?>>
-<span id="el<?php echo $acc_nature_list->RowCount ?>_acc_nature_acc_nature_id">
-<span<?php echo $acc_nature_list->acc_nature_id->viewAttributes() ?>><?php echo $acc_nature_list->acc_nature_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row acc_nature_acc_nature_id">
-			<label class="<?php echo $acc_nature_list->LeftColumnClass ?>"><?php echo $acc_nature_list->acc_nature_id->caption() ?></label>
-			<div class="<?php echo $acc_nature_list->RightColumnClass ?>"><div <?php echo $acc_nature_list->acc_nature_id->cellAttributes() ?>>
-<span id="el<?php echo $acc_nature_list->RowCount ?>_acc_nature_acc_nature_id">
-<span<?php echo $acc_nature_list->acc_nature_id->viewAttributes() ?>><?php echo $acc_nature_list->acc_nature_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($acc_nature_list->acc_nature_name->Visible) { // acc_nature_name ?>
-		<?php if ($acc_nature->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $acc_nature_list->TableLeftColumnClass ?>"><span class="acc_nature_acc_nature_name">
-<?php if ($acc_nature_list->isExport() || $acc_nature_list->SortUrl($acc_nature_list->acc_nature_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_nature_list->SortUrl($acc_nature_list->acc_nature_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_nature_list->acc_nature_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($acc_nature_list->acc_nature_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_nature_list->acc_nature_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $acc_nature_list->acc_nature_name->cellAttributes() ?>>
-<span id="el<?php echo $acc_nature_list->RowCount ?>_acc_nature_acc_nature_name">
-<span<?php echo $acc_nature_list->acc_nature_name->viewAttributes() ?>><?php echo $acc_nature_list->acc_nature_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row acc_nature_acc_nature_name">
-			<label class="<?php echo $acc_nature_list->LeftColumnClass ?>"><?php echo $acc_nature_list->acc_nature_name->caption() ?></label>
-			<div class="<?php echo $acc_nature_list->RightColumnClass ?>"><div <?php echo $acc_nature_list->acc_nature_name->cellAttributes() ?>>
-<span id="el<?php echo $acc_nature_list->RowCount ?>_acc_nature_acc_nature_name">
-<span<?php echo $acc_nature_list->acc_nature_name->viewAttributes() ?>><?php echo $acc_nature_list->acc_nature_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($acc_nature->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$acc_nature_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $acc_nature->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$acc_nature_list->ListOptions->render("body", "bottom", $acc_nature_list->RowCount);
+// Render list options (body, left)
+$acc_nature_list->ListOptions->render("body", "left", $acc_nature_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($acc_nature_list->acc_nature_id->Visible) { // acc_nature_id ?>
+		<td data-name="acc_nature_id" <?php echo $acc_nature_list->acc_nature_id->cellAttributes() ?>>
+<span id="el<?php echo $acc_nature_list->RowCount ?>_acc_nature_acc_nature_id">
+<span<?php echo $acc_nature_list->acc_nature_id->viewAttributes() ?>><?php echo $acc_nature_list->acc_nature_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($acc_nature_list->acc_nature_name->Visible) { // acc_nature_name ?>
+		<td data-name="acc_nature_name" <?php echo $acc_nature_list->acc_nature_name->cellAttributes() ?>>
+<span id="el<?php echo $acc_nature_list->RowCount ?>_acc_nature_acc_nature_name">
+<span<?php echo $acc_nature_list->acc_nature_name->viewAttributes() ?>><?php echo $acc_nature_list->acc_nature_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$acc_nature_list->ListOptions->render("body", "right", $acc_nature_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$acc_nature_list->isGridAdd())
 		$acc_nature_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$acc_nature->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -287,7 +262,7 @@ if ($acc_nature_list->Recordset)
 	$acc_nature_list->Recordset->Close();
 ?>
 <?php if (!$acc_nature_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$acc_nature_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $acc_nature_list->Pager->render() ?>
@@ -299,7 +274,7 @@ if ($acc_nature_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($acc_nature_list->TotalRecords == 0 && !$acc_nature->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $sms_package_delete = new sms_package_delete();
 $sms_package_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -73,11 +72,11 @@ $sms_package_delete->showMessage();
 <?php if ($sms_package_delete->sms_pkg_id->Visible) { // sms_pkg_id ?>
 		<th class="<?php echo $sms_package_delete->sms_pkg_id->headerCellClass() ?>"><span id="elh_sms_package_sms_pkg_id" class="sms_package_sms_pkg_id"><?php echo $sms_package_delete->sms_pkg_id->caption() ?></span></th>
 <?php } ?>
-<?php if ($sms_package_delete->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
-		<th class="<?php echo $sms_package_delete->sms_pkg_branch_id->headerCellClass() ?>"><span id="elh_sms_package_sms_pkg_branch_id" class="sms_package_sms_pkg_branch_id"><?php echo $sms_package_delete->sms_pkg_branch_id->caption() ?></span></th>
-<?php } ?>
 <?php if ($sms_package_delete->sms_pkg_sms_api_id->Visible) { // sms_pkg_sms_api_id ?>
 		<th class="<?php echo $sms_package_delete->sms_pkg_sms_api_id->headerCellClass() ?>"><span id="elh_sms_package_sms_pkg_sms_api_id" class="sms_package_sms_pkg_sms_api_id"><?php echo $sms_package_delete->sms_pkg_sms_api_id->caption() ?></span></th>
+<?php } ?>
+<?php if ($sms_package_delete->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
+		<th class="<?php echo $sms_package_delete->sms_pkg_branch_id->headerCellClass() ?>"><span id="elh_sms_package_sms_pkg_branch_id" class="sms_package_sms_pkg_branch_id"><?php echo $sms_package_delete->sms_pkg_branch_id->caption() ?></span></th>
 <?php } ?>
 <?php if ($sms_package_delete->sms_pkg_total_allowed_sms->Visible) { // sms_pkg_total_allowed_sms ?>
 		<th class="<?php echo $sms_package_delete->sms_pkg_total_allowed_sms->headerCellClass() ?>"><span id="elh_sms_package_sms_pkg_total_allowed_sms" class="sms_package_sms_pkg_total_allowed_sms"><?php echo $sms_package_delete->sms_pkg_total_allowed_sms->caption() ?></span></th>
@@ -116,17 +115,17 @@ while (!$sms_package_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($sms_package_delete->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
-		<td <?php echo $sms_package_delete->sms_pkg_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_package_delete->RowCount ?>_sms_package_sms_pkg_branch_id" class="sms_package_sms_pkg_branch_id">
-<span<?php echo $sms_package_delete->sms_pkg_branch_id->viewAttributes() ?>><?php echo $sms_package_delete->sms_pkg_branch_id->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($sms_package_delete->sms_pkg_sms_api_id->Visible) { // sms_pkg_sms_api_id ?>
 		<td <?php echo $sms_package_delete->sms_pkg_sms_api_id->cellAttributes() ?>>
 <span id="el<?php echo $sms_package_delete->RowCount ?>_sms_package_sms_pkg_sms_api_id" class="sms_package_sms_pkg_sms_api_id">
 <span<?php echo $sms_package_delete->sms_pkg_sms_api_id->viewAttributes() ?>><?php echo $sms_package_delete->sms_pkg_sms_api_id->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($sms_package_delete->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
+		<td <?php echo $sms_package_delete->sms_pkg_branch_id->cellAttributes() ?>>
+<span id="el<?php echo $sms_package_delete->RowCount ?>_sms_package_sms_pkg_branch_id" class="sms_package_sms_pkg_branch_id">
+<span<?php echo $sms_package_delete->sms_pkg_branch_id->viewAttributes() ?>><?php echo $sms_package_delete->sms_pkg_branch_id->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

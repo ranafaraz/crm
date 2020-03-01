@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $user_delete = new user_delete();
 $user_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -88,11 +87,11 @@ $user_delete->showMessage();
 <?php if ($user_delete->user_email->Visible) { // user_email ?>
 		<th class="<?php echo $user_delete->user_email->headerCellClass() ?>"><span id="elh_user_user_email" class="user_user_email"><?php echo $user_delete->user_email->caption() ?></span></th>
 <?php } ?>
-<?php if ($user_delete->user_cnic->Visible) { // user_cnic ?>
-		<th class="<?php echo $user_delete->user_cnic->headerCellClass() ?>"><span id="elh_user_user_cnic" class="user_user_cnic"><?php echo $user_delete->user_cnic->caption() ?></span></th>
-<?php } ?>
 <?php if ($user_delete->user_father->Visible) { // user_father ?>
 		<th class="<?php echo $user_delete->user_father->headerCellClass() ?>"><span id="elh_user_user_father" class="user_user_father"><?php echo $user_delete->user_father->caption() ?></span></th>
+<?php } ?>
+<?php if ($user_delete->user_cnic->Visible) { // user_cnic ?>
+		<th class="<?php echo $user_delete->user_cnic->headerCellClass() ?>"><span id="elh_user_user_cnic" class="user_user_cnic"><?php echo $user_delete->user_cnic->caption() ?></span></th>
 <?php } ?>
 	</tr>
 	</thead>
@@ -157,17 +156,17 @@ while (!$user_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($user_delete->user_cnic->Visible) { // user_cnic ?>
-		<td <?php echo $user_delete->user_cnic->cellAttributes() ?>>
-<span id="el<?php echo $user_delete->RowCount ?>_user_user_cnic" class="user_user_cnic">
-<span<?php echo $user_delete->user_cnic->viewAttributes() ?>><?php echo $user_delete->user_cnic->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($user_delete->user_father->Visible) { // user_father ?>
 		<td <?php echo $user_delete->user_father->cellAttributes() ?>>
 <span id="el<?php echo $user_delete->RowCount ?>_user_user_father" class="user_user_father">
 <span<?php echo $user_delete->user_father->viewAttributes() ?>><?php echo $user_delete->user_father->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($user_delete->user_cnic->Visible) { // user_cnic ?>
+		<td <?php echo $user_delete->user_cnic->cellAttributes() ?>>
+<span id="el<?php echo $user_delete->RowCount ?>_user_user_cnic" class="user_user_cnic">
+<span<?php echo $user_delete->user_cnic->viewAttributes() ?>><?php echo $user_delete->user_cnic->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

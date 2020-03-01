@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $designation_add = new designation_add();
 $designation_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -132,7 +131,7 @@ $designation_add->showMessage();
 		<label id="elh_designation_designation_desc" for="x_designation_desc" class="<?php echo $designation_add->LeftColumnClass ?>"><?php echo $designation_add->designation_desc->caption() ?><?php echo $designation_add->designation_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $designation_add->RightColumnClass ?>"><div <?php echo $designation_add->designation_desc->cellAttributes() ?>>
 <span id="el_designation_designation_desc">
-<textarea data-table="designation" data-field="x_designation_desc" name="x_designation_desc" id="x_designation_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($designation_add->designation_desc->getPlaceHolder()) ?>"<?php echo $designation_add->designation_desc->editAttributes() ?>><?php echo $designation_add->designation_desc->EditValue ?></textarea>
+<input type="text" data-table="designation" data-field="x_designation_desc" name="x_designation_desc" id="x_designation_desc" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($designation_add->designation_desc->getPlaceHolder()) ?>" value="<?php echo $designation_add->designation_desc->EditValue ?>"<?php echo $designation_add->designation_desc->editAttributes() ?>>
 </span>
 <?php echo $designation_add->designation_desc->CustomMsg ?></div></div>
 	</div>

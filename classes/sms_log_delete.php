@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_log_delete extends sms_log
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'sms_log';
@@ -325,7 +325,6 @@ class sms_log_delete extends sms_log
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class sms_log_delete extends sms_log
 			$GLOBALS["Table"] = &$GLOBALS["sms_log"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class sms_log_delete extends sms_log
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class sms_log_delete extends sms_log
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class sms_log_delete extends sms_log
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("sms_loglist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->sms_log_id->setVisibility();
@@ -595,10 +568,8 @@ class sms_log_delete extends sms_log
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->sms_log_branch_id);
-		$this->setupLookupOptions($this->sms_log_sms_api_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -665,7 +636,7 @@ class sms_log_delete extends sms_log
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -717,11 +688,6 @@ class sms_log_delete extends sms_log
 		$this->sms_log_id->setDbValue($row['sms_log_id']);
 		$this->sms_log_branch_id->setDbValue($row['sms_log_branch_id']);
 		$this->sms_log_sms_api_id->setDbValue($row['sms_log_sms_api_id']);
-		if (array_key_exists('EV__sms_log_sms_api_id', $rs->fields)) {
-			$this->sms_log_sms_api_id->VirtualValue = $rs->fields('EV__sms_log_sms_api_id'); // Set up virtual field value
-		} else {
-			$this->sms_log_sms_api_id->VirtualValue = ""; // Clear value
-		}
 		$this->sms_log_message->setDbValue($row['sms_log_message']);
 		$this->sms_log_to->setDbValue($row['sms_log_to']);
 		$this->sms_log_date->setDbValue($row['sms_log_date']);
@@ -762,55 +728,16 @@ class sms_log_delete extends sms_log
 
 			// sms_log_id
 			$this->sms_log_id->ViewValue = $this->sms_log_id->CurrentValue;
-			$this->sms_log_id->CssClass = "font-weight-bold";
 			$this->sms_log_id->ViewCustomAttributes = "";
 
 			// sms_log_branch_id
-			$curVal = strval($this->sms_log_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->lookupCacheOption($curVal);
-				if ($this->sms_log_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->sms_log_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->sms_log_branch_id->ViewValue = NULL;
-			}
+			$this->sms_log_branch_id->ViewValue = $this->sms_log_branch_id->CurrentValue;
+			$this->sms_log_branch_id->ViewValue = FormatNumber($this->sms_log_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->sms_log_branch_id->ViewCustomAttributes = "";
 
 			// sms_log_sms_api_id
-			if ($this->sms_log_sms_api_id->VirtualValue != "") {
-				$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->VirtualValue;
-			} else {
-				$curVal = strval($this->sms_log_sms_api_id->CurrentValue);
-				if ($curVal != "") {
-					$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->lookupCacheOption($curVal);
-					if ($this->sms_log_sms_api_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`sms_api_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->sms_log_sms_api_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->sms_log_sms_api_id->ViewValue = NULL;
-				}
-			}
+			$this->sms_log_sms_api_id->ViewValue = $this->sms_log_sms_api_id->CurrentValue;
+			$this->sms_log_sms_api_id->ViewValue = FormatNumber($this->sms_log_sms_api_id->ViewValue, 0, -2, -2, -2);
 			$this->sms_log_sms_api_id->ViewCustomAttributes = "";
 
 			// sms_log_date
@@ -848,10 +775,6 @@ class sms_log_delete extends sms_log
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -959,10 +882,6 @@ class sms_log_delete extends sms_log
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_sms_log_branch_id":
-					break;
-				case "x_sms_log_sms_api_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -983,10 +902,6 @@ class sms_log_delete extends sms_log
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_sms_log_branch_id":
-							break;
-						case "x_sms_log_sms_api_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

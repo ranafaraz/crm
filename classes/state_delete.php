@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class state_delete extends state
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'state';
@@ -325,7 +325,6 @@ class state_delete extends state
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class state_delete extends state
 			$GLOBALS["Table"] = &$GLOBALS["state"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class state_delete extends state
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class state_delete extends state
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class state_delete extends state
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("statelist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->state_id->setVisibility();
@@ -592,9 +565,8 @@ class state_delete extends state
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->state_country_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -747,25 +719,8 @@ class state_delete extends state
 			$this->state_id->ViewCustomAttributes = "";
 
 			// state_country_id
-			$curVal = strval($this->state_country_id->CurrentValue);
-			if ($curVal != "") {
-				$this->state_country_id->ViewValue = $this->state_country_id->lookupCacheOption($curVal);
-				if ($this->state_country_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`country_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->state_country_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->state_country_id->ViewValue = $this->state_country_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->state_country_id->ViewValue = NULL;
-			}
+			$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
+			$this->state_country_id->ViewValue = FormatNumber($this->state_country_id->ViewValue, 0, -2, -2, -2);
 			$this->state_country_id->ViewCustomAttributes = "";
 
 			// state_name
@@ -797,10 +752,6 @@ class state_delete extends state
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -908,8 +859,6 @@ class state_delete extends state
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_state_country_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -930,8 +879,6 @@ class state_delete extends state
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_state_country_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

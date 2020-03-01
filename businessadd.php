@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $business_add = new business_add();
 $business_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -61,31 +60,49 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_branch_id->caption(), $business_add->b_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_b_branch_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($business_add->b_branch_id->errorMessage()) ?>");
 			<?php if ($business_add->b_b_type_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_b_b_type_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_b_type_id->caption(), $business_add->b_b_type_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
-			<?php if ($business_add->b_b_nature_id->Required) { ?>
-				elm = this.getElements("x" + infix + "_b_b_nature_id");
-				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_b_nature_id->caption(), $business_add->b_b_nature_id->RequiredErrorMessage)) ?>");
-			<?php } ?>
+				elm = this.getElements("x" + infix + "_b_b_type_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($business_add->b_b_type_id->errorMessage()) ?>");
 			<?php if ($business_add->b_b_status_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_b_b_status_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_b_status_id->caption(), $business_add->b_b_status_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_b_b_status_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($business_add->b_b_status_id->errorMessage()) ?>");
+			<?php if ($business_add->b_b_nature_id->Required) { ?>
+				elm = this.getElements("x" + infix + "_b_b_nature_id");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_b_nature_id->caption(), $business_add->b_b_nature_id->RequiredErrorMessage)) ?>");
+			<?php } ?>
+				elm = this.getElements("x" + infix + "_b_b_nature_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($business_add->b_b_nature_id->errorMessage()) ?>");
 			<?php if ($business_add->b_city_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_b_city_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_city_id->caption(), $business_add->b_city_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_b_city_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($business_add->b_city_id->errorMessage()) ?>");
 			<?php if ($business_add->b_referral_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_b_referral_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_referral_id->caption(), $business_add->b_referral_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_b_referral_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($business_add->b_referral_id->errorMessage()) ?>");
 			<?php if ($business_add->b_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_b_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -117,10 +134,9 @@ loadjs.ready("head", function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_ntn->caption(), $business_add->b_ntn->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($business_add->b_logo->Required) { ?>
-				felm = this.getElements("x" + infix + "_b_logo");
-				elm = this.getElements("fn_x" + infix + "_b_logo");
-				if (felm && elm && !ew.hasValue(elm))
-					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $business_add->b_logo->caption(), $business_add->b_logo->RequiredErrorMessage)) ?>");
+				elm = this.getElements("x" + infix + "_b_logo");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $business_add->b_logo->caption(), $business_add->b_logo->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($business_add->b_no_of_emp->Required) { ?>
 				elm = this.getElements("x" + infix + "_b_no_of_emp");
@@ -181,18 +197,6 @@ loadjs.ready("head", function() {
 	fbusinessadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fbusinessadd.lists["x_b_branch_id"] = <?php echo $business_add->b_branch_id->Lookup->toClientList($business_add) ?>;
-	fbusinessadd.lists["x_b_branch_id"].options = <?php echo JsonEncode($business_add->b_branch_id->lookupOptions()) ?>;
-	fbusinessadd.lists["x_b_b_type_id"] = <?php echo $business_add->b_b_type_id->Lookup->toClientList($business_add) ?>;
-	fbusinessadd.lists["x_b_b_type_id"].options = <?php echo JsonEncode($business_add->b_b_type_id->lookupOptions()) ?>;
-	fbusinessadd.lists["x_b_b_nature_id"] = <?php echo $business_add->b_b_nature_id->Lookup->toClientList($business_add) ?>;
-	fbusinessadd.lists["x_b_b_nature_id"].options = <?php echo JsonEncode($business_add->b_b_nature_id->lookupOptions()) ?>;
-	fbusinessadd.lists["x_b_b_status_id"] = <?php echo $business_add->b_b_status_id->Lookup->toClientList($business_add) ?>;
-	fbusinessadd.lists["x_b_b_status_id"].options = <?php echo JsonEncode($business_add->b_b_status_id->lookupOptions()) ?>;
-	fbusinessadd.lists["x_b_city_id"] = <?php echo $business_add->b_city_id->Lookup->toClientList($business_add) ?>;
-	fbusinessadd.lists["x_b_city_id"].options = <?php echo JsonEncode($business_add->b_city_id->lookupOptions()) ?>;
-	fbusinessadd.lists["x_b_referral_id"] = <?php echo $business_add->b_referral_id->Lookup->toClientList($business_add) ?>;
-	fbusinessadd.lists["x_b_referral_id"].options = <?php echo JsonEncode($business_add->b_referral_id->lookupOptions()) ?>;
 	loadjs.done("fbusinessadd");
 });
 </script>
@@ -221,23 +225,7 @@ $business_add->showMessage();
 		<label id="elh_business_b_branch_id" for="x_b_branch_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_branch_id->caption() ?><?php echo $business_add->b_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_branch_id->cellAttributes() ?>>
 <span id="el_business_b_branch_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($business_add->b_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $business_add->b_branch_id->ViewValue ?></button>
-		<div id="dsl_x_b_branch_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $business_add->b_branch_id->radioButtonListHtml(TRUE, "x_b_branch_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_b_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="business" data-field="x_b_branch_id" data-value-separator="<?php echo $business_add->b_branch_id->displayValueSeparatorAttribute() ?>" name="x_b_branch_id" id="x_b_branch_id" value="{value}"<?php echo $business_add->b_branch_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$business_add->b_branch_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $business_add->b_branch_id->Lookup->getParamTag($business_add, "p_x_b_branch_id") ?>
+<input type="text" data-table="business" data-field="x_b_branch_id" name="x_b_branch_id" id="x_b_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($business_add->b_branch_id->getPlaceHolder()) ?>" value="<?php echo $business_add->b_branch_id->EditValue ?>"<?php echo $business_add->b_branch_id->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -247,51 +235,9 @@ $business_add->showMessage();
 		<label id="elh_business_b_b_type_id" for="x_b_b_type_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_b_type_id->caption() ?><?php echo $business_add->b_b_type_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_b_type_id->cellAttributes() ?>>
 <span id="el_business_b_b_type_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($business_add->b_b_type_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $business_add->b_b_type_id->ViewValue ?></button>
-		<div id="dsl_x_b_b_type_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $business_add->b_b_type_id->radioButtonListHtml(TRUE, "x_b_b_type_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_b_b_type_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="business" data-field="x_b_b_type_id" data-value-separator="<?php echo $business_add->b_b_type_id->displayValueSeparatorAttribute() ?>" name="x_b_b_type_id" id="x_b_b_type_id" value="{value}"<?php echo $business_add->b_b_type_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$business_add->b_b_type_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $business_add->b_b_type_id->Lookup->getParamTag($business_add, "p_x_b_b_type_id") ?>
+<input type="text" data-table="business" data-field="x_b_b_type_id" name="x_b_b_type_id" id="x_b_b_type_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($business_add->b_b_type_id->getPlaceHolder()) ?>" value="<?php echo $business_add->b_b_type_id->EditValue ?>"<?php echo $business_add->b_b_type_id->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_b_type_id->CustomMsg ?></div></div>
-	</div>
-<?php } ?>
-<?php if ($business_add->b_b_nature_id->Visible) { // b_b_nature_id ?>
-	<div id="r_b_b_nature_id" class="form-group row">
-		<label id="elh_business_b_b_nature_id" for="x_b_b_nature_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_b_nature_id->caption() ?><?php echo $business_add->b_b_nature_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_b_nature_id->cellAttributes() ?>>
-<span id="el_business_b_b_nature_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($business_add->b_b_nature_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $business_add->b_b_nature_id->ViewValue ?></button>
-		<div id="dsl_x_b_b_nature_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $business_add->b_b_nature_id->radioButtonListHtml(TRUE, "x_b_b_nature_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_b_b_nature_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="business" data-field="x_b_b_nature_id" data-value-separator="<?php echo $business_add->b_b_nature_id->displayValueSeparatorAttribute() ?>" name="x_b_b_nature_id" id="x_b_b_nature_id" value="{value}"<?php echo $business_add->b_b_nature_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$business_add->b_b_nature_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $business_add->b_b_nature_id->Lookup->getParamTag($business_add, "p_x_b_b_nature_id") ?>
-</span>
-<?php echo $business_add->b_b_nature_id->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($business_add->b_b_status_id->Visible) { // b_b_status_id ?>
@@ -299,25 +245,19 @@ $business_add->showMessage();
 		<label id="elh_business_b_b_status_id" for="x_b_b_status_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_b_status_id->caption() ?><?php echo $business_add->b_b_status_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_b_status_id->cellAttributes() ?>>
 <span id="el_business_b_b_status_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($business_add->b_b_status_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $business_add->b_b_status_id->ViewValue ?></button>
-		<div id="dsl_x_b_b_status_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $business_add->b_b_status_id->radioButtonListHtml(TRUE, "x_b_b_status_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_b_b_status_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="business" data-field="x_b_b_status_id" data-value-separator="<?php echo $business_add->b_b_status_id->displayValueSeparatorAttribute() ?>" name="x_b_b_status_id" id="x_b_b_status_id" value="{value}"<?php echo $business_add->b_b_status_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$business_add->b_b_status_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $business_add->b_b_status_id->Lookup->getParamTag($business_add, "p_x_b_b_status_id") ?>
+<input type="text" data-table="business" data-field="x_b_b_status_id" name="x_b_b_status_id" id="x_b_b_status_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($business_add->b_b_status_id->getPlaceHolder()) ?>" value="<?php echo $business_add->b_b_status_id->EditValue ?>"<?php echo $business_add->b_b_status_id->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_b_status_id->CustomMsg ?></div></div>
+	</div>
+<?php } ?>
+<?php if ($business_add->b_b_nature_id->Visible) { // b_b_nature_id ?>
+	<div id="r_b_b_nature_id" class="form-group row">
+		<label id="elh_business_b_b_nature_id" for="x_b_b_nature_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_b_nature_id->caption() ?><?php echo $business_add->b_b_nature_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_b_nature_id->cellAttributes() ?>>
+<span id="el_business_b_b_nature_id">
+<input type="text" data-table="business" data-field="x_b_b_nature_id" name="x_b_b_nature_id" id="x_b_b_nature_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($business_add->b_b_nature_id->getPlaceHolder()) ?>" value="<?php echo $business_add->b_b_nature_id->EditValue ?>"<?php echo $business_add->b_b_nature_id->editAttributes() ?>>
+</span>
+<?php echo $business_add->b_b_nature_id->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($business_add->b_city_id->Visible) { // b_city_id ?>
@@ -325,23 +265,7 @@ $business_add->showMessage();
 		<label id="elh_business_b_city_id" for="x_b_city_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_city_id->caption() ?><?php echo $business_add->b_city_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_city_id->cellAttributes() ?>>
 <span id="el_business_b_city_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($business_add->b_city_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $business_add->b_city_id->ViewValue ?></button>
-		<div id="dsl_x_b_city_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $business_add->b_city_id->radioButtonListHtml(TRUE, "x_b_city_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_b_city_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="business" data-field="x_b_city_id" data-value-separator="<?php echo $business_add->b_city_id->displayValueSeparatorAttribute() ?>" name="x_b_city_id" id="x_b_city_id" value="{value}"<?php echo $business_add->b_city_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$business_add->b_city_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $business_add->b_city_id->Lookup->getParamTag($business_add, "p_x_b_city_id") ?>
+<input type="text" data-table="business" data-field="x_b_city_id" name="x_b_city_id" id="x_b_city_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($business_add->b_city_id->getPlaceHolder()) ?>" value="<?php echo $business_add->b_city_id->EditValue ?>"<?php echo $business_add->b_city_id->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_city_id->CustomMsg ?></div></div>
 	</div>
@@ -351,23 +275,7 @@ $business_add->showMessage();
 		<label id="elh_business_b_referral_id" for="x_b_referral_id" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_referral_id->caption() ?><?php echo $business_add->b_referral_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_referral_id->cellAttributes() ?>>
 <span id="el_business_b_referral_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($business_add->b_referral_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $business_add->b_referral_id->ViewValue ?></button>
-		<div id="dsl_x_b_referral_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $business_add->b_referral_id->radioButtonListHtml(TRUE, "x_b_referral_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_b_referral_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="business" data-field="x_b_referral_id" data-value-separator="<?php echo $business_add->b_referral_id->displayValueSeparatorAttribute() ?>" name="x_b_referral_id" id="x_b_referral_id" value="{value}"<?php echo $business_add->b_referral_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$business_add->b_referral_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $business_add->b_referral_id->Lookup->getParamTag($business_add, "p_x_b_referral_id") ?>
+<input type="text" data-table="business" data-field="x_b_referral_id" name="x_b_referral_id" id="x_b_referral_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($business_add->b_referral_id->getPlaceHolder()) ?>" value="<?php echo $business_add->b_referral_id->EditValue ?>"<?php echo $business_add->b_referral_id->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_referral_id->CustomMsg ?></div></div>
 	</div>
@@ -407,7 +315,7 @@ $business_add->showMessage();
 		<label id="elh_business_b_address" for="x_b_address" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_address->caption() ?><?php echo $business_add->b_address->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_address->cellAttributes() ?>>
 <span id="el_business_b_address">
-<textarea data-table="business" data-field="x_b_address" name="x_b_address" id="x_b_address" cols="35" rows="4" placeholder="<?php echo HtmlEncode($business_add->b_address->getPlaceHolder()) ?>"<?php echo $business_add->b_address->editAttributes() ?>><?php echo $business_add->b_address->EditValue ?></textarea>
+<input type="text" data-table="business" data-field="x_b_address" name="x_b_address" id="x_b_address" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($business_add->b_address->getPlaceHolder()) ?>" value="<?php echo $business_add->b_address->EditValue ?>"<?php echo $business_add->b_address->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_address->CustomMsg ?></div></div>
 	</div>
@@ -434,23 +342,10 @@ $business_add->showMessage();
 <?php } ?>
 <?php if ($business_add->b_logo->Visible) { // b_logo ?>
 	<div id="r_b_logo" class="form-group row">
-		<label id="elh_business_b_logo" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_logo->caption() ?><?php echo $business_add->b_logo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_business_b_logo" for="x_b_logo" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_logo->caption() ?><?php echo $business_add->b_logo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_logo->cellAttributes() ?>>
 <span id="el_business_b_logo">
-<div id="fd_x_b_logo">
-<div class="input-group">
-	<div class="custom-file">
-		<input type="file" class="custom-file-input" title="<?php echo $business_add->b_logo->title() ?>" data-table="business" data-field="x_b_logo" name="x_b_logo" id="x_b_logo" lang="<?php echo CurrentLanguageID() ?>"<?php echo $business_add->b_logo->editAttributes() ?><?php if ($business_add->b_logo->ReadOnly || $business_add->b_logo->Disabled) echo " disabled"; ?>>
-		<label class="custom-file-label ew-file-label" for="x_b_logo"><?php echo $Language->phrase("ChooseFile") ?></label>
-	</div>
-</div>
-<input type="hidden" name="fn_x_b_logo" id= "fn_x_b_logo" value="<?php echo $business_add->b_logo->Upload->FileName ?>">
-<input type="hidden" name="fa_x_b_logo" id= "fa_x_b_logo" value="0">
-<input type="hidden" name="fs_x_b_logo" id= "fs_x_b_logo" value="100">
-<input type="hidden" name="fx_x_b_logo" id= "fx_x_b_logo" value="<?php echo $business_add->b_logo->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_b_logo" id= "fm_x_b_logo" value="<?php echo $business_add->b_logo->UploadMaxFileSize ?>">
-</div>
-<table id="ft_x_b_logo" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<input type="text" data-table="business" data-field="x_b_logo" name="x_b_logo" id="x_b_logo" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($business_add->b_logo->getPlaceHolder()) ?>" value="<?php echo $business_add->b_logo->EditValue ?>"<?php echo $business_add->b_logo->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_logo->CustomMsg ?></div></div>
 	</div>
@@ -490,7 +385,7 @@ $business_add->showMessage();
 		<label id="elh_business_b_deal_with_referral" for="x_b_deal_with_referral" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_deal_with_referral->caption() ?><?php echo $business_add->b_deal_with_referral->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_deal_with_referral->cellAttributes() ?>>
 <span id="el_business_b_deal_with_referral">
-<textarea data-table="business" data-field="x_b_deal_with_referral" name="x_b_deal_with_referral" id="x_b_deal_with_referral" cols="35" rows="4" placeholder="<?php echo HtmlEncode($business_add->b_deal_with_referral->getPlaceHolder()) ?>"<?php echo $business_add->b_deal_with_referral->editAttributes() ?>><?php echo $business_add->b_deal_with_referral->EditValue ?></textarea>
+<input type="text" data-table="business" data-field="x_b_deal_with_referral" name="x_b_deal_with_referral" id="x_b_deal_with_referral" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($business_add->b_deal_with_referral->getPlaceHolder()) ?>" value="<?php echo $business_add->b_deal_with_referral->EditValue ?>"<?php echo $business_add->b_deal_with_referral->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_deal_with_referral->CustomMsg ?></div></div>
 	</div>
@@ -500,7 +395,7 @@ $business_add->showMessage();
 		<label id="elh_business_b_comments" for="x_b_comments" class="<?php echo $business_add->LeftColumnClass ?>"><?php echo $business_add->b_comments->caption() ?><?php echo $business_add->b_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $business_add->RightColumnClass ?>"><div <?php echo $business_add->b_comments->cellAttributes() ?>>
 <span id="el_business_b_comments">
-<textarea data-table="business" data-field="x_b_comments" name="x_b_comments" id="x_b_comments" cols="35" rows="4" placeholder="<?php echo HtmlEncode($business_add->b_comments->getPlaceHolder()) ?>"<?php echo $business_add->b_comments->editAttributes() ?>><?php echo $business_add->b_comments->EditValue ?></textarea>
+<input type="text" data-table="business" data-field="x_b_comments" name="x_b_comments" id="x_b_comments" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($business_add->b_comments->getPlaceHolder()) ?>" value="<?php echo $business_add->b_comments->EditValue ?>"<?php echo $business_add->b_comments->editAttributes() ?>>
 </span>
 <?php echo $business_add->b_comments->CustomMsg ?></div></div>
 	</div>

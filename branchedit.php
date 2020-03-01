@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $branch_edit = new branch_edit();
 $branch_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -66,6 +65,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $branch_edit->branch_org_id->caption(), $branch_edit->branch_org_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_branch_org_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($branch_edit->branch_org_id->errorMessage()) ?>");
 			<?php if ($branch_edit->branch_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_branch_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -114,8 +116,6 @@ loadjs.ready("head", function() {
 	fbranchedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fbranchedit.lists["x_branch_org_id"] = <?php echo $branch_edit->branch_org_id->Lookup->toClientList($branch_edit) ?>;
-	fbranchedit.lists["x_branch_org_id"].options = <?php echo JsonEncode($branch_edit->branch_org_id->lookupOptions()) ?>;
 	loadjs.done("fbranchedit");
 });
 </script>
@@ -155,23 +155,7 @@ $branch_edit->showMessage();
 		<label id="elh_branch_branch_org_id" for="x_branch_org_id" class="<?php echo $branch_edit->LeftColumnClass ?>"><?php echo $branch_edit->branch_org_id->caption() ?><?php echo $branch_edit->branch_org_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $branch_edit->RightColumnClass ?>"><div <?php echo $branch_edit->branch_org_id->cellAttributes() ?>>
 <span id="el_branch_branch_org_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($branch_edit->branch_org_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $branch_edit->branch_org_id->ViewValue ?></button>
-		<div id="dsl_x_branch_org_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $branch_edit->branch_org_id->radioButtonListHtml(TRUE, "x_branch_org_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_branch_org_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="branch" data-field="x_branch_org_id" data-value-separator="<?php echo $branch_edit->branch_org_id->displayValueSeparatorAttribute() ?>" name="x_branch_org_id" id="x_branch_org_id" value="{value}"<?php echo $branch_edit->branch_org_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$branch_edit->branch_org_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $branch_edit->branch_org_id->Lookup->getParamTag($branch_edit, "p_x_branch_org_id") ?>
+<input type="text" data-table="branch" data-field="x_branch_org_id" name="x_branch_org_id" id="x_branch_org_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($branch_edit->branch_org_id->getPlaceHolder()) ?>" value="<?php echo $branch_edit->branch_org_id->EditValue ?>"<?php echo $branch_edit->branch_org_id->editAttributes() ?>>
 </span>
 <?php echo $branch_edit->branch_org_id->CustomMsg ?></div></div>
 	</div>
@@ -211,7 +195,7 @@ $branch_edit->showMessage();
 		<label id="elh_branch_branch_address" for="x_branch_address" class="<?php echo $branch_edit->LeftColumnClass ?>"><?php echo $branch_edit->branch_address->caption() ?><?php echo $branch_edit->branch_address->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $branch_edit->RightColumnClass ?>"><div <?php echo $branch_edit->branch_address->cellAttributes() ?>>
 <span id="el_branch_branch_address">
-<textarea data-table="branch" data-field="x_branch_address" name="x_branch_address" id="x_branch_address" cols="35" rows="4" placeholder="<?php echo HtmlEncode($branch_edit->branch_address->getPlaceHolder()) ?>"<?php echo $branch_edit->branch_address->editAttributes() ?>><?php echo $branch_edit->branch_address->EditValue ?></textarea>
+<input type="text" data-table="branch" data-field="x_branch_address" name="x_branch_address" id="x_branch_address" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($branch_edit->branch_address->getPlaceHolder()) ?>" value="<?php echo $branch_edit->branch_address->EditValue ?>"<?php echo $branch_edit->branch_address->editAttributes() ?>>
 </span>
 <?php echo $branch_edit->branch_address->CustomMsg ?></div></div>
 	</div>

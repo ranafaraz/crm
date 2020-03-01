@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class cus_support_delete extends cus_support
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'cus_support';
@@ -325,7 +325,6 @@ class cus_support_delete extends cus_support
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class cus_support_delete extends cus_support
 			$GLOBALS["Table"] = &$GLOBALS["cus_support"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class cus_support_delete extends cus_support
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class cus_support_delete extends cus_support
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,28 +539,12 @@ class cus_support_delete extends cus_support
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("cus_supportlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->cus_sup_id->setVisibility();
 		$this->cus_sup_branch_id->setVisibility();
 		$this->cus_sup_emp_id->setVisibility();
-		$this->cus_sup_query->setVisibility();
+		$this->cus_sup_query->Visible = FALSE;
 		$this->cus_sup_screen_shots->Visible = FALSE;
 		$this->cus_sup_date->setVisibility();
 		$this->cus_sup_status->setVisibility();
@@ -598,10 +571,8 @@ class cus_support_delete extends cus_support
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->cus_sup_branch_id);
-		$this->setupLookupOptions($this->cus_sup_emp_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -668,7 +639,7 @@ class cus_support_delete extends cus_support
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -720,14 +691,8 @@ class cus_support_delete extends cus_support
 		$this->cus_sup_id->setDbValue($row['cus_sup_id']);
 		$this->cus_sup_branch_id->setDbValue($row['cus_sup_branch_id']);
 		$this->cus_sup_emp_id->setDbValue($row['cus_sup_emp_id']);
-		if (array_key_exists('EV__cus_sup_emp_id', $rs->fields)) {
-			$this->cus_sup_emp_id->VirtualValue = $rs->fields('EV__cus_sup_emp_id'); // Set up virtual field value
-		} else {
-			$this->cus_sup_emp_id->VirtualValue = ""; // Clear value
-		}
 		$this->cus_sup_query->setDbValue($row['cus_sup_query']);
-		$this->cus_sup_screen_shots->Upload->DbValue = $row['cus_sup_screen_shots'];
-		$this->cus_sup_screen_shots->setDbValue($this->cus_sup_screen_shots->Upload->DbValue);
+		$this->cus_sup_screen_shots->setDbValue($row['cus_sup_screen_shots']);
 		$this->cus_sup_date->setDbValue($row['cus_sup_date']);
 		$this->cus_sup_status->setDbValue($row['cus_sup_status']);
 		$this->cus_sup_comments->setDbValue($row['cus_sup_comments']);
@@ -775,64 +740,21 @@ class cus_support_delete extends cus_support
 
 			// cus_sup_id
 			$this->cus_sup_id->ViewValue = $this->cus_sup_id->CurrentValue;
-			$this->cus_sup_id->CssClass = "font-weight-bold";
 			$this->cus_sup_id->ViewCustomAttributes = "";
 
 			// cus_sup_branch_id
-			$curVal = strval($this->cus_sup_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->lookupCacheOption($curVal);
-				if ($this->cus_sup_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->cus_sup_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->cus_sup_branch_id->ViewValue = NULL;
-			}
+			$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
+			$this->cus_sup_branch_id->ViewValue = FormatNumber($this->cus_sup_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->cus_sup_branch_id->ViewCustomAttributes = "";
 
 			// cus_sup_emp_id
-			if ($this->cus_sup_emp_id->VirtualValue != "") {
-				$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->VirtualValue;
-			} else {
-				$curVal = strval($this->cus_sup_emp_id->CurrentValue);
-				if ($curVal != "") {
-					$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->lookupCacheOption($curVal);
-					if ($this->cus_sup_emp_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`emp_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->cus_sup_emp_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->cus_sup_emp_id->ViewValue = NULL;
-				}
-			}
+			$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
+			$this->cus_sup_emp_id->ViewValue = FormatNumber($this->cus_sup_emp_id->ViewValue, 0, -2, -2, -2);
 			$this->cus_sup_emp_id->ViewCustomAttributes = "";
-
-			// cus_sup_query
-			$this->cus_sup_query->ViewValue = $this->cus_sup_query->CurrentValue;
-			$this->cus_sup_query->ViewCustomAttributes = "";
 
 			// cus_sup_date
 			$this->cus_sup_date->ViewValue = $this->cus_sup_date->CurrentValue;
-			$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 1);
+			$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 0);
 			$this->cus_sup_date->ViewCustomAttributes = "";
 
 			// cus_sup_status
@@ -845,7 +767,7 @@ class cus_support_delete extends cus_support
 
 			// cus_sup_resolved_on
 			$this->cus_sup_resolved_on->ViewValue = $this->cus_sup_resolved_on->CurrentValue;
-			$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 1);
+			$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 0);
 			$this->cus_sup_resolved_on->ViewCustomAttributes = "";
 
 			// cus_sup_id
@@ -862,11 +784,6 @@ class cus_support_delete extends cus_support
 			$this->cus_sup_emp_id->LinkCustomAttributes = "";
 			$this->cus_sup_emp_id->HrefValue = "";
 			$this->cus_sup_emp_id->TooltipValue = "";
-
-			// cus_sup_query
-			$this->cus_sup_query->LinkCustomAttributes = "";
-			$this->cus_sup_query->HrefValue = "";
-			$this->cus_sup_query->TooltipValue = "";
 
 			// cus_sup_date
 			$this->cus_sup_date->LinkCustomAttributes = "";
@@ -893,10 +810,6 @@ class cus_support_delete extends cus_support
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -1004,10 +917,6 @@ class cus_support_delete extends cus_support
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_cus_sup_branch_id":
-					break;
-				case "x_cus_sup_emp_id":
-					break;
 				case "x_cus_sup_status":
 					break;
 				default:
@@ -1030,10 +939,6 @@ class cus_support_delete extends cus_support
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_cus_sup_branch_id":
-							break;
-						case "x_cus_sup_emp_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

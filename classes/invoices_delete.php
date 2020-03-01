@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class invoices_delete extends invoices
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'invoices';
@@ -325,7 +325,6 @@ class invoices_delete extends invoices
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class invoices_delete extends invoices
 			$GLOBALS["Table"] = &$GLOBALS["invoices"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class invoices_delete extends invoices
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class invoices_delete extends invoices
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class invoices_delete extends invoices
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("invoiceslist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->invoice_id->setVisibility();
@@ -602,11 +575,8 @@ class invoices_delete extends invoices
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->invoice_branch_id);
-		$this->setupLookupOptions($this->invoice_business_id);
-		$this->setupLookupOptions($this->invoice_service_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -673,7 +643,7 @@ class invoices_delete extends invoices
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -725,17 +695,7 @@ class invoices_delete extends invoices
 		$this->invoice_id->setDbValue($row['invoice_id']);
 		$this->invoice_branch_id->setDbValue($row['invoice_branch_id']);
 		$this->invoice_business_id->setDbValue($row['invoice_business_id']);
-		if (array_key_exists('EV__invoice_business_id', $rs->fields)) {
-			$this->invoice_business_id->VirtualValue = $rs->fields('EV__invoice_business_id'); // Set up virtual field value
-		} else {
-			$this->invoice_business_id->VirtualValue = ""; // Clear value
-		}
 		$this->invoice_service_id->setDbValue($row['invoice_service_id']);
-		if (array_key_exists('EV__invoice_service_id', $rs->fields)) {
-			$this->invoice_service_id->VirtualValue = $rs->fields('EV__invoice_service_id'); // Set up virtual field value
-		} else {
-			$this->invoice_service_id->VirtualValue = ""; // Clear value
-		}
 		$this->invoice_amount->setDbValue($row['invoice_amount']);
 		$this->invoice_issue_date->setDbValue($row['invoice_issue_date']);
 		$this->invoice_due_date->setDbValue($row['invoice_due_date']);
@@ -796,81 +756,21 @@ class invoices_delete extends invoices
 
 			// invoice_id
 			$this->invoice_id->ViewValue = $this->invoice_id->CurrentValue;
-			$this->invoice_id->CssClass = "font-weight-bold";
 			$this->invoice_id->ViewCustomAttributes = "";
 
 			// invoice_branch_id
-			$curVal = strval($this->invoice_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->lookupCacheOption($curVal);
-				if ($this->invoice_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->invoice_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->invoice_branch_id->ViewValue = NULL;
-			}
+			$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->CurrentValue;
+			$this->invoice_branch_id->ViewValue = FormatNumber($this->invoice_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->invoice_branch_id->ViewCustomAttributes = "";
 
 			// invoice_business_id
-			if ($this->invoice_business_id->VirtualValue != "") {
-				$this->invoice_business_id->ViewValue = $this->invoice_business_id->VirtualValue;
-			} else {
-				$curVal = strval($this->invoice_business_id->CurrentValue);
-				if ($curVal != "") {
-					$this->invoice_business_id->ViewValue = $this->invoice_business_id->lookupCacheOption($curVal);
-					if ($this->invoice_business_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->invoice_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->invoice_business_id->ViewValue = $this->invoice_business_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->invoice_business_id->ViewValue = $this->invoice_business_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->invoice_business_id->ViewValue = NULL;
-				}
-			}
+			$this->invoice_business_id->ViewValue = $this->invoice_business_id->CurrentValue;
+			$this->invoice_business_id->ViewValue = FormatNumber($this->invoice_business_id->ViewValue, 0, -2, -2, -2);
 			$this->invoice_business_id->ViewCustomAttributes = "";
 
 			// invoice_service_id
-			if ($this->invoice_service_id->VirtualValue != "") {
-				$this->invoice_service_id->ViewValue = $this->invoice_service_id->VirtualValue;
-			} else {
-				$curVal = strval($this->invoice_service_id->CurrentValue);
-				if ($curVal != "") {
-					$this->invoice_service_id->ViewValue = $this->invoice_service_id->lookupCacheOption($curVal);
-					if ($this->invoice_service_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->invoice_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->invoice_service_id->ViewValue = $this->invoice_service_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->invoice_service_id->ViewValue = $this->invoice_service_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->invoice_service_id->ViewValue = NULL;
-				}
-			}
+			$this->invoice_service_id->ViewValue = $this->invoice_service_id->CurrentValue;
+			$this->invoice_service_id->ViewValue = FormatNumber($this->invoice_service_id->ViewValue, 0, -2, -2, -2);
 			$this->invoice_service_id->ViewCustomAttributes = "";
 
 			// invoice_amount
@@ -976,10 +876,6 @@ class invoices_delete extends invoices
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -1087,12 +983,6 @@ class invoices_delete extends invoices
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_invoice_branch_id":
-					break;
-				case "x_invoice_business_id":
-					break;
-				case "x_invoice_service_id":
-					break;
 				case "x_invoice_status":
 					break;
 				default:
@@ -1115,12 +1005,6 @@ class invoices_delete extends invoices
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_invoice_branch_id":
-							break;
-						case "x_invoice_business_id":
-							break;
-						case "x_invoice_service_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

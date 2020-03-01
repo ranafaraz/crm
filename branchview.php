@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $branch_view = new branch_view();
 $branch_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $branch_view->showMessage();
 ?>
-<?php if (!$branch_view->IsModal) { ?>
-<?php if (!$branch_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $branch_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fbranchview" id="fbranchview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -140,12 +131,6 @@ $branch_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$branch_view->IsModal) { ?>
-<?php if (!$branch_view->isExport()) { ?>
-<?php echo $branch_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $branch_view->showPageFooter();

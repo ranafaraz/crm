@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $branch_list = new branch_list();
 $branch_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $branch_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$branch_list->isExport() && !$branch->CurrentAction) { ?>
 <form name="fbranchlistsrch" id="fbranchlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fbranchlistsrch-search-panel" class="<?php echo $branch_list->SearchPanelClass ?>">
@@ -113,33 +111,95 @@ $branch_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $branch_list->showPageHeader(); ?>
 <?php
 $branch_list->showMessage();
 ?>
 <?php if ($branch_list->TotalRecords > 0 || $branch->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$branch_list->isExport()) { ?>
-<div>
-<?php if (!$branch_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $branch_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $branch_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fbranchlist" id="fbranchlist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($branch_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> branch">
+<form name="fbranchlist" id="fbranchlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="branch">
-<div class="row ew-multi-column-row">
+<div id="gmp_branch" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($branch_list->TotalRecords > 0 || $branch_list->isGridEdit()) { ?>
+<table id="tbl_branchlist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$branch->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$branch_list->renderListOptions();
+
+// Render list options (header, left)
+$branch_list->ListOptions->render("header", "left");
+?>
+<?php if ($branch_list->branch_id->Visible) { // branch_id ?>
+	<?php if ($branch_list->SortUrl($branch_list->branch_id) == "") { ?>
+		<th data-name="branch_id" class="<?php echo $branch_list->branch_id->headerCellClass() ?>"><div id="elh_branch_branch_id" class="branch_branch_id"><div class="ew-table-header-caption"><?php echo $branch_list->branch_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="branch_id" class="<?php echo $branch_list->branch_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_id) ?>', 1);"><div id="elh_branch_branch_id" class="branch_branch_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($branch_list->branch_org_id->Visible) { // branch_org_id ?>
+	<?php if ($branch_list->SortUrl($branch_list->branch_org_id) == "") { ?>
+		<th data-name="branch_org_id" class="<?php echo $branch_list->branch_org_id->headerCellClass() ?>"><div id="elh_branch_branch_org_id" class="branch_branch_org_id"><div class="ew-table-header-caption"><?php echo $branch_list->branch_org_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="branch_org_id" class="<?php echo $branch_list->branch_org_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_org_id) ?>', 1);"><div id="elh_branch_branch_org_id" class="branch_branch_org_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_org_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_org_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_org_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($branch_list->branch_name->Visible) { // branch_name ?>
+	<?php if ($branch_list->SortUrl($branch_list->branch_name) == "") { ?>
+		<th data-name="branch_name" class="<?php echo $branch_list->branch_name->headerCellClass() ?>"><div id="elh_branch_branch_name" class="branch_branch_name"><div class="ew-table-header-caption"><?php echo $branch_list->branch_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="branch_name" class="<?php echo $branch_list->branch_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_name) ?>', 1);"><div id="elh_branch_branch_name" class="branch_branch_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($branch_list->branch_manager->Visible) { // branch_manager ?>
+	<?php if ($branch_list->SortUrl($branch_list->branch_manager) == "") { ?>
+		<th data-name="branch_manager" class="<?php echo $branch_list->branch_manager->headerCellClass() ?>"><div id="elh_branch_branch_manager" class="branch_branch_manager"><div class="ew-table-header-caption"><?php echo $branch_list->branch_manager->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="branch_manager" class="<?php echo $branch_list->branch_manager->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_manager) ?>', 1);"><div id="elh_branch_branch_manager" class="branch_branch_manager">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_manager->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_manager->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_manager->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($branch_list->branch_contact->Visible) { // branch_contact ?>
+	<?php if ($branch_list->SortUrl($branch_list->branch_contact) == "") { ?>
+		<th data-name="branch_contact" class="<?php echo $branch_list->branch_contact->headerCellClass() ?>"><div id="elh_branch_branch_contact" class="branch_branch_contact"><div class="ew-table-header-caption"><?php echo $branch_list->branch_contact->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="branch_contact" class="<?php echo $branch_list->branch_contact->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_contact) ?>', 1);"><div id="elh_branch_branch_contact" class="branch_branch_contact">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_contact->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_contact->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_contact->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($branch_list->branch_address->Visible) { // branch_address ?>
+	<?php if ($branch_list->SortUrl($branch_list->branch_address) == "") { ?>
+		<th data-name="branch_address" class="<?php echo $branch_list->branch_address->headerCellClass() ?>"><div id="elh_branch_branch_address" class="branch_branch_address"><div class="ew-table-header-caption"><?php echo $branch_list->branch_address->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="branch_address" class="<?php echo $branch_list->branch_address->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_address) ?>', 1);"><div id="elh_branch_branch_address" class="branch_branch_address">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_address->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_address->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_address->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$branch_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($branch_list->ExportAll && $branch_list->isExport()) {
 	$branch_list->StopRecord = $branch_list->TotalRecords;
@@ -160,6 +220,11 @@ if ($branch_list->Recordset && !$branch_list->Recordset->EOF) {
 } elseif (!$branch->AllowAddDeleteRow && $branch_list->StopRecord == 0) {
 	$branch_list->StopRecord = $branch->GridAddRowCount;
 }
+
+// Initialize aggregate
+$branch->RowType = ROWTYPE_AGGREGATEINIT;
+$branch->resetAttributes();
+$branch_list->renderRow();
 while ($branch_list->RecordCount < $branch_list->StopRecord) {
 	$branch_list->RecordCount++;
 	if ($branch_list->RecordCount >= $branch_list->StartRecord) {
@@ -186,212 +251,70 @@ while ($branch_list->RecordCount < $branch_list->StopRecord) {
 		// Render list options
 		$branch_list->renderListOptions();
 ?>
-<div class="<?php echo $branch_list->getMultiColumnClass() ?>" <?php echo $branch->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($branch_list->branch_id->Visible) { // branch_id ?>
-		<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $branch_list->TableLeftColumnClass ?>"><span class="branch_branch_id">
-<?php if ($branch_list->isExport() || $branch_list->SortUrl($branch_list->branch_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $branch_list->branch_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $branch_list->branch_id->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_id">
-<span<?php echo $branch_list->branch_id->viewAttributes() ?>><?php echo $branch_list->branch_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row branch_branch_id">
-			<label class="<?php echo $branch_list->LeftColumnClass ?>"><?php echo $branch_list->branch_id->caption() ?></label>
-			<div class="<?php echo $branch_list->RightColumnClass ?>"><div <?php echo $branch_list->branch_id->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_id">
-<span<?php echo $branch_list->branch_id->viewAttributes() ?>><?php echo $branch_list->branch_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($branch_list->branch_org_id->Visible) { // branch_org_id ?>
-		<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $branch_list->TableLeftColumnClass ?>"><span class="branch_branch_org_id">
-<?php if ($branch_list->isExport() || $branch_list->SortUrl($branch_list->branch_org_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $branch_list->branch_org_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_org_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_org_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_org_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_org_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $branch_list->branch_org_id->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_org_id">
-<span<?php echo $branch_list->branch_org_id->viewAttributes() ?>><?php echo $branch_list->branch_org_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row branch_branch_org_id">
-			<label class="<?php echo $branch_list->LeftColumnClass ?>"><?php echo $branch_list->branch_org_id->caption() ?></label>
-			<div class="<?php echo $branch_list->RightColumnClass ?>"><div <?php echo $branch_list->branch_org_id->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_org_id">
-<span<?php echo $branch_list->branch_org_id->viewAttributes() ?>><?php echo $branch_list->branch_org_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($branch_list->branch_name->Visible) { // branch_name ?>
-		<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $branch_list->TableLeftColumnClass ?>"><span class="branch_branch_name">
-<?php if ($branch_list->isExport() || $branch_list->SortUrl($branch_list->branch_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $branch_list->branch_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $branch_list->branch_name->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_name">
-<span<?php echo $branch_list->branch_name->viewAttributes() ?>><?php echo $branch_list->branch_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row branch_branch_name">
-			<label class="<?php echo $branch_list->LeftColumnClass ?>"><?php echo $branch_list->branch_name->caption() ?></label>
-			<div class="<?php echo $branch_list->RightColumnClass ?>"><div <?php echo $branch_list->branch_name->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_name">
-<span<?php echo $branch_list->branch_name->viewAttributes() ?>><?php echo $branch_list->branch_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($branch_list->branch_manager->Visible) { // branch_manager ?>
-		<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $branch_list->TableLeftColumnClass ?>"><span class="branch_branch_manager">
-<?php if ($branch_list->isExport() || $branch_list->SortUrl($branch_list->branch_manager) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $branch_list->branch_manager->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_manager) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_manager->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_manager->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_manager->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $branch_list->branch_manager->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_manager">
-<span<?php echo $branch_list->branch_manager->viewAttributes() ?>><?php echo $branch_list->branch_manager->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row branch_branch_manager">
-			<label class="<?php echo $branch_list->LeftColumnClass ?>"><?php echo $branch_list->branch_manager->caption() ?></label>
-			<div class="<?php echo $branch_list->RightColumnClass ?>"><div <?php echo $branch_list->branch_manager->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_manager">
-<span<?php echo $branch_list->branch_manager->viewAttributes() ?>><?php echo $branch_list->branch_manager->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($branch_list->branch_contact->Visible) { // branch_contact ?>
-		<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $branch_list->TableLeftColumnClass ?>"><span class="branch_branch_contact">
-<?php if ($branch_list->isExport() || $branch_list->SortUrl($branch_list->branch_contact) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $branch_list->branch_contact->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_contact) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_contact->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_contact->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_contact->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $branch_list->branch_contact->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_contact">
-<span<?php echo $branch_list->branch_contact->viewAttributes() ?>><?php echo $branch_list->branch_contact->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row branch_branch_contact">
-			<label class="<?php echo $branch_list->LeftColumnClass ?>"><?php echo $branch_list->branch_contact->caption() ?></label>
-			<div class="<?php echo $branch_list->RightColumnClass ?>"><div <?php echo $branch_list->branch_contact->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_contact">
-<span<?php echo $branch_list->branch_contact->viewAttributes() ?>><?php echo $branch_list->branch_contact->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($branch_list->branch_address->Visible) { // branch_address ?>
-		<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $branch_list->TableLeftColumnClass ?>"><span class="branch_branch_address">
-<?php if ($branch_list->isExport() || $branch_list->SortUrl($branch_list->branch_address) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $branch_list->branch_address->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $branch_list->SortUrl($branch_list->branch_address) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $branch_list->branch_address->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($branch_list->branch_address->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($branch_list->branch_address->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $branch_list->branch_address->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_address">
-<span<?php echo $branch_list->branch_address->viewAttributes() ?>><?php echo $branch_list->branch_address->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row branch_branch_address">
-			<label class="<?php echo $branch_list->LeftColumnClass ?>"><?php echo $branch_list->branch_address->caption() ?></label>
-			<div class="<?php echo $branch_list->RightColumnClass ?>"><div <?php echo $branch_list->branch_address->cellAttributes() ?>>
-<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_address">
-<span<?php echo $branch_list->branch_address->viewAttributes() ?>><?php echo $branch_list->branch_address->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($branch->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$branch_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $branch->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$branch_list->ListOptions->render("body", "bottom", $branch_list->RowCount);
+// Render list options (body, left)
+$branch_list->ListOptions->render("body", "left", $branch_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($branch_list->branch_id->Visible) { // branch_id ?>
+		<td data-name="branch_id" <?php echo $branch_list->branch_id->cellAttributes() ?>>
+<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_id">
+<span<?php echo $branch_list->branch_id->viewAttributes() ?>><?php echo $branch_list->branch_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($branch_list->branch_org_id->Visible) { // branch_org_id ?>
+		<td data-name="branch_org_id" <?php echo $branch_list->branch_org_id->cellAttributes() ?>>
+<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_org_id">
+<span<?php echo $branch_list->branch_org_id->viewAttributes() ?>><?php echo $branch_list->branch_org_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($branch_list->branch_name->Visible) { // branch_name ?>
+		<td data-name="branch_name" <?php echo $branch_list->branch_name->cellAttributes() ?>>
+<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_name">
+<span<?php echo $branch_list->branch_name->viewAttributes() ?>><?php echo $branch_list->branch_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($branch_list->branch_manager->Visible) { // branch_manager ?>
+		<td data-name="branch_manager" <?php echo $branch_list->branch_manager->cellAttributes() ?>>
+<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_manager">
+<span<?php echo $branch_list->branch_manager->viewAttributes() ?>><?php echo $branch_list->branch_manager->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($branch_list->branch_contact->Visible) { // branch_contact ?>
+		<td data-name="branch_contact" <?php echo $branch_list->branch_contact->cellAttributes() ?>>
+<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_contact">
+<span<?php echo $branch_list->branch_contact->viewAttributes() ?>><?php echo $branch_list->branch_contact->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($branch_list->branch_address->Visible) { // branch_address ?>
+		<td data-name="branch_address" <?php echo $branch_list->branch_address->cellAttributes() ?>>
+<span id="el<?php echo $branch_list->RowCount ?>_branch_branch_address">
+<span<?php echo $branch_list->branch_address->viewAttributes() ?>><?php echo $branch_list->branch_address->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$branch_list->ListOptions->render("body", "right", $branch_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$branch_list->isGridAdd())
 		$branch_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$branch->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -403,7 +326,7 @@ if ($branch_list->Recordset)
 	$branch_list->Recordset->Close();
 ?>
 <?php if (!$branch_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$branch_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $branch_list->Pager->render() ?>
@@ -415,7 +338,7 @@ if ($branch_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($branch_list->TotalRecords == 0 && !$branch->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

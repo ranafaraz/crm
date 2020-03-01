@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $acc_head_list = new acc_head_list();
 $acc_head_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $acc_head_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$acc_head_list->isExport() && !$acc_head->CurrentAction) { ?>
 <form name="facc_headlistsrch" id="facc_headlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="facc_headlistsrch-search-panel" class="<?php echo $acc_head_list->SearchPanelClass ?>">
@@ -113,33 +111,77 @@ $acc_head_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $acc_head_list->showPageHeader(); ?>
 <?php
 $acc_head_list->showMessage();
 ?>
 <?php if ($acc_head_list->TotalRecords > 0 || $acc_head->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$acc_head_list->isExport()) { ?>
-<div>
-<?php if (!$acc_head_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $acc_head_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $acc_head_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="facc_headlist" id="facc_headlist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($acc_head_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> acc_head">
+<form name="facc_headlist" id="facc_headlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="acc_head">
-<div class="row ew-multi-column-row">
+<div id="gmp_acc_head" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($acc_head_list->TotalRecords > 0 || $acc_head_list->isGridEdit()) { ?>
+<table id="tbl_acc_headlist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$acc_head->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$acc_head_list->renderListOptions();
+
+// Render list options (header, left)
+$acc_head_list->ListOptions->render("header", "left");
+?>
+<?php if ($acc_head_list->acc_head_id->Visible) { // acc_head_id ?>
+	<?php if ($acc_head_list->SortUrl($acc_head_list->acc_head_id) == "") { ?>
+		<th data-name="acc_head_id" class="<?php echo $acc_head_list->acc_head_id->headerCellClass() ?>"><div id="elh_acc_head_acc_head_id" class="acc_head_acc_head_id"><div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="acc_head_id" class="<?php echo $acc_head_list->acc_head_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_id) ?>', 1);"><div id="elh_acc_head_acc_head_id" class="acc_head_acc_head_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($acc_head_list->acc_head_acc_nature_id->Visible) { // acc_head_acc_nature_id ?>
+	<?php if ($acc_head_list->SortUrl($acc_head_list->acc_head_acc_nature_id) == "") { ?>
+		<th data-name="acc_head_acc_nature_id" class="<?php echo $acc_head_list->acc_head_acc_nature_id->headerCellClass() ?>"><div id="elh_acc_head_acc_head_acc_nature_id" class="acc_head_acc_head_acc_nature_id"><div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_acc_nature_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="acc_head_acc_nature_id" class="<?php echo $acc_head_list->acc_head_acc_nature_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_acc_nature_id) ?>', 1);"><div id="elh_acc_head_acc_head_acc_nature_id" class="acc_head_acc_head_acc_nature_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_acc_nature_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_acc_nature_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_acc_nature_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($acc_head_list->acc_head_caption->Visible) { // acc_head_caption ?>
+	<?php if ($acc_head_list->SortUrl($acc_head_list->acc_head_caption) == "") { ?>
+		<th data-name="acc_head_caption" class="<?php echo $acc_head_list->acc_head_caption->headerCellClass() ?>"><div id="elh_acc_head_acc_head_caption" class="acc_head_acc_head_caption"><div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_caption->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="acc_head_caption" class="<?php echo $acc_head_list->acc_head_caption->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_caption) ?>', 1);"><div id="elh_acc_head_acc_head_caption" class="acc_head_acc_head_caption">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($acc_head_list->acc_head_desc->Visible) { // acc_head_desc ?>
+	<?php if ($acc_head_list->SortUrl($acc_head_list->acc_head_desc) == "") { ?>
+		<th data-name="acc_head_desc" class="<?php echo $acc_head_list->acc_head_desc->headerCellClass() ?>"><div id="elh_acc_head_acc_head_desc" class="acc_head_acc_head_desc"><div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_desc->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="acc_head_desc" class="<?php echo $acc_head_list->acc_head_desc->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_desc) ?>', 1);"><div id="elh_acc_head_acc_head_desc" class="acc_head_acc_head_desc">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$acc_head_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($acc_head_list->ExportAll && $acc_head_list->isExport()) {
 	$acc_head_list->StopRecord = $acc_head_list->TotalRecords;
@@ -160,6 +202,11 @@ if ($acc_head_list->Recordset && !$acc_head_list->Recordset->EOF) {
 } elseif (!$acc_head->AllowAddDeleteRow && $acc_head_list->StopRecord == 0) {
 	$acc_head_list->StopRecord = $acc_head->GridAddRowCount;
 }
+
+// Initialize aggregate
+$acc_head->RowType = ROWTYPE_AGGREGATEINIT;
+$acc_head->resetAttributes();
+$acc_head_list->renderRow();
 while ($acc_head_list->RecordCount < $acc_head_list->StopRecord) {
 	$acc_head_list->RecordCount++;
 	if ($acc_head_list->RecordCount >= $acc_head_list->StartRecord) {
@@ -186,154 +233,56 @@ while ($acc_head_list->RecordCount < $acc_head_list->StopRecord) {
 		// Render list options
 		$acc_head_list->renderListOptions();
 ?>
-<div class="<?php echo $acc_head_list->getMultiColumnClass() ?>" <?php echo $acc_head->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($acc_head->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($acc_head_list->acc_head_id->Visible) { // acc_head_id ?>
-		<?php if ($acc_head->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $acc_head_list->TableLeftColumnClass ?>"><span class="acc_head_acc_head_id">
-<?php if ($acc_head_list->isExport() || $acc_head_list->SortUrl($acc_head_list->acc_head_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $acc_head_list->acc_head_id->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_id">
-<span<?php echo $acc_head_list->acc_head_id->viewAttributes() ?>><?php echo $acc_head_list->acc_head_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row acc_head_acc_head_id">
-			<label class="<?php echo $acc_head_list->LeftColumnClass ?>"><?php echo $acc_head_list->acc_head_id->caption() ?></label>
-			<div class="<?php echo $acc_head_list->RightColumnClass ?>"><div <?php echo $acc_head_list->acc_head_id->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_id">
-<span<?php echo $acc_head_list->acc_head_id->viewAttributes() ?>><?php echo $acc_head_list->acc_head_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($acc_head_list->acc_head_acc_nature_id->Visible) { // acc_head_acc_nature_id ?>
-		<?php if ($acc_head->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $acc_head_list->TableLeftColumnClass ?>"><span class="acc_head_acc_head_acc_nature_id">
-<?php if ($acc_head_list->isExport() || $acc_head_list->SortUrl($acc_head_list->acc_head_acc_nature_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_acc_nature_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_acc_nature_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_acc_nature_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_acc_nature_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_acc_nature_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $acc_head_list->acc_head_acc_nature_id->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_acc_nature_id">
-<span<?php echo $acc_head_list->acc_head_acc_nature_id->viewAttributes() ?>><?php echo $acc_head_list->acc_head_acc_nature_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row acc_head_acc_head_acc_nature_id">
-			<label class="<?php echo $acc_head_list->LeftColumnClass ?>"><?php echo $acc_head_list->acc_head_acc_nature_id->caption() ?></label>
-			<div class="<?php echo $acc_head_list->RightColumnClass ?>"><div <?php echo $acc_head_list->acc_head_acc_nature_id->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_acc_nature_id">
-<span<?php echo $acc_head_list->acc_head_acc_nature_id->viewAttributes() ?>><?php echo $acc_head_list->acc_head_acc_nature_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($acc_head_list->acc_head_caption->Visible) { // acc_head_caption ?>
-		<?php if ($acc_head->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $acc_head_list->TableLeftColumnClass ?>"><span class="acc_head_acc_head_caption">
-<?php if ($acc_head_list->isExport() || $acc_head_list->SortUrl($acc_head_list->acc_head_caption) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_caption->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_caption) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $acc_head_list->acc_head_caption->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_caption">
-<span<?php echo $acc_head_list->acc_head_caption->viewAttributes() ?>><?php echo $acc_head_list->acc_head_caption->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row acc_head_acc_head_caption">
-			<label class="<?php echo $acc_head_list->LeftColumnClass ?>"><?php echo $acc_head_list->acc_head_caption->caption() ?></label>
-			<div class="<?php echo $acc_head_list->RightColumnClass ?>"><div <?php echo $acc_head_list->acc_head_caption->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_caption">
-<span<?php echo $acc_head_list->acc_head_caption->viewAttributes() ?>><?php echo $acc_head_list->acc_head_caption->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($acc_head_list->acc_head_desc->Visible) { // acc_head_desc ?>
-		<?php if ($acc_head->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $acc_head_list->TableLeftColumnClass ?>"><span class="acc_head_acc_head_desc">
-<?php if ($acc_head_list->isExport() || $acc_head_list->SortUrl($acc_head_list->acc_head_desc) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_desc->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $acc_head_list->SortUrl($acc_head_list->acc_head_desc) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $acc_head_list->acc_head_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($acc_head_list->acc_head_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($acc_head_list->acc_head_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $acc_head_list->acc_head_desc->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_desc">
-<span<?php echo $acc_head_list->acc_head_desc->viewAttributes() ?>><?php echo $acc_head_list->acc_head_desc->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row acc_head_acc_head_desc">
-			<label class="<?php echo $acc_head_list->LeftColumnClass ?>"><?php echo $acc_head_list->acc_head_desc->caption() ?></label>
-			<div class="<?php echo $acc_head_list->RightColumnClass ?>"><div <?php echo $acc_head_list->acc_head_desc->cellAttributes() ?>>
-<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_desc">
-<span<?php echo $acc_head_list->acc_head_desc->viewAttributes() ?>><?php echo $acc_head_list->acc_head_desc->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($acc_head->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$acc_head_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $acc_head->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$acc_head_list->ListOptions->render("body", "bottom", $acc_head_list->RowCount);
+// Render list options (body, left)
+$acc_head_list->ListOptions->render("body", "left", $acc_head_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($acc_head_list->acc_head_id->Visible) { // acc_head_id ?>
+		<td data-name="acc_head_id" <?php echo $acc_head_list->acc_head_id->cellAttributes() ?>>
+<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_id">
+<span<?php echo $acc_head_list->acc_head_id->viewAttributes() ?>><?php echo $acc_head_list->acc_head_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($acc_head_list->acc_head_acc_nature_id->Visible) { // acc_head_acc_nature_id ?>
+		<td data-name="acc_head_acc_nature_id" <?php echo $acc_head_list->acc_head_acc_nature_id->cellAttributes() ?>>
+<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_acc_nature_id">
+<span<?php echo $acc_head_list->acc_head_acc_nature_id->viewAttributes() ?>><?php echo $acc_head_list->acc_head_acc_nature_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($acc_head_list->acc_head_caption->Visible) { // acc_head_caption ?>
+		<td data-name="acc_head_caption" <?php echo $acc_head_list->acc_head_caption->cellAttributes() ?>>
+<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_caption">
+<span<?php echo $acc_head_list->acc_head_caption->viewAttributes() ?>><?php echo $acc_head_list->acc_head_caption->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($acc_head_list->acc_head_desc->Visible) { // acc_head_desc ?>
+		<td data-name="acc_head_desc" <?php echo $acc_head_list->acc_head_desc->cellAttributes() ?>>
+<span id="el<?php echo $acc_head_list->RowCount ?>_acc_head_acc_head_desc">
+<span<?php echo $acc_head_list->acc_head_desc->viewAttributes() ?>><?php echo $acc_head_list->acc_head_desc->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$acc_head_list->ListOptions->render("body", "right", $acc_head_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$acc_head_list->isGridAdd())
 		$acc_head_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$acc_head->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -345,7 +294,7 @@ if ($acc_head_list->Recordset)
 	$acc_head_list->Recordset->Close();
 ?>
 <?php if (!$acc_head_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$acc_head_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $acc_head_list->Pager->render() ?>
@@ -357,7 +306,7 @@ if ($acc_head_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($acc_head_list->TotalRecords == 0 && !$acc_head->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

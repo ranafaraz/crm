@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $reference_letter_list = new reference_letter_list();
 $reference_letter_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $reference_letter_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$reference_letter_list->isExport() && !$reference_letter->CurrentAction) { ?>
 <form name="freference_letterlistsrch" id="freference_letterlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="freference_letterlistsrch-search-panel" class="<?php echo $reference_letter_list->SearchPanelClass ?>">
@@ -113,33 +111,95 @@ $reference_letter_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $reference_letter_list->showPageHeader(); ?>
 <?php
 $reference_letter_list->showMessage();
 ?>
 <?php if ($reference_letter_list->TotalRecords > 0 || $reference_letter->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$reference_letter_list->isExport()) { ?>
-<div>
-<?php if (!$reference_letter_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $reference_letter_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $reference_letter_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="freference_letterlist" id="freference_letterlist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($reference_letter_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> reference_letter">
+<form name="freference_letterlist" id="freference_letterlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="reference_letter">
-<div class="row ew-multi-column-row">
+<div id="gmp_reference_letter" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($reference_letter_list->TotalRecords > 0 || $reference_letter_list->isGridEdit()) { ?>
+<table id="tbl_reference_letterlist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$reference_letter->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$reference_letter_list->renderListOptions();
+
+// Render list options (header, left)
+$reference_letter_list->ListOptions->render("header", "left");
+?>
+<?php if ($reference_letter_list->ref_letter_id->Visible) { // ref_letter_id ?>
+	<?php if ($reference_letter_list->SortUrl($reference_letter_list->ref_letter_id) == "") { ?>
+		<th data-name="ref_letter_id" class="<?php echo $reference_letter_list->ref_letter_id->headerCellClass() ?>"><div id="elh_reference_letter_ref_letter_id" class="reference_letter_ref_letter_id"><div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="ref_letter_id" class="<?php echo $reference_letter_list->ref_letter_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_id) ?>', 1);"><div id="elh_reference_letter_ref_letter_id" class="reference_letter_ref_letter_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($reference_letter_list->ref_letter_branch_id->Visible) { // ref_letter_branch_id ?>
+	<?php if ($reference_letter_list->SortUrl($reference_letter_list->ref_letter_branch_id) == "") { ?>
+		<th data-name="ref_letter_branch_id" class="<?php echo $reference_letter_list->ref_letter_branch_id->headerCellClass() ?>"><div id="elh_reference_letter_ref_letter_branch_id" class="reference_letter_ref_letter_branch_id"><div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_branch_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="ref_letter_branch_id" class="<?php echo $reference_letter_list->ref_letter_branch_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_branch_id) ?>', 1);"><div id="elh_reference_letter_ref_letter_branch_id" class="reference_letter_ref_letter_branch_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($reference_letter_list->ref_letter_to_whom->Visible) { // ref_letter_to_whom ?>
+	<?php if ($reference_letter_list->SortUrl($reference_letter_list->ref_letter_to_whom) == "") { ?>
+		<th data-name="ref_letter_to_whom" class="<?php echo $reference_letter_list->ref_letter_to_whom->headerCellClass() ?>"><div id="elh_reference_letter_ref_letter_to_whom" class="reference_letter_ref_letter_to_whom"><div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_to_whom->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="ref_letter_to_whom" class="<?php echo $reference_letter_list->ref_letter_to_whom->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_to_whom) ?>', 1);"><div id="elh_reference_letter_ref_letter_to_whom" class="reference_letter_ref_letter_to_whom">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_to_whom->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_to_whom->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_to_whom->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($reference_letter_list->ref_letter_by_whom->Visible) { // ref_letter_by_whom ?>
+	<?php if ($reference_letter_list->SortUrl($reference_letter_list->ref_letter_by_whom) == "") { ?>
+		<th data-name="ref_letter_by_whom" class="<?php echo $reference_letter_list->ref_letter_by_whom->headerCellClass() ?>"><div id="elh_reference_letter_ref_letter_by_whom" class="reference_letter_ref_letter_by_whom"><div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_by_whom->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="ref_letter_by_whom" class="<?php echo $reference_letter_list->ref_letter_by_whom->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_by_whom) ?>', 1);"><div id="elh_reference_letter_ref_letter_by_whom" class="reference_letter_ref_letter_by_whom">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_by_whom->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_by_whom->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_by_whom->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($reference_letter_list->ref_letter_scanned->Visible) { // ref_letter_scanned ?>
+	<?php if ($reference_letter_list->SortUrl($reference_letter_list->ref_letter_scanned) == "") { ?>
+		<th data-name="ref_letter_scanned" class="<?php echo $reference_letter_list->ref_letter_scanned->headerCellClass() ?>"><div id="elh_reference_letter_ref_letter_scanned" class="reference_letter_ref_letter_scanned"><div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_scanned->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="ref_letter_scanned" class="<?php echo $reference_letter_list->ref_letter_scanned->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_scanned) ?>', 1);"><div id="elh_reference_letter_ref_letter_scanned" class="reference_letter_ref_letter_scanned">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_scanned->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_scanned->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_scanned->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($reference_letter_list->ref_letter_date->Visible) { // ref_letter_date ?>
+	<?php if ($reference_letter_list->SortUrl($reference_letter_list->ref_letter_date) == "") { ?>
+		<th data-name="ref_letter_date" class="<?php echo $reference_letter_list->ref_letter_date->headerCellClass() ?>"><div id="elh_reference_letter_ref_letter_date" class="reference_letter_ref_letter_date"><div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_date->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="ref_letter_date" class="<?php echo $reference_letter_list->ref_letter_date->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_date) ?>', 1);"><div id="elh_reference_letter_ref_letter_date" class="reference_letter_ref_letter_date">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_date->caption() ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_date->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_date->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$reference_letter_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($reference_letter_list->ExportAll && $reference_letter_list->isExport()) {
 	$reference_letter_list->StopRecord = $reference_letter_list->TotalRecords;
@@ -160,6 +220,11 @@ if ($reference_letter_list->Recordset && !$reference_letter_list->Recordset->EOF
 } elseif (!$reference_letter->AllowAddDeleteRow && $reference_letter_list->StopRecord == 0) {
 	$reference_letter_list->StopRecord = $reference_letter->GridAddRowCount;
 }
+
+// Initialize aggregate
+$reference_letter->RowType = ROWTYPE_AGGREGATEINIT;
+$reference_letter->resetAttributes();
+$reference_letter_list->renderRow();
 while ($reference_letter_list->RecordCount < $reference_letter_list->StopRecord) {
 	$reference_letter_list->RecordCount++;
 	if ($reference_letter_list->RecordCount >= $reference_letter_list->StartRecord) {
@@ -186,212 +251,70 @@ while ($reference_letter_list->RecordCount < $reference_letter_list->StopRecord)
 		// Render list options
 		$reference_letter_list->renderListOptions();
 ?>
-<div class="<?php echo $reference_letter_list->getMultiColumnClass() ?>" <?php echo $reference_letter->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($reference_letter_list->ref_letter_id->Visible) { // ref_letter_id ?>
-		<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $reference_letter_list->TableLeftColumnClass ?>"><span class="reference_letter_ref_letter_id">
-<?php if ($reference_letter_list->isExport() || $reference_letter_list->SortUrl($reference_letter_list->ref_letter_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $reference_letter_list->ref_letter_id->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_id">
-<span<?php echo $reference_letter_list->ref_letter_id->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row reference_letter_ref_letter_id">
-			<label class="<?php echo $reference_letter_list->LeftColumnClass ?>"><?php echo $reference_letter_list->ref_letter_id->caption() ?></label>
-			<div class="<?php echo $reference_letter_list->RightColumnClass ?>"><div <?php echo $reference_letter_list->ref_letter_id->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_id">
-<span<?php echo $reference_letter_list->ref_letter_id->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($reference_letter_list->ref_letter_branch_id->Visible) { // ref_letter_branch_id ?>
-		<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $reference_letter_list->TableLeftColumnClass ?>"><span class="reference_letter_ref_letter_branch_id">
-<?php if ($reference_letter_list->isExport() || $reference_letter_list->SortUrl($reference_letter_list->ref_letter_branch_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_branch_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_branch_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $reference_letter_list->ref_letter_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_branch_id">
-<span<?php echo $reference_letter_list->ref_letter_branch_id->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_branch_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row reference_letter_ref_letter_branch_id">
-			<label class="<?php echo $reference_letter_list->LeftColumnClass ?>"><?php echo $reference_letter_list->ref_letter_branch_id->caption() ?></label>
-			<div class="<?php echo $reference_letter_list->RightColumnClass ?>"><div <?php echo $reference_letter_list->ref_letter_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_branch_id">
-<span<?php echo $reference_letter_list->ref_letter_branch_id->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_branch_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($reference_letter_list->ref_letter_to_whom->Visible) { // ref_letter_to_whom ?>
-		<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $reference_letter_list->TableLeftColumnClass ?>"><span class="reference_letter_ref_letter_to_whom">
-<?php if ($reference_letter_list->isExport() || $reference_letter_list->SortUrl($reference_letter_list->ref_letter_to_whom) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_to_whom->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_to_whom) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_to_whom->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_to_whom->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_to_whom->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $reference_letter_list->ref_letter_to_whom->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_to_whom">
-<span<?php echo $reference_letter_list->ref_letter_to_whom->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_to_whom->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row reference_letter_ref_letter_to_whom">
-			<label class="<?php echo $reference_letter_list->LeftColumnClass ?>"><?php echo $reference_letter_list->ref_letter_to_whom->caption() ?></label>
-			<div class="<?php echo $reference_letter_list->RightColumnClass ?>"><div <?php echo $reference_letter_list->ref_letter_to_whom->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_to_whom">
-<span<?php echo $reference_letter_list->ref_letter_to_whom->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_to_whom->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($reference_letter_list->ref_letter_by_whom->Visible) { // ref_letter_by_whom ?>
-		<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $reference_letter_list->TableLeftColumnClass ?>"><span class="reference_letter_ref_letter_by_whom">
-<?php if ($reference_letter_list->isExport() || $reference_letter_list->SortUrl($reference_letter_list->ref_letter_by_whom) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_by_whom->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_by_whom) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_by_whom->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_by_whom->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_by_whom->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $reference_letter_list->ref_letter_by_whom->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_by_whom">
-<span<?php echo $reference_letter_list->ref_letter_by_whom->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_by_whom->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row reference_letter_ref_letter_by_whom">
-			<label class="<?php echo $reference_letter_list->LeftColumnClass ?>"><?php echo $reference_letter_list->ref_letter_by_whom->caption() ?></label>
-			<div class="<?php echo $reference_letter_list->RightColumnClass ?>"><div <?php echo $reference_letter_list->ref_letter_by_whom->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_by_whom">
-<span<?php echo $reference_letter_list->ref_letter_by_whom->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_by_whom->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($reference_letter_list->ref_letter_scanned->Visible) { // ref_letter_scanned ?>
-		<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $reference_letter_list->TableLeftColumnClass ?>"><span class="reference_letter_ref_letter_scanned">
-<?php if ($reference_letter_list->isExport() || $reference_letter_list->SortUrl($reference_letter_list->ref_letter_scanned) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_scanned->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_scanned) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_scanned->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_scanned->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_scanned->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $reference_letter_list->ref_letter_scanned->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_scanned">
-<span><?php echo GetFileViewTag($reference_letter_list->ref_letter_scanned, $reference_letter_list->ref_letter_scanned->getViewValue(), FALSE) ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row reference_letter_ref_letter_scanned">
-			<label class="<?php echo $reference_letter_list->LeftColumnClass ?>"><?php echo $reference_letter_list->ref_letter_scanned->caption() ?></label>
-			<div class="<?php echo $reference_letter_list->RightColumnClass ?>"><div <?php echo $reference_letter_list->ref_letter_scanned->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_scanned">
-<span><?php echo GetFileViewTag($reference_letter_list->ref_letter_scanned, $reference_letter_list->ref_letter_scanned->getViewValue(), FALSE) ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($reference_letter_list->ref_letter_date->Visible) { // ref_letter_date ?>
-		<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $reference_letter_list->TableLeftColumnClass ?>"><span class="reference_letter_ref_letter_date">
-<?php if ($reference_letter_list->isExport() || $reference_letter_list->SortUrl($reference_letter_list->ref_letter_date) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_date->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $reference_letter_list->SortUrl($reference_letter_list->ref_letter_date) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $reference_letter_list->ref_letter_date->caption() ?></span><span class="ew-table-header-sort"><?php if ($reference_letter_list->ref_letter_date->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($reference_letter_list->ref_letter_date->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $reference_letter_list->ref_letter_date->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_date">
-<span<?php echo $reference_letter_list->ref_letter_date->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_date->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row reference_letter_ref_letter_date">
-			<label class="<?php echo $reference_letter_list->LeftColumnClass ?>"><?php echo $reference_letter_list->ref_letter_date->caption() ?></label>
-			<div class="<?php echo $reference_letter_list->RightColumnClass ?>"><div <?php echo $reference_letter_list->ref_letter_date->cellAttributes() ?>>
-<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_date">
-<span<?php echo $reference_letter_list->ref_letter_date->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_date->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($reference_letter->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$reference_letter_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $reference_letter->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$reference_letter_list->ListOptions->render("body", "bottom", $reference_letter_list->RowCount);
+// Render list options (body, left)
+$reference_letter_list->ListOptions->render("body", "left", $reference_letter_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($reference_letter_list->ref_letter_id->Visible) { // ref_letter_id ?>
+		<td data-name="ref_letter_id" <?php echo $reference_letter_list->ref_letter_id->cellAttributes() ?>>
+<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_id">
+<span<?php echo $reference_letter_list->ref_letter_id->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($reference_letter_list->ref_letter_branch_id->Visible) { // ref_letter_branch_id ?>
+		<td data-name="ref_letter_branch_id" <?php echo $reference_letter_list->ref_letter_branch_id->cellAttributes() ?>>
+<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_branch_id">
+<span<?php echo $reference_letter_list->ref_letter_branch_id->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_branch_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($reference_letter_list->ref_letter_to_whom->Visible) { // ref_letter_to_whom ?>
+		<td data-name="ref_letter_to_whom" <?php echo $reference_letter_list->ref_letter_to_whom->cellAttributes() ?>>
+<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_to_whom">
+<span<?php echo $reference_letter_list->ref_letter_to_whom->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_to_whom->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($reference_letter_list->ref_letter_by_whom->Visible) { // ref_letter_by_whom ?>
+		<td data-name="ref_letter_by_whom" <?php echo $reference_letter_list->ref_letter_by_whom->cellAttributes() ?>>
+<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_by_whom">
+<span<?php echo $reference_letter_list->ref_letter_by_whom->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_by_whom->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($reference_letter_list->ref_letter_scanned->Visible) { // ref_letter_scanned ?>
+		<td data-name="ref_letter_scanned" <?php echo $reference_letter_list->ref_letter_scanned->cellAttributes() ?>>
+<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_scanned">
+<span<?php echo $reference_letter_list->ref_letter_scanned->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_scanned->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($reference_letter_list->ref_letter_date->Visible) { // ref_letter_date ?>
+		<td data-name="ref_letter_date" <?php echo $reference_letter_list->ref_letter_date->cellAttributes() ?>>
+<span id="el<?php echo $reference_letter_list->RowCount ?>_reference_letter_ref_letter_date">
+<span<?php echo $reference_letter_list->ref_letter_date->viewAttributes() ?>><?php echo $reference_letter_list->ref_letter_date->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$reference_letter_list->ListOptions->render("body", "right", $reference_letter_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$reference_letter_list->isGridAdd())
 		$reference_letter_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$reference_letter->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -403,7 +326,7 @@ if ($reference_letter_list->Recordset)
 	$reference_letter_list->Recordset->Close();
 ?>
 <?php if (!$reference_letter_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$reference_letter_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $reference_letter_list->Pager->render() ?>
@@ -415,7 +338,7 @@ if ($reference_letter_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($reference_letter_list->TotalRecords == 0 && !$reference_letter->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

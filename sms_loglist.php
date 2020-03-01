@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $sms_log_list = new sms_log_list();
 $sms_log_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -73,27 +72,72 @@ $sms_log_list->renderOtherOptions();
 $sms_log_list->showMessage();
 ?>
 <?php if ($sms_log_list->TotalRecords > 0 || $sms_log->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$sms_log_list->isExport()) { ?>
-<div>
-<?php if (!$sms_log_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $sms_log_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $sms_log_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fsms_loglist" id="fsms_loglist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($sms_log_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> sms_log">
+<form name="fsms_loglist" id="fsms_loglist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="sms_log">
-<div class="row ew-multi-column-row">
+<div id="gmp_sms_log" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($sms_log_list->TotalRecords > 0 || $sms_log_list->isGridEdit()) { ?>
+<table id="tbl_sms_loglist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$sms_log->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$sms_log_list->renderListOptions();
+
+// Render list options (header, left)
+$sms_log_list->ListOptions->render("header", "left");
+?>
+<?php if ($sms_log_list->sms_log_id->Visible) { // sms_log_id ?>
+	<?php if ($sms_log_list->SortUrl($sms_log_list->sms_log_id) == "") { ?>
+		<th data-name="sms_log_id" class="<?php echo $sms_log_list->sms_log_id->headerCellClass() ?>"><div id="elh_sms_log_sms_log_id" class="sms_log_sms_log_id"><div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sms_log_id" class="<?php echo $sms_log_list->sms_log_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_id) ?>', 1);"><div id="elh_sms_log_sms_log_id" class="sms_log_sms_log_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($sms_log_list->sms_log_branch_id->Visible) { // sms_log_branch_id ?>
+	<?php if ($sms_log_list->SortUrl($sms_log_list->sms_log_branch_id) == "") { ?>
+		<th data-name="sms_log_branch_id" class="<?php echo $sms_log_list->sms_log_branch_id->headerCellClass() ?>"><div id="elh_sms_log_sms_log_branch_id" class="sms_log_sms_log_branch_id"><div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_branch_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sms_log_branch_id" class="<?php echo $sms_log_list->sms_log_branch_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_branch_id) ?>', 1);"><div id="elh_sms_log_sms_log_branch_id" class="sms_log_sms_log_branch_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($sms_log_list->sms_log_sms_api_id->Visible) { // sms_log_sms_api_id ?>
+	<?php if ($sms_log_list->SortUrl($sms_log_list->sms_log_sms_api_id) == "") { ?>
+		<th data-name="sms_log_sms_api_id" class="<?php echo $sms_log_list->sms_log_sms_api_id->headerCellClass() ?>"><div id="elh_sms_log_sms_log_sms_api_id" class="sms_log_sms_log_sms_api_id"><div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_sms_api_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sms_log_sms_api_id" class="<?php echo $sms_log_list->sms_log_sms_api_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_sms_api_id) ?>', 1);"><div id="elh_sms_log_sms_log_sms_api_id" class="sms_log_sms_log_sms_api_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_sms_api_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_sms_api_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_sms_api_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($sms_log_list->sms_log_date->Visible) { // sms_log_date ?>
+	<?php if ($sms_log_list->SortUrl($sms_log_list->sms_log_date) == "") { ?>
+		<th data-name="sms_log_date" class="<?php echo $sms_log_list->sms_log_date->headerCellClass() ?>"><div id="elh_sms_log_sms_log_date" class="sms_log_sms_log_date"><div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_date->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sms_log_date" class="<?php echo $sms_log_list->sms_log_date->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_date) ?>', 1);"><div id="elh_sms_log_sms_log_date" class="sms_log_sms_log_date">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_date->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_date->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_date->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$sms_log_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($sms_log_list->ExportAll && $sms_log_list->isExport()) {
 	$sms_log_list->StopRecord = $sms_log_list->TotalRecords;
@@ -114,6 +158,11 @@ if ($sms_log_list->Recordset && !$sms_log_list->Recordset->EOF) {
 } elseif (!$sms_log->AllowAddDeleteRow && $sms_log_list->StopRecord == 0) {
 	$sms_log_list->StopRecord = $sms_log->GridAddRowCount;
 }
+
+// Initialize aggregate
+$sms_log->RowType = ROWTYPE_AGGREGATEINIT;
+$sms_log->resetAttributes();
+$sms_log_list->renderRow();
 while ($sms_log_list->RecordCount < $sms_log_list->StopRecord) {
 	$sms_log_list->RecordCount++;
 	if ($sms_log_list->RecordCount >= $sms_log_list->StartRecord) {
@@ -140,154 +189,56 @@ while ($sms_log_list->RecordCount < $sms_log_list->StopRecord) {
 		// Render list options
 		$sms_log_list->renderListOptions();
 ?>
-<div class="<?php echo $sms_log_list->getMultiColumnClass() ?>" <?php echo $sms_log->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($sms_log->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($sms_log_list->sms_log_id->Visible) { // sms_log_id ?>
-		<?php if ($sms_log->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $sms_log_list->TableLeftColumnClass ?>"><span class="sms_log_sms_log_id">
-<?php if ($sms_log_list->isExport() || $sms_log_list->SortUrl($sms_log_list->sms_log_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $sms_log_list->sms_log_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_id">
-<span<?php echo $sms_log_list->sms_log_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row sms_log_sms_log_id">
-			<label class="<?php echo $sms_log_list->LeftColumnClass ?>"><?php echo $sms_log_list->sms_log_id->caption() ?></label>
-			<div class="<?php echo $sms_log_list->RightColumnClass ?>"><div <?php echo $sms_log_list->sms_log_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_id">
-<span<?php echo $sms_log_list->sms_log_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($sms_log_list->sms_log_branch_id->Visible) { // sms_log_branch_id ?>
-		<?php if ($sms_log->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $sms_log_list->TableLeftColumnClass ?>"><span class="sms_log_sms_log_branch_id">
-<?php if ($sms_log_list->isExport() || $sms_log_list->SortUrl($sms_log_list->sms_log_branch_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_branch_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_branch_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $sms_log_list->sms_log_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_branch_id">
-<span<?php echo $sms_log_list->sms_log_branch_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_branch_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row sms_log_sms_log_branch_id">
-			<label class="<?php echo $sms_log_list->LeftColumnClass ?>"><?php echo $sms_log_list->sms_log_branch_id->caption() ?></label>
-			<div class="<?php echo $sms_log_list->RightColumnClass ?>"><div <?php echo $sms_log_list->sms_log_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_branch_id">
-<span<?php echo $sms_log_list->sms_log_branch_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_branch_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($sms_log_list->sms_log_sms_api_id->Visible) { // sms_log_sms_api_id ?>
-		<?php if ($sms_log->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $sms_log_list->TableLeftColumnClass ?>"><span class="sms_log_sms_log_sms_api_id">
-<?php if ($sms_log_list->isExport() || $sms_log_list->SortUrl($sms_log_list->sms_log_sms_api_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_sms_api_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_sms_api_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_sms_api_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_sms_api_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_sms_api_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $sms_log_list->sms_log_sms_api_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_sms_api_id">
-<span<?php echo $sms_log_list->sms_log_sms_api_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_sms_api_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row sms_log_sms_log_sms_api_id">
-			<label class="<?php echo $sms_log_list->LeftColumnClass ?>"><?php echo $sms_log_list->sms_log_sms_api_id->caption() ?></label>
-			<div class="<?php echo $sms_log_list->RightColumnClass ?>"><div <?php echo $sms_log_list->sms_log_sms_api_id->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_sms_api_id">
-<span<?php echo $sms_log_list->sms_log_sms_api_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_sms_api_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($sms_log_list->sms_log_date->Visible) { // sms_log_date ?>
-		<?php if ($sms_log->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $sms_log_list->TableLeftColumnClass ?>"><span class="sms_log_sms_log_date">
-<?php if ($sms_log_list->isExport() || $sms_log_list->SortUrl($sms_log_list->sms_log_date) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_date->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $sms_log_list->SortUrl($sms_log_list->sms_log_date) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $sms_log_list->sms_log_date->caption() ?></span><span class="ew-table-header-sort"><?php if ($sms_log_list->sms_log_date->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($sms_log_list->sms_log_date->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $sms_log_list->sms_log_date->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_date">
-<span<?php echo $sms_log_list->sms_log_date->viewAttributes() ?>><?php echo $sms_log_list->sms_log_date->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row sms_log_sms_log_date">
-			<label class="<?php echo $sms_log_list->LeftColumnClass ?>"><?php echo $sms_log_list->sms_log_date->caption() ?></label>
-			<div class="<?php echo $sms_log_list->RightColumnClass ?>"><div <?php echo $sms_log_list->sms_log_date->cellAttributes() ?>>
-<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_date">
-<span<?php echo $sms_log_list->sms_log_date->viewAttributes() ?>><?php echo $sms_log_list->sms_log_date->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($sms_log->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$sms_log_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $sms_log->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$sms_log_list->ListOptions->render("body", "bottom", $sms_log_list->RowCount);
+// Render list options (body, left)
+$sms_log_list->ListOptions->render("body", "left", $sms_log_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($sms_log_list->sms_log_id->Visible) { // sms_log_id ?>
+		<td data-name="sms_log_id" <?php echo $sms_log_list->sms_log_id->cellAttributes() ?>>
+<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_id">
+<span<?php echo $sms_log_list->sms_log_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($sms_log_list->sms_log_branch_id->Visible) { // sms_log_branch_id ?>
+		<td data-name="sms_log_branch_id" <?php echo $sms_log_list->sms_log_branch_id->cellAttributes() ?>>
+<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_branch_id">
+<span<?php echo $sms_log_list->sms_log_branch_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_branch_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($sms_log_list->sms_log_sms_api_id->Visible) { // sms_log_sms_api_id ?>
+		<td data-name="sms_log_sms_api_id" <?php echo $sms_log_list->sms_log_sms_api_id->cellAttributes() ?>>
+<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_sms_api_id">
+<span<?php echo $sms_log_list->sms_log_sms_api_id->viewAttributes() ?>><?php echo $sms_log_list->sms_log_sms_api_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($sms_log_list->sms_log_date->Visible) { // sms_log_date ?>
+		<td data-name="sms_log_date" <?php echo $sms_log_list->sms_log_date->cellAttributes() ?>>
+<span id="el<?php echo $sms_log_list->RowCount ?>_sms_log_sms_log_date">
+<span<?php echo $sms_log_list->sms_log_date->viewAttributes() ?>><?php echo $sms_log_list->sms_log_date->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$sms_log_list->ListOptions->render("body", "right", $sms_log_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$sms_log_list->isGridAdd())
 		$sms_log_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$sms_log->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -299,7 +250,7 @@ if ($sms_log_list->Recordset)
 	$sms_log_list->Recordset->Close();
 ?>
 <?php if (!$sms_log_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$sms_log_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $sms_log_list->Pager->render() ?>
@@ -311,7 +262,7 @@ if ($sms_log_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($sms_log_list->TotalRecords == 0 && !$sms_log->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

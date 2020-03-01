@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $employees_view = new employees_view();
 $employees_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $employees_view->showMessage();
 ?>
-<?php if (!$employees_view->IsModal) { ?>
-<?php if (!$employees_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $employees_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="femployeesview" id="femployeesview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -105,6 +96,16 @@ $employees_view->showMessage();
 		<td data-name="emp_designation_id" <?php echo $employees_view->emp_designation_id->cellAttributes() ?>>
 <span id="el_employees_emp_designation_id">
 <span<?php echo $employees_view->emp_designation_id->viewAttributes() ?>><?php echo $employees_view->emp_designation_id->getViewValue() ?></span>
+</span>
+</td>
+	</tr>
+<?php } ?>
+<?php if ($employees_view->emp_city_id->Visible) { // emp_city_id ?>
+	<tr id="r_emp_city_id">
+		<td class="<?php echo $employees_view->TableLeftColumnClass ?>"><span id="elh_employees_emp_city_id"><?php echo $employees_view->emp_city_id->caption() ?></span></td>
+		<td data-name="emp_city_id" <?php echo $employees_view->emp_city_id->cellAttributes() ?>>
+<span id="el_employees_emp_city_id">
+<span<?php echo $employees_view->emp_city_id->viewAttributes() ?>><?php echo $employees_view->emp_city_id->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -149,16 +150,6 @@ $employees_view->showMessage();
 </td>
 	</tr>
 <?php } ?>
-<?php if ($employees_view->emp_city_id->Visible) { // emp_city_id ?>
-	<tr id="r_emp_city_id">
-		<td class="<?php echo $employees_view->TableLeftColumnClass ?>"><span id="elh_employees_emp_city_id"><?php echo $employees_view->emp_city_id->caption() ?></span></td>
-		<td data-name="emp_city_id" <?php echo $employees_view->emp_city_id->cellAttributes() ?>>
-<span id="el_employees_emp_city_id">
-<span<?php echo $employees_view->emp_city_id->viewAttributes() ?>><?php echo $employees_view->emp_city_id->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
 <?php if ($employees_view->emp_contact->Visible) { // emp_contact ?>
 	<tr id="r_emp_contact">
 		<td class="<?php echo $employees_view->TableLeftColumnClass ?>"><span id="elh_employees_emp_contact"><?php echo $employees_view->emp_contact->caption() ?></span></td>
@@ -184,18 +175,12 @@ $employees_view->showMessage();
 		<td class="<?php echo $employees_view->TableLeftColumnClass ?>"><span id="elh_employees_emp_photo"><?php echo $employees_view->emp_photo->caption() ?></span></td>
 		<td data-name="emp_photo" <?php echo $employees_view->emp_photo->cellAttributes() ?>>
 <span id="el_employees_emp_photo">
-<span><?php echo GetFileViewTag($employees_view->emp_photo, $employees_view->emp_photo->getViewValue(), FALSE) ?></span>
+<span<?php echo $employees_view->emp_photo->viewAttributes() ?>><?php echo $employees_view->emp_photo->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$employees_view->IsModal) { ?>
-<?php if (!$employees_view->isExport()) { ?>
-<?php echo $employees_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $employees_view->showPageFooter();

@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -73,13 +73,10 @@ class referral extends DbTable
 		$this->fields['referral_id'] = &$this->referral_id;
 
 		// referral_branch_id
-		$this->referral_branch_id = new DbField('referral', 'referral', 'x_referral_branch_id', 'referral_branch_id', '`referral_branch_id`', '`referral_branch_id`', 3, 12, -1, FALSE, '`referral_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->referral_branch_id = new DbField('referral', 'referral', 'x_referral_branch_id', 'referral_branch_id', '`referral_branch_id`', '`referral_branch_id`', 3, 12, -1, FALSE, '`referral_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->referral_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->referral_branch_id->Required = TRUE; // Required field
 		$this->referral_branch_id->Sortable = TRUE; // Allow sort
-		$this->referral_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->referral_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->referral_branch_id->Lookup = new Lookup('referral_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->referral_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['referral_branch_id'] = &$this->referral_branch_id;
 
@@ -91,7 +88,7 @@ class referral extends DbTable
 		$this->fields['referral_name'] = &$this->referral_name;
 
 		// referral_desc
-		$this->referral_desc = new DbField('referral', 'referral', 'x_referral_desc', 'referral_desc', '`referral_desc`', '`referral_desc`', 200, 200, -1, FALSE, '`referral_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->referral_desc = new DbField('referral', 'referral', 'x_referral_desc', 'referral_desc', '`referral_desc`', '`referral_desc`', 200, 200, -1, FALSE, '`referral_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->referral_desc->Nullable = FALSE; // NOT NULL field
 		$this->referral_desc->Required = TRUE; // Required field
 		$this->referral_desc->Sortable = TRUE; // Allow sort
@@ -376,7 +373,7 @@ class referral extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -715,29 +712,11 @@ class referral extends DbTable
 		// referral_id
 
 		$this->referral_id->ViewValue = $this->referral_id->CurrentValue;
-		$this->referral_id->CssClass = "font-weight-bold";
 		$this->referral_id->ViewCustomAttributes = "";
 
 		// referral_branch_id
-		$curVal = strval($this->referral_branch_id->CurrentValue);
-		if ($curVal != "") {
-			$this->referral_branch_id->ViewValue = $this->referral_branch_id->lookupCacheOption($curVal);
-			if ($this->referral_branch_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->referral_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->referral_branch_id->ViewValue = $this->referral_branch_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->referral_branch_id->ViewValue = NULL;
-		}
+		$this->referral_branch_id->ViewValue = $this->referral_branch_id->CurrentValue;
+		$this->referral_branch_id->ViewValue = FormatNumber($this->referral_branch_id->ViewValue, 0, -2, -2, -2);
 		$this->referral_branch_id->ViewCustomAttributes = "";
 
 		// referral_name
@@ -796,11 +775,13 @@ class referral extends DbTable
 		$this->referral_id->EditAttrs["class"] = "form-control";
 		$this->referral_id->EditCustomAttributes = "";
 		$this->referral_id->EditValue = $this->referral_id->CurrentValue;
-		$this->referral_id->CssClass = "font-weight-bold";
 		$this->referral_id->ViewCustomAttributes = "";
 
 		// referral_branch_id
+		$this->referral_branch_id->EditAttrs["class"] = "form-control";
 		$this->referral_branch_id->EditCustomAttributes = "";
+		$this->referral_branch_id->EditValue = $this->referral_branch_id->CurrentValue;
+		$this->referral_branch_id->PlaceHolder = RemoveHtml($this->referral_branch_id->caption());
 
 		// referral_name
 		$this->referral_name->EditAttrs["class"] = "form-control";
@@ -813,6 +794,8 @@ class referral extends DbTable
 		// referral_desc
 		$this->referral_desc->EditAttrs["class"] = "form-control";
 		$this->referral_desc->EditCustomAttributes = "";
+		if (!$this->referral_desc->Raw)
+			$this->referral_desc->CurrentValue = HtmlDecode($this->referral_desc->CurrentValue);
 		$this->referral_desc->EditValue = $this->referral_desc->CurrentValue;
 		$this->referral_desc->PlaceHolder = RemoveHtml($this->referral_desc->caption());
 
@@ -861,7 +844,6 @@ class referral extends DbTable
 					$doc->exportCaption($this->referral_branch_id);
 					$doc->exportCaption($this->referral_name);
 					$doc->exportCaption($this->referral_desc);
-					$doc->exportCaption($this->referral_deal_signed);
 				}
 				$doc->endExportRow();
 			}
@@ -903,7 +885,6 @@ class referral extends DbTable
 						$doc->exportField($this->referral_branch_id);
 						$doc->exportField($this->referral_name);
 						$doc->exportField($this->referral_desc);
-						$doc->exportField($this->referral_deal_signed);
 					}
 					$doc->endExportRow($rowCnt);
 				}

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_list = new services_list();
 $services_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $services_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$services_list->isExport() && !$services->CurrentAction) { ?>
 <form name="fserviceslistsrch" id="fserviceslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fserviceslistsrch-search-panel" class="<?php echo $services_list->SearchPanelClass ?>">
@@ -113,33 +111,77 @@ $services_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $services_list->showPageHeader(); ?>
 <?php
 $services_list->showMessage();
 ?>
 <?php if ($services_list->TotalRecords > 0 || $services->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$services_list->isExport()) { ?>
-<div>
-<?php if (!$services_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $services_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $services_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fserviceslist" id="fserviceslist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($services_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> services">
+<form name="fserviceslist" id="fserviceslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="services">
-<div class="row ew-multi-column-row">
+<div id="gmp_services" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($services_list->TotalRecords > 0 || $services_list->isGridEdit()) { ?>
+<table id="tbl_serviceslist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$services->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$services_list->renderListOptions();
+
+// Render list options (header, left)
+$services_list->ListOptions->render("header", "left");
+?>
+<?php if ($services_list->service_id->Visible) { // service_id ?>
+	<?php if ($services_list->SortUrl($services_list->service_id) == "") { ?>
+		<th data-name="service_id" class="<?php echo $services_list->service_id->headerCellClass() ?>"><div id="elh_services_service_id" class="services_service_id"><div class="ew-table-header-caption"><?php echo $services_list->service_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="service_id" class="<?php echo $services_list->service_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_id) ?>', 1);"><div id="elh_services_service_id" class="services_service_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_list->service_branch_id->Visible) { // service_branch_id ?>
+	<?php if ($services_list->SortUrl($services_list->service_branch_id) == "") { ?>
+		<th data-name="service_branch_id" class="<?php echo $services_list->service_branch_id->headerCellClass() ?>"><div id="elh_services_service_branch_id" class="services_service_branch_id"><div class="ew-table-header-caption"><?php echo $services_list->service_branch_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="service_branch_id" class="<?php echo $services_list->service_branch_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_branch_id) ?>', 1);"><div id="elh_services_service_branch_id" class="services_service_branch_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_list->service_caption->Visible) { // service_caption ?>
+	<?php if ($services_list->SortUrl($services_list->service_caption) == "") { ?>
+		<th data-name="service_caption" class="<?php echo $services_list->service_caption->headerCellClass() ?>"><div id="elh_services_service_caption" class="services_service_caption"><div class="ew-table-header-caption"><?php echo $services_list->service_caption->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="service_caption" class="<?php echo $services_list->service_caption->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_caption) ?>', 1);"><div id="elh_services_service_caption" class="services_service_caption">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_list->service_logo->Visible) { // service_logo ?>
+	<?php if ($services_list->SortUrl($services_list->service_logo) == "") { ?>
+		<th data-name="service_logo" class="<?php echo $services_list->service_logo->headerCellClass() ?>"><div id="elh_services_service_logo" class="services_service_logo"><div class="ew-table-header-caption"><?php echo $services_list->service_logo->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="service_logo" class="<?php echo $services_list->service_logo->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_logo) ?>', 1);"><div id="elh_services_service_logo" class="services_service_logo">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_logo->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_logo->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_logo->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$services_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($services_list->ExportAll && $services_list->isExport()) {
 	$services_list->StopRecord = $services_list->TotalRecords;
@@ -160,6 +202,11 @@ if ($services_list->Recordset && !$services_list->Recordset->EOF) {
 } elseif (!$services->AllowAddDeleteRow && $services_list->StopRecord == 0) {
 	$services_list->StopRecord = $services->GridAddRowCount;
 }
+
+// Initialize aggregate
+$services->RowType = ROWTYPE_AGGREGATEINIT;
+$services->resetAttributes();
+$services_list->renderRow();
 while ($services_list->RecordCount < $services_list->StopRecord) {
 	$services_list->RecordCount++;
 	if ($services_list->RecordCount >= $services_list->StartRecord) {
@@ -186,183 +233,56 @@ while ($services_list->RecordCount < $services_list->StopRecord) {
 		// Render list options
 		$services_list->renderListOptions();
 ?>
-<div class="<?php echo $services_list->getMultiColumnClass() ?>" <?php echo $services->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($services_list->service_id->Visible) { // service_id ?>
-		<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_list->TableLeftColumnClass ?>"><span class="services_service_id">
-<?php if ($services_list->isExport() || $services_list->SortUrl($services_list->service_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_list->service_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_list->service_id->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_id">
-<span<?php echo $services_list->service_id->viewAttributes() ?>><?php echo $services_list->service_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_service_id">
-			<label class="<?php echo $services_list->LeftColumnClass ?>"><?php echo $services_list->service_id->caption() ?></label>
-			<div class="<?php echo $services_list->RightColumnClass ?>"><div <?php echo $services_list->service_id->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_id">
-<span<?php echo $services_list->service_id->viewAttributes() ?>><?php echo $services_list->service_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_list->service_branch_id->Visible) { // service_branch_id ?>
-		<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_list->TableLeftColumnClass ?>"><span class="services_service_branch_id">
-<?php if ($services_list->isExport() || $services_list->SortUrl($services_list->service_branch_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_list->service_branch_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_branch_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_list->service_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_branch_id">
-<span<?php echo $services_list->service_branch_id->viewAttributes() ?>><?php echo $services_list->service_branch_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_service_branch_id">
-			<label class="<?php echo $services_list->LeftColumnClass ?>"><?php echo $services_list->service_branch_id->caption() ?></label>
-			<div class="<?php echo $services_list->RightColumnClass ?>"><div <?php echo $services_list->service_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_branch_id">
-<span<?php echo $services_list->service_branch_id->viewAttributes() ?>><?php echo $services_list->service_branch_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_list->service_caption->Visible) { // service_caption ?>
-		<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_list->TableLeftColumnClass ?>"><span class="services_service_caption">
-<?php if ($services_list->isExport() || $services_list->SortUrl($services_list->service_caption) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_list->service_caption->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_caption) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_list->service_caption->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_caption">
-<span<?php echo $services_list->service_caption->viewAttributes() ?>><?php echo $services_list->service_caption->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_service_caption">
-			<label class="<?php echo $services_list->LeftColumnClass ?>"><?php echo $services_list->service_caption->caption() ?></label>
-			<div class="<?php echo $services_list->RightColumnClass ?>"><div <?php echo $services_list->service_caption->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_caption">
-<span<?php echo $services_list->service_caption->viewAttributes() ?>><?php echo $services_list->service_caption->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_list->service_desc->Visible) { // service_desc ?>
-		<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_list->TableLeftColumnClass ?>"><span class="services_service_desc">
-<?php if ($services_list->isExport() || $services_list->SortUrl($services_list->service_desc) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_list->service_desc->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_desc) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_list->service_desc->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_desc">
-<span<?php echo $services_list->service_desc->viewAttributes() ?>><?php echo $services_list->service_desc->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_service_desc">
-			<label class="<?php echo $services_list->LeftColumnClass ?>"><?php echo $services_list->service_desc->caption() ?></label>
-			<div class="<?php echo $services_list->RightColumnClass ?>"><div <?php echo $services_list->service_desc->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_desc">
-<span<?php echo $services_list->service_desc->viewAttributes() ?>><?php echo $services_list->service_desc->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_list->service_logo->Visible) { // service_logo ?>
-		<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_list->TableLeftColumnClass ?>"><span class="services_service_logo">
-<?php if ($services_list->isExport() || $services_list->SortUrl($services_list->service_logo) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_list->service_logo->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_list->SortUrl($services_list->service_logo) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_list->service_logo->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($services_list->service_logo->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_list->service_logo->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_list->service_logo->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_logo">
-<span><?php echo GetFileViewTag($services_list->service_logo, $services_list->service_logo->getViewValue(), FALSE) ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_service_logo">
-			<label class="<?php echo $services_list->LeftColumnClass ?>"><?php echo $services_list->service_logo->caption() ?></label>
-			<div class="<?php echo $services_list->RightColumnClass ?>"><div <?php echo $services_list->service_logo->cellAttributes() ?>>
-<span id="el<?php echo $services_list->RowCount ?>_services_service_logo">
-<span><?php echo GetFileViewTag($services_list->service_logo, $services_list->service_logo->getViewValue(), FALSE) ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$services_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $services->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$services_list->ListOptions->render("body", "bottom", $services_list->RowCount);
+// Render list options (body, left)
+$services_list->ListOptions->render("body", "left", $services_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($services_list->service_id->Visible) { // service_id ?>
+		<td data-name="service_id" <?php echo $services_list->service_id->cellAttributes() ?>>
+<span id="el<?php echo $services_list->RowCount ?>_services_service_id">
+<span<?php echo $services_list->service_id->viewAttributes() ?>><?php echo $services_list->service_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_list->service_branch_id->Visible) { // service_branch_id ?>
+		<td data-name="service_branch_id" <?php echo $services_list->service_branch_id->cellAttributes() ?>>
+<span id="el<?php echo $services_list->RowCount ?>_services_service_branch_id">
+<span<?php echo $services_list->service_branch_id->viewAttributes() ?>><?php echo $services_list->service_branch_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_list->service_caption->Visible) { // service_caption ?>
+		<td data-name="service_caption" <?php echo $services_list->service_caption->cellAttributes() ?>>
+<span id="el<?php echo $services_list->RowCount ?>_services_service_caption">
+<span<?php echo $services_list->service_caption->viewAttributes() ?>><?php echo $services_list->service_caption->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_list->service_logo->Visible) { // service_logo ?>
+		<td data-name="service_logo" <?php echo $services_list->service_logo->cellAttributes() ?>>
+<span id="el<?php echo $services_list->RowCount ?>_services_service_logo">
+<span<?php echo $services_list->service_logo->viewAttributes() ?>><?php echo $services_list->service_logo->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$services_list->ListOptions->render("body", "right", $services_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$services_list->isGridAdd())
 		$services_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$services->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -374,7 +294,7 @@ if ($services_list->Recordset)
 	$services_list->Recordset->Close();
 ?>
 <?php if (!$services_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$services_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $services_list->Pager->render() ?>
@@ -386,7 +306,7 @@ if ($services_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($services_list->TotalRecords == 0 && !$services->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

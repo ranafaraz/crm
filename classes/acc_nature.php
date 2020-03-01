@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -356,7 +356,7 @@ class acc_nature extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -689,7 +689,6 @@ class acc_nature extends DbTable
 		// acc_nature_id
 
 		$this->acc_nature_id->ViewValue = $this->acc_nature_id->CurrentValue;
-		$this->acc_nature_id->CssClass = "font-weight-bold";
 		$this->acc_nature_id->ViewCustomAttributes = "";
 
 		// acc_nature_name
@@ -734,7 +733,6 @@ class acc_nature extends DbTable
 		$this->acc_nature_id->EditAttrs["class"] = "form-control";
 		$this->acc_nature_id->EditCustomAttributes = "";
 		$this->acc_nature_id->EditValue = $this->acc_nature_id->CurrentValue;
-		$this->acc_nature_id->CssClass = "font-weight-bold";
 		$this->acc_nature_id->ViewCustomAttributes = "";
 
 		// acc_nature_name

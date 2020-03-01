@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -81,35 +81,26 @@ class invoices extends DbTable
 		$this->fields['invoice_id'] = &$this->invoice_id;
 
 		// invoice_branch_id
-		$this->invoice_branch_id = new DbField('invoices', 'invoices', 'x_invoice_branch_id', 'invoice_branch_id', '`invoice_branch_id`', '`invoice_branch_id`', 3, 12, -1, FALSE, '`invoice_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->invoice_branch_id = new DbField('invoices', 'invoices', 'x_invoice_branch_id', 'invoice_branch_id', '`invoice_branch_id`', '`invoice_branch_id`', 3, 12, -1, FALSE, '`invoice_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->invoice_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->invoice_branch_id->Required = TRUE; // Required field
 		$this->invoice_branch_id->Sortable = TRUE; // Allow sort
-		$this->invoice_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->invoice_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->invoice_branch_id->Lookup = new Lookup('invoice_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->invoice_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['invoice_branch_id'] = &$this->invoice_branch_id;
 
 		// invoice_business_id
-		$this->invoice_business_id = new DbField('invoices', 'invoices', 'x_invoice_business_id', 'invoice_business_id', '`invoice_business_id`', '`invoice_business_id`', 3, 12, -1, FALSE, '`EV__invoice_business_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
+		$this->invoice_business_id = new DbField('invoices', 'invoices', 'x_invoice_business_id', 'invoice_business_id', '`invoice_business_id`', '`invoice_business_id`', 3, 12, -1, FALSE, '`invoice_business_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->invoice_business_id->Nullable = FALSE; // NOT NULL field
 		$this->invoice_business_id->Required = TRUE; // Required field
 		$this->invoice_business_id->Sortable = TRUE; // Allow sort
-		$this->invoice_business_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->invoice_business_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->invoice_business_id->Lookup = new Lookup('invoice_business_id', 'business', FALSE, 'b_id', ["b_name","","",""], [], [], [], [], [], [], '', '');
 		$this->invoice_business_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['invoice_business_id'] = &$this->invoice_business_id;
 
 		// invoice_service_id
-		$this->invoice_service_id = new DbField('invoices', 'invoices', 'x_invoice_service_id', 'invoice_service_id', '`invoice_service_id`', '`invoice_service_id`', 3, 12, -1, FALSE, '`EV__invoice_service_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
+		$this->invoice_service_id = new DbField('invoices', 'invoices', 'x_invoice_service_id', 'invoice_service_id', '`invoice_service_id`', '`invoice_service_id`', 3, 12, -1, FALSE, '`invoice_service_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->invoice_service_id->Nullable = FALSE; // NOT NULL field
 		$this->invoice_service_id->Required = TRUE; // Required field
 		$this->invoice_service_id->Sortable = TRUE; // Allow sort
-		$this->invoice_service_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->invoice_service_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->invoice_service_id->Lookup = new Lookup('invoice_service_id', 'services', FALSE, 'service_id', ["service_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->invoice_service_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['invoice_service_id'] = &$this->invoice_service_id;
 
@@ -138,7 +129,7 @@ class invoices extends DbTable
 		$this->fields['invoice_due_date'] = &$this->invoice_due_date;
 
 		// invoice_status
-		$this->invoice_status = new DbField('invoices', 'invoices', 'x_invoice_status', 'invoice_status', '`invoice_status`', '`invoice_status`', 202, 14, -1, FALSE, '`invoice_status`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
+		$this->invoice_status = new DbField('invoices', 'invoices', 'x_invoice_status', 'invoice_status', '`invoice_status`', '`invoice_status`', 202, 42, -1, FALSE, '`invoice_status`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
 		$this->invoice_status->Nullable = FALSE; // NOT NULL field
 		$this->invoice_status->Required = TRUE; // Required field
 		$this->invoice_status->Sortable = TRUE; // Allow sort
@@ -216,21 +207,9 @@ class invoices extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
-			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
-			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
-	}
-
-	// Session ORDER BY for List page
-	public function getSessionOrderByList()
-	{
-		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
-	}
-	public function setSessionOrderByList($v)
-	{
-		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -257,22 +236,6 @@ class invoices extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
-	}
-	public function getSqlSelectList() // Select for List page
-	{
-		$select = "";
-		$select = "SELECT * FROM (" .
-			"SELECT *, (SELECT `b_name` FROM `business` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`b_id` = `invoices`.`invoice_business_id` LIMIT 1) AS `EV__invoice_business_id`, (SELECT `service_caption` FROM `services` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`service_id` = `invoices`.`invoice_service_id` LIMIT 1) AS `EV__invoice_service_id` FROM `invoices`" .
-			") `TMP_TABLE`";
-		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
-	}
-	public function sqlSelectList() // For backward compatibility
-	{
-		return $this->getSqlSelectList();
-	}
-	public function setSqlSelectList($v)
-	{
-		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -428,13 +391,8 @@ class invoices extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		if ($this->useVirtualFields()) {
-			$select = $this->getSqlSelectList();
-			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-		} else {
-			$select = $this->getSqlSelect();
-			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
-		}
+		$select = $this->getSqlSelect();
+		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -442,32 +400,8 @@ class invoices extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
+		$sort = $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
-	}
-
-	// Check if virtual fields is used in SQL
-	protected function useVirtualFields()
-	{
-		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
-		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-		if ($where != "")
-			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
-		if ($orderBy != "")
-			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
-		if ($this->invoice_business_id->AdvancedSearch->SearchValue != "" ||
-			$this->invoice_business_id->AdvancedSearch->SearchValue2 != "" ||
-			ContainsString($where, " " . $this->invoice_business_id->VirtualExpression . " "))
-			return TRUE;
-		if (ContainsString($orderBy, " " . $this->invoice_business_id->VirtualExpression . " "))
-			return TRUE;
-		if ($this->invoice_service_id->AdvancedSearch->SearchValue != "" ||
-			$this->invoice_service_id->AdvancedSearch->SearchValue2 != "" ||
-			ContainsString($where, " " . $this->invoice_service_id->VirtualExpression . " "))
-			return TRUE;
-		if (ContainsString($orderBy, " " . $this->invoice_service_id->VirtualExpression . " "))
-			return TRUE;
-		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -495,10 +429,7 @@ class invoices extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		if ($this->useVirtualFields())
-			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
-		else
-			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -516,7 +447,7 @@ class invoices extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -879,81 +810,21 @@ class invoices extends DbTable
 		// invoice_id
 
 		$this->invoice_id->ViewValue = $this->invoice_id->CurrentValue;
-		$this->invoice_id->CssClass = "font-weight-bold";
 		$this->invoice_id->ViewCustomAttributes = "";
 
 		// invoice_branch_id
-		$curVal = strval($this->invoice_branch_id->CurrentValue);
-		if ($curVal != "") {
-			$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->lookupCacheOption($curVal);
-			if ($this->invoice_branch_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->invoice_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->invoice_branch_id->ViewValue = NULL;
-		}
+		$this->invoice_branch_id->ViewValue = $this->invoice_branch_id->CurrentValue;
+		$this->invoice_branch_id->ViewValue = FormatNumber($this->invoice_branch_id->ViewValue, 0, -2, -2, -2);
 		$this->invoice_branch_id->ViewCustomAttributes = "";
 
 		// invoice_business_id
-		if ($this->invoice_business_id->VirtualValue != "") {
-			$this->invoice_business_id->ViewValue = $this->invoice_business_id->VirtualValue;
-		} else {
-			$curVal = strval($this->invoice_business_id->CurrentValue);
-			if ($curVal != "") {
-				$this->invoice_business_id->ViewValue = $this->invoice_business_id->lookupCacheOption($curVal);
-				if ($this->invoice_business_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->invoice_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->invoice_business_id->ViewValue = $this->invoice_business_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->invoice_business_id->ViewValue = $this->invoice_business_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->invoice_business_id->ViewValue = NULL;
-			}
-		}
+		$this->invoice_business_id->ViewValue = $this->invoice_business_id->CurrentValue;
+		$this->invoice_business_id->ViewValue = FormatNumber($this->invoice_business_id->ViewValue, 0, -2, -2, -2);
 		$this->invoice_business_id->ViewCustomAttributes = "";
 
 		// invoice_service_id
-		if ($this->invoice_service_id->VirtualValue != "") {
-			$this->invoice_service_id->ViewValue = $this->invoice_service_id->VirtualValue;
-		} else {
-			$curVal = strval($this->invoice_service_id->CurrentValue);
-			if ($curVal != "") {
-				$this->invoice_service_id->ViewValue = $this->invoice_service_id->lookupCacheOption($curVal);
-				if ($this->invoice_service_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->invoice_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->invoice_service_id->ViewValue = $this->invoice_service_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->invoice_service_id->ViewValue = $this->invoice_service_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->invoice_service_id->ViewValue = NULL;
-			}
-		}
+		$this->invoice_service_id->ViewValue = $this->invoice_service_id->CurrentValue;
+		$this->invoice_service_id->ViewValue = FormatNumber($this->invoice_service_id->ViewValue, 0, -2, -2, -2);
 		$this->invoice_service_id->ViewCustomAttributes = "";
 
 		// invoice_amount
@@ -1086,17 +957,25 @@ class invoices extends DbTable
 		$this->invoice_id->EditAttrs["class"] = "form-control";
 		$this->invoice_id->EditCustomAttributes = "";
 		$this->invoice_id->EditValue = $this->invoice_id->CurrentValue;
-		$this->invoice_id->CssClass = "font-weight-bold";
 		$this->invoice_id->ViewCustomAttributes = "";
 
 		// invoice_branch_id
+		$this->invoice_branch_id->EditAttrs["class"] = "form-control";
 		$this->invoice_branch_id->EditCustomAttributes = "";
+		$this->invoice_branch_id->EditValue = $this->invoice_branch_id->CurrentValue;
+		$this->invoice_branch_id->PlaceHolder = RemoveHtml($this->invoice_branch_id->caption());
 
 		// invoice_business_id
+		$this->invoice_business_id->EditAttrs["class"] = "form-control";
 		$this->invoice_business_id->EditCustomAttributes = "";
+		$this->invoice_business_id->EditValue = $this->invoice_business_id->CurrentValue;
+		$this->invoice_business_id->PlaceHolder = RemoveHtml($this->invoice_business_id->caption());
 
 		// invoice_service_id
+		$this->invoice_service_id->EditAttrs["class"] = "form-control";
 		$this->invoice_service_id->EditCustomAttributes = "";
+		$this->invoice_service_id->EditValue = $this->invoice_service_id->CurrentValue;
+		$this->invoice_service_id->PlaceHolder = RemoveHtml($this->invoice_service_id->caption());
 
 		// invoice_amount
 		$this->invoice_amount->EditAttrs["class"] = "form-control";

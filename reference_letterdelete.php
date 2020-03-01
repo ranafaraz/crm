@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $reference_letter_delete = new reference_letter_delete();
 $reference_letter_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -140,7 +139,7 @@ while (!$reference_letter_delete->Recordset->EOF) {
 <?php if ($reference_letter_delete->ref_letter_scanned->Visible) { // ref_letter_scanned ?>
 		<td <?php echo $reference_letter_delete->ref_letter_scanned->cellAttributes() ?>>
 <span id="el<?php echo $reference_letter_delete->RowCount ?>_reference_letter_ref_letter_scanned" class="reference_letter_ref_letter_scanned">
-<span><?php echo GetFileViewTag($reference_letter_delete->ref_letter_scanned, $reference_letter_delete->ref_letter_scanned->getViewValue(), FALSE) ?></span>
+<span<?php echo $reference_letter_delete->ref_letter_scanned->viewAttributes() ?>><?php echo $reference_letter_delete->ref_letter_scanned->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $tehsil_add = new tehsil_add();
 $tehsil_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -61,6 +60,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $tehsil_add->tehsil_district_id->caption(), $tehsil_add->tehsil_district_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_tehsil_district_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($tehsil_add->tehsil_district_id->errorMessage()) ?>");
 			<?php if ($tehsil_add->tehsil_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_tehsil_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -94,8 +96,6 @@ loadjs.ready("head", function() {
 	ftehsiladd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	ftehsiladd.lists["x_tehsil_district_id"] = <?php echo $tehsil_add->tehsil_district_id->Lookup->toClientList($tehsil_add) ?>;
-	ftehsiladd.lists["x_tehsil_district_id"].options = <?php echo JsonEncode($tehsil_add->tehsil_district_id->lookupOptions()) ?>;
 	loadjs.done("ftehsiladd");
 });
 </script>
@@ -124,23 +124,7 @@ $tehsil_add->showMessage();
 		<label id="elh_tehsil_tehsil_district_id" for="x_tehsil_district_id" class="<?php echo $tehsil_add->LeftColumnClass ?>"><?php echo $tehsil_add->tehsil_district_id->caption() ?><?php echo $tehsil_add->tehsil_district_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $tehsil_add->RightColumnClass ?>"><div <?php echo $tehsil_add->tehsil_district_id->cellAttributes() ?>>
 <span id="el_tehsil_tehsil_district_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($tehsil_add->tehsil_district_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $tehsil_add->tehsil_district_id->ViewValue ?></button>
-		<div id="dsl_x_tehsil_district_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $tehsil_add->tehsil_district_id->radioButtonListHtml(TRUE, "x_tehsil_district_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_tehsil_district_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="tehsil" data-field="x_tehsil_district_id" data-value-separator="<?php echo $tehsil_add->tehsil_district_id->displayValueSeparatorAttribute() ?>" name="x_tehsil_district_id" id="x_tehsil_district_id" value="{value}"<?php echo $tehsil_add->tehsil_district_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$tehsil_add->tehsil_district_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $tehsil_add->tehsil_district_id->Lookup->getParamTag($tehsil_add, "p_x_tehsil_district_id") ?>
+<input type="text" data-table="tehsil" data-field="x_tehsil_district_id" name="x_tehsil_district_id" id="x_tehsil_district_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($tehsil_add->tehsil_district_id->getPlaceHolder()) ?>" value="<?php echo $tehsil_add->tehsil_district_id->EditValue ?>"<?php echo $tehsil_add->tehsil_district_id->editAttributes() ?>>
 </span>
 <?php echo $tehsil_add->tehsil_district_id->CustomMsg ?></div></div>
 	</div>

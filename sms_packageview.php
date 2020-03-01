@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $sms_package_view = new sms_package_view();
 $sms_package_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $sms_package_view->showMessage();
 ?>
-<?php if (!$sms_package_view->IsModal) { ?>
-<?php if (!$sms_package_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $sms_package_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fsms_packageview" id="fsms_packageview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -89,22 +80,22 @@ $sms_package_view->showMessage();
 </td>
 	</tr>
 <?php } ?>
-<?php if ($sms_package_view->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
-	<tr id="r_sms_pkg_branch_id">
-		<td class="<?php echo $sms_package_view->TableLeftColumnClass ?>"><span id="elh_sms_package_sms_pkg_branch_id"><?php echo $sms_package_view->sms_pkg_branch_id->caption() ?></span></td>
-		<td data-name="sms_pkg_branch_id" <?php echo $sms_package_view->sms_pkg_branch_id->cellAttributes() ?>>
-<span id="el_sms_package_sms_pkg_branch_id">
-<span<?php echo $sms_package_view->sms_pkg_branch_id->viewAttributes() ?>><?php echo $sms_package_view->sms_pkg_branch_id->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
 <?php if ($sms_package_view->sms_pkg_sms_api_id->Visible) { // sms_pkg_sms_api_id ?>
 	<tr id="r_sms_pkg_sms_api_id">
 		<td class="<?php echo $sms_package_view->TableLeftColumnClass ?>"><span id="elh_sms_package_sms_pkg_sms_api_id"><?php echo $sms_package_view->sms_pkg_sms_api_id->caption() ?></span></td>
 		<td data-name="sms_pkg_sms_api_id" <?php echo $sms_package_view->sms_pkg_sms_api_id->cellAttributes() ?>>
 <span id="el_sms_package_sms_pkg_sms_api_id">
 <span<?php echo $sms_package_view->sms_pkg_sms_api_id->viewAttributes() ?>><?php echo $sms_package_view->sms_pkg_sms_api_id->getViewValue() ?></span>
+</span>
+</td>
+	</tr>
+<?php } ?>
+<?php if ($sms_package_view->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
+	<tr id="r_sms_pkg_branch_id">
+		<td class="<?php echo $sms_package_view->TableLeftColumnClass ?>"><span id="elh_sms_package_sms_pkg_branch_id"><?php echo $sms_package_view->sms_pkg_branch_id->caption() ?></span></td>
+		<td data-name="sms_pkg_branch_id" <?php echo $sms_package_view->sms_pkg_branch_id->cellAttributes() ?>>
+<span id="el_sms_package_sms_pkg_branch_id">
+<span<?php echo $sms_package_view->sms_pkg_branch_id->viewAttributes() ?>><?php echo $sms_package_view->sms_pkg_branch_id->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -150,12 +141,6 @@ $sms_package_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$sms_package_view->IsModal) { ?>
-<?php if (!$sms_package_view->isExport()) { ?>
-<?php echo $sms_package_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $sms_package_view->showPageFooter();

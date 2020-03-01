@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $organization_delete = new organization_delete();
 $organization_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -169,7 +168,7 @@ while (!$organization_delete->Recordset->EOF) {
 <?php if ($organization_delete->org_logo->Visible) { // org_logo ?>
 		<td <?php echo $organization_delete->org_logo->cellAttributes() ?>>
 <span id="el<?php echo $organization_delete->RowCount ?>_organization_org_logo" class="organization_org_logo">
-<span><?php echo GetFileViewTag($organization_delete->org_logo, $organization_delete->org_logo->getViewValue(), FALSE) ?></span>
+<span<?php echo $organization_delete->org_logo->viewAttributes() ?>><?php echo $organization_delete->org_logo->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

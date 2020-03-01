@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class designation_add extends designation
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'designation';
@@ -325,7 +325,6 @@ class designation_add extends designation
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class designation_add extends designation
 			$GLOBALS["Table"] = &$GLOBALS["designation"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'add');
@@ -369,9 +364,6 @@ class designation_add extends designation
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class designation_add extends designation
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class designation_add extends designation
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -644,22 +630,6 @@ class designation_add extends designation
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canAdd()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("designationlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -937,7 +907,6 @@ class designation_add extends designation
 
 			// designation_id
 			$this->designation_id->ViewValue = $this->designation_id->CurrentValue;
-			$this->designation_id->CssClass = "font-weight-bold";
 			$this->designation_id->ViewCustomAttributes = "";
 
 			// designation_caption
@@ -970,6 +939,8 @@ class designation_add extends designation
 			// designation_desc
 			$this->designation_desc->EditAttrs["class"] = "form-control";
 			$this->designation_desc->EditCustomAttributes = "";
+			if (!$this->designation_desc->Raw)
+				$this->designation_desc->CurrentValue = HtmlDecode($this->designation_desc->CurrentValue);
 			$this->designation_desc->EditValue = HtmlEncode($this->designation_desc->CurrentValue);
 			$this->designation_desc->PlaceHolder = RemoveHtml($this->designation_desc->caption());
 

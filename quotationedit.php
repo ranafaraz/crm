@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $quotation_edit = new quotation_edit();
 $quotation_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -66,16 +65,25 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $quotation_edit->quote_branch_id->caption(), $quotation_edit->quote_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_quote_branch_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($quotation_edit->quote_branch_id->errorMessage()) ?>");
 			<?php if ($quotation_edit->quote_business_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_quote_business_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $quotation_edit->quote_business_id->caption(), $quotation_edit->quote_business_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_quote_business_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($quotation_edit->quote_business_id->errorMessage()) ?>");
 			<?php if ($quotation_edit->quote_service_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_quote_service_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $quotation_edit->quote_service_id->caption(), $quotation_edit->quote_service_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_quote_service_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($quotation_edit->quote_service_id->errorMessage()) ?>");
 			<?php if ($quotation_edit->quote_issue_date->Required) { ?>
 				elm = this.getElements("x" + infix + "_quote_issue_date");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -138,12 +146,6 @@ loadjs.ready("head", function() {
 	fquotationedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fquotationedit.lists["x_quote_branch_id"] = <?php echo $quotation_edit->quote_branch_id->Lookup->toClientList($quotation_edit) ?>;
-	fquotationedit.lists["x_quote_branch_id"].options = <?php echo JsonEncode($quotation_edit->quote_branch_id->lookupOptions()) ?>;
-	fquotationedit.lists["x_quote_business_id"] = <?php echo $quotation_edit->quote_business_id->Lookup->toClientList($quotation_edit) ?>;
-	fquotationedit.lists["x_quote_business_id"].options = <?php echo JsonEncode($quotation_edit->quote_business_id->lookupOptions()) ?>;
-	fquotationedit.lists["x_quote_service_id"] = <?php echo $quotation_edit->quote_service_id->Lookup->toClientList($quotation_edit) ?>;
-	fquotationedit.lists["x_quote_service_id"].options = <?php echo JsonEncode($quotation_edit->quote_service_id->lookupOptions()) ?>;
 	loadjs.done("fquotationedit");
 });
 </script>
@@ -183,23 +185,7 @@ $quotation_edit->showMessage();
 		<label id="elh_quotation_quote_branch_id" for="x_quote_branch_id" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_branch_id->caption() ?><?php echo $quotation_edit->quote_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $quotation_edit->RightColumnClass ?>"><div <?php echo $quotation_edit->quote_branch_id->cellAttributes() ?>>
 <span id="el_quotation_quote_branch_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($quotation_edit->quote_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $quotation_edit->quote_branch_id->ViewValue ?></button>
-		<div id="dsl_x_quote_branch_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $quotation_edit->quote_branch_id->radioButtonListHtml(TRUE, "x_quote_branch_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_quote_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="quotation" data-field="x_quote_branch_id" data-value-separator="<?php echo $quotation_edit->quote_branch_id->displayValueSeparatorAttribute() ?>" name="x_quote_branch_id" id="x_quote_branch_id" value="{value}"<?php echo $quotation_edit->quote_branch_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$quotation_edit->quote_branch_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $quotation_edit->quote_branch_id->Lookup->getParamTag($quotation_edit, "p_x_quote_branch_id") ?>
+<input type="text" data-table="quotation" data-field="x_quote_branch_id" name="x_quote_branch_id" id="x_quote_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($quotation_edit->quote_branch_id->getPlaceHolder()) ?>" value="<?php echo $quotation_edit->quote_branch_id->EditValue ?>"<?php echo $quotation_edit->quote_branch_id->editAttributes() ?>>
 </span>
 <?php echo $quotation_edit->quote_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -209,23 +195,7 @@ $quotation_edit->showMessage();
 		<label id="elh_quotation_quote_business_id" for="x_quote_business_id" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_business_id->caption() ?><?php echo $quotation_edit->quote_business_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $quotation_edit->RightColumnClass ?>"><div <?php echo $quotation_edit->quote_business_id->cellAttributes() ?>>
 <span id="el_quotation_quote_business_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($quotation_edit->quote_business_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $quotation_edit->quote_business_id->ViewValue ?></button>
-		<div id="dsl_x_quote_business_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $quotation_edit->quote_business_id->radioButtonListHtml(TRUE, "x_quote_business_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_quote_business_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="quotation" data-field="x_quote_business_id" data-value-separator="<?php echo $quotation_edit->quote_business_id->displayValueSeparatorAttribute() ?>" name="x_quote_business_id" id="x_quote_business_id" value="{value}"<?php echo $quotation_edit->quote_business_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$quotation_edit->quote_business_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $quotation_edit->quote_business_id->Lookup->getParamTag($quotation_edit, "p_x_quote_business_id") ?>
+<input type="text" data-table="quotation" data-field="x_quote_business_id" name="x_quote_business_id" id="x_quote_business_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($quotation_edit->quote_business_id->getPlaceHolder()) ?>" value="<?php echo $quotation_edit->quote_business_id->EditValue ?>"<?php echo $quotation_edit->quote_business_id->editAttributes() ?>>
 </span>
 <?php echo $quotation_edit->quote_business_id->CustomMsg ?></div></div>
 	</div>
@@ -235,23 +205,7 @@ $quotation_edit->showMessage();
 		<label id="elh_quotation_quote_service_id" for="x_quote_service_id" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_service_id->caption() ?><?php echo $quotation_edit->quote_service_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $quotation_edit->RightColumnClass ?>"><div <?php echo $quotation_edit->quote_service_id->cellAttributes() ?>>
 <span id="el_quotation_quote_service_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($quotation_edit->quote_service_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $quotation_edit->quote_service_id->ViewValue ?></button>
-		<div id="dsl_x_quote_service_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $quotation_edit->quote_service_id->radioButtonListHtml(TRUE, "x_quote_service_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_quote_service_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="quotation" data-field="x_quote_service_id" data-value-separator="<?php echo $quotation_edit->quote_service_id->displayValueSeparatorAttribute() ?>" name="x_quote_service_id" id="x_quote_service_id" value="{value}"<?php echo $quotation_edit->quote_service_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$quotation_edit->quote_service_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $quotation_edit->quote_service_id->Lookup->getParamTag($quotation_edit, "p_x_quote_service_id") ?>
+<input type="text" data-table="quotation" data-field="x_quote_service_id" name="x_quote_service_id" id="x_quote_service_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($quotation_edit->quote_service_id->getPlaceHolder()) ?>" value="<?php echo $quotation_edit->quote_service_id->EditValue ?>"<?php echo $quotation_edit->quote_service_id->editAttributes() ?>>
 </span>
 <?php echo $quotation_edit->quote_service_id->CustomMsg ?></div></div>
 	</div>
@@ -302,32 +256,20 @@ loadjs.ready(["fquotationedit", "datetimepicker"], function() {
 <?php } ?>
 <?php if ($quotation_edit->quote_content->Visible) { // quote_content ?>
 	<div id="r_quote_content" class="form-group row">
-		<label id="elh_quotation_quote_content" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_content->caption() ?><?php echo $quotation_edit->quote_content->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_quotation_quote_content" for="x_quote_content" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_content->caption() ?><?php echo $quotation_edit->quote_content->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $quotation_edit->RightColumnClass ?>"><div <?php echo $quotation_edit->quote_content->cellAttributes() ?>>
 <span id="el_quotation_quote_content">
-<?php $quotation_edit->quote_content->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="quotation" data-field="x_quote_content" name="x_quote_content" id="x_quote_content" cols="35" rows="4" placeholder="<?php echo HtmlEncode($quotation_edit->quote_content->getPlaceHolder()) ?>"<?php echo $quotation_edit->quote_content->editAttributes() ?>><?php echo $quotation_edit->quote_content->EditValue ?></textarea>
-<script>
-loadjs.ready(["fquotationedit", "editor"], function() {
-	ew.createEditor("fquotationedit", "x_quote_content", 35, 4, <?php echo $quotation_edit->quote_content->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $quotation_edit->quote_content->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($quotation_edit->quote_comments->Visible) { // quote_comments ?>
 	<div id="r_quote_comments" class="form-group row">
-		<label id="elh_quotation_quote_comments" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_comments->caption() ?><?php echo $quotation_edit->quote_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_quotation_quote_comments" for="x_quote_comments" class="<?php echo $quotation_edit->LeftColumnClass ?>"><?php echo $quotation_edit->quote_comments->caption() ?><?php echo $quotation_edit->quote_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $quotation_edit->RightColumnClass ?>"><div <?php echo $quotation_edit->quote_comments->cellAttributes() ?>>
 <span id="el_quotation_quote_comments">
-<?php $quotation_edit->quote_comments->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="quotation" data-field="x_quote_comments" name="x_quote_comments" id="x_quote_comments" cols="35" rows="4" placeholder="<?php echo HtmlEncode($quotation_edit->quote_comments->getPlaceHolder()) ?>"<?php echo $quotation_edit->quote_comments->editAttributes() ?>><?php echo $quotation_edit->quote_comments->EditValue ?></textarea>
-<script>
-loadjs.ready(["fquotationedit", "editor"], function() {
-	ew.createEditor("fquotationedit", "x_quote_comments", 35, 4, <?php echo $quotation_edit->quote_comments->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $quotation_edit->quote_comments->CustomMsg ?></div></div>
 	</div>

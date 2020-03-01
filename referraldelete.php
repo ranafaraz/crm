@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $referral_delete = new referral_delete();
 $referral_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -82,9 +81,6 @@ $referral_delete->showMessage();
 <?php if ($referral_delete->referral_desc->Visible) { // referral_desc ?>
 		<th class="<?php echo $referral_delete->referral_desc->headerCellClass() ?>"><span id="elh_referral_referral_desc" class="referral_referral_desc"><?php echo $referral_delete->referral_desc->caption() ?></span></th>
 <?php } ?>
-<?php if ($referral_delete->referral_deal_signed->Visible) { // referral_deal_signed ?>
-		<th class="<?php echo $referral_delete->referral_deal_signed->headerCellClass() ?>"><span id="elh_referral_referral_deal_signed" class="referral_referral_deal_signed"><?php echo $referral_delete->referral_deal_signed->caption() ?></span></th>
-<?php } ?>
 	</tr>
 	</thead>
 	<tbody>
@@ -131,13 +127,6 @@ while (!$referral_delete->Recordset->EOF) {
 		<td <?php echo $referral_delete->referral_desc->cellAttributes() ?>>
 <span id="el<?php echo $referral_delete->RowCount ?>_referral_referral_desc" class="referral_referral_desc">
 <span<?php echo $referral_delete->referral_desc->viewAttributes() ?>><?php echo $referral_delete->referral_desc->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($referral_delete->referral_deal_signed->Visible) { // referral_deal_signed ?>
-		<td <?php echo $referral_delete->referral_deal_signed->cellAttributes() ?>>
-<span id="el<?php echo $referral_delete->RowCount ?>_referral_referral_deal_signed" class="referral_referral_deal_signed">
-<span<?php echo $referral_delete->referral_deal_signed->viewAttributes() ?>><?php echo $referral_delete->referral_deal_signed->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

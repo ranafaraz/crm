@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class user_type_delete extends user_type
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'user_type';
@@ -325,7 +325,6 @@ class user_type_delete extends user_type
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class user_type_delete extends user_type
 			$GLOBALS["Table"] = &$GLOBALS["user_type"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class user_type_delete extends user_type
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class user_type_delete extends user_type
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,27 +539,11 @@ class user_type_delete extends user_type
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("user_typelist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->user_type_id->setVisibility();
 		$this->user_type_name->setVisibility();
-		$this->user_type_desc->Visible = FALSE;
+		$this->user_type_desc->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -743,12 +716,15 @@ class user_type_delete extends user_type
 
 			// user_type_id
 			$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
-			$this->user_type_id->CssClass = "font-weight-bold";
 			$this->user_type_id->ViewCustomAttributes = "";
 
 			// user_type_name
 			$this->user_type_name->ViewValue = $this->user_type_name->CurrentValue;
 			$this->user_type_name->ViewCustomAttributes = "";
+
+			// user_type_desc
+			$this->user_type_desc->ViewValue = $this->user_type_desc->CurrentValue;
+			$this->user_type_desc->ViewCustomAttributes = "";
 
 			// user_type_id
 			$this->user_type_id->LinkCustomAttributes = "";
@@ -759,6 +735,11 @@ class user_type_delete extends user_type
 			$this->user_type_name->LinkCustomAttributes = "";
 			$this->user_type_name->HrefValue = "";
 			$this->user_type_name->TooltipValue = "";
+
+			// user_type_desc
+			$this->user_type_desc->LinkCustomAttributes = "";
+			$this->user_type_desc->HrefValue = "";
+			$this->user_type_desc->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
@@ -770,10 +751,6 @@ class user_type_delete extends user_type
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();

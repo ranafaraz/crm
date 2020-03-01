@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $sms_package_add = new sms_package_add();
 $sms_package_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -56,16 +55,22 @@ loadjs.ready("head", function() {
 		for (var i = startcnt; i <= rowcnt; i++) {
 			var infix = ($k[0]) ? String(i) : "";
 			$fobj.data("rowindex", infix);
-			<?php if ($sms_package_add->sms_pkg_branch_id->Required) { ?>
-				elm = this.getElements("x" + infix + "_sms_pkg_branch_id");
-				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $sms_package_add->sms_pkg_branch_id->caption(), $sms_package_add->sms_pkg_branch_id->RequiredErrorMessage)) ?>");
-			<?php } ?>
 			<?php if ($sms_package_add->sms_pkg_sms_api_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_sms_pkg_sms_api_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $sms_package_add->sms_pkg_sms_api_id->caption(), $sms_package_add->sms_pkg_sms_api_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_sms_pkg_sms_api_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($sms_package_add->sms_pkg_sms_api_id->errorMessage()) ?>");
+			<?php if ($sms_package_add->sms_pkg_branch_id->Required) { ?>
+				elm = this.getElements("x" + infix + "_sms_pkg_branch_id");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $sms_package_add->sms_pkg_branch_id->caption(), $sms_package_add->sms_pkg_branch_id->RequiredErrorMessage)) ?>");
+			<?php } ?>
+				elm = this.getElements("x" + infix + "_sms_pkg_branch_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($sms_package_add->sms_pkg_branch_id->errorMessage()) ?>");
 			<?php if ($sms_package_add->sms_pkg_total_allowed_sms->Required) { ?>
 				elm = this.getElements("x" + infix + "_sms_pkg_total_allowed_sms");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -123,10 +128,6 @@ loadjs.ready("head", function() {
 	fsms_packageadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fsms_packageadd.lists["x_sms_pkg_branch_id"] = <?php echo $sms_package_add->sms_pkg_branch_id->Lookup->toClientList($sms_package_add) ?>;
-	fsms_packageadd.lists["x_sms_pkg_branch_id"].options = <?php echo JsonEncode($sms_package_add->sms_pkg_branch_id->lookupOptions()) ?>;
-	fsms_packageadd.lists["x_sms_pkg_sms_api_id"] = <?php echo $sms_package_add->sms_pkg_sms_api_id->Lookup->toClientList($sms_package_add) ?>;
-	fsms_packageadd.lists["x_sms_pkg_sms_api_id"].options = <?php echo JsonEncode($sms_package_add->sms_pkg_sms_api_id->lookupOptions()) ?>;
 	loadjs.done("fsms_packageadd");
 });
 </script>
@@ -150,56 +151,24 @@ $sms_package_add->showMessage();
 <input type="hidden" name="action" id="action" value="insert">
 <input type="hidden" name="modal" value="<?php echo (int)$sms_package_add->IsModal ?>">
 <div class="ew-add-div"><!-- page* -->
-<?php if ($sms_package_add->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
-	<div id="r_sms_pkg_branch_id" class="form-group row">
-		<label id="elh_sms_package_sms_pkg_branch_id" for="x_sms_pkg_branch_id" class="<?php echo $sms_package_add->LeftColumnClass ?>"><?php echo $sms_package_add->sms_pkg_branch_id->caption() ?><?php echo $sms_package_add->sms_pkg_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $sms_package_add->RightColumnClass ?>"><div <?php echo $sms_package_add->sms_pkg_branch_id->cellAttributes() ?>>
-<span id="el_sms_package_sms_pkg_branch_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($sms_package_add->sms_pkg_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $sms_package_add->sms_pkg_branch_id->ViewValue ?></button>
-		<div id="dsl_x_sms_pkg_branch_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $sms_package_add->sms_pkg_branch_id->radioButtonListHtml(TRUE, "x_sms_pkg_branch_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_sms_pkg_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="sms_package" data-field="x_sms_pkg_branch_id" data-value-separator="<?php echo $sms_package_add->sms_pkg_branch_id->displayValueSeparatorAttribute() ?>" name="x_sms_pkg_branch_id" id="x_sms_pkg_branch_id" value="{value}"<?php echo $sms_package_add->sms_pkg_branch_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$sms_package_add->sms_pkg_branch_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $sms_package_add->sms_pkg_branch_id->Lookup->getParamTag($sms_package_add, "p_x_sms_pkg_branch_id") ?>
-</span>
-<?php echo $sms_package_add->sms_pkg_branch_id->CustomMsg ?></div></div>
-	</div>
-<?php } ?>
 <?php if ($sms_package_add->sms_pkg_sms_api_id->Visible) { // sms_pkg_sms_api_id ?>
 	<div id="r_sms_pkg_sms_api_id" class="form-group row">
 		<label id="elh_sms_package_sms_pkg_sms_api_id" for="x_sms_pkg_sms_api_id" class="<?php echo $sms_package_add->LeftColumnClass ?>"><?php echo $sms_package_add->sms_pkg_sms_api_id->caption() ?><?php echo $sms_package_add->sms_pkg_sms_api_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_package_add->RightColumnClass ?>"><div <?php echo $sms_package_add->sms_pkg_sms_api_id->cellAttributes() ?>>
 <span id="el_sms_package_sms_pkg_sms_api_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($sms_package_add->sms_pkg_sms_api_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $sms_package_add->sms_pkg_sms_api_id->ViewValue ?></button>
-		<div id="dsl_x_sms_pkg_sms_api_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $sms_package_add->sms_pkg_sms_api_id->radioButtonListHtml(TRUE, "x_sms_pkg_sms_api_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_sms_pkg_sms_api_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="sms_package" data-field="x_sms_pkg_sms_api_id" data-value-separator="<?php echo $sms_package_add->sms_pkg_sms_api_id->displayValueSeparatorAttribute() ?>" name="x_sms_pkg_sms_api_id" id="x_sms_pkg_sms_api_id" value="{value}"<?php echo $sms_package_add->sms_pkg_sms_api_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$sms_package_add->sms_pkg_sms_api_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $sms_package_add->sms_pkg_sms_api_id->Lookup->getParamTag($sms_package_add, "p_x_sms_pkg_sms_api_id") ?>
+<input type="text" data-table="sms_package" data-field="x_sms_pkg_sms_api_id" name="x_sms_pkg_sms_api_id" id="x_sms_pkg_sms_api_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($sms_package_add->sms_pkg_sms_api_id->getPlaceHolder()) ?>" value="<?php echo $sms_package_add->sms_pkg_sms_api_id->EditValue ?>"<?php echo $sms_package_add->sms_pkg_sms_api_id->editAttributes() ?>>
 </span>
 <?php echo $sms_package_add->sms_pkg_sms_api_id->CustomMsg ?></div></div>
+	</div>
+<?php } ?>
+<?php if ($sms_package_add->sms_pkg_branch_id->Visible) { // sms_pkg_branch_id ?>
+	<div id="r_sms_pkg_branch_id" class="form-group row">
+		<label id="elh_sms_package_sms_pkg_branch_id" for="x_sms_pkg_branch_id" class="<?php echo $sms_package_add->LeftColumnClass ?>"><?php echo $sms_package_add->sms_pkg_branch_id->caption() ?><?php echo $sms_package_add->sms_pkg_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $sms_package_add->RightColumnClass ?>"><div <?php echo $sms_package_add->sms_pkg_branch_id->cellAttributes() ?>>
+<span id="el_sms_package_sms_pkg_branch_id">
+<input type="text" data-table="sms_package" data-field="x_sms_pkg_branch_id" name="x_sms_pkg_branch_id" id="x_sms_pkg_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($sms_package_add->sms_pkg_branch_id->getPlaceHolder()) ?>" value="<?php echo $sms_package_add->sms_pkg_branch_id->EditValue ?>"<?php echo $sms_package_add->sms_pkg_branch_id->editAttributes() ?>>
+</span>
+<?php echo $sms_package_add->sms_pkg_branch_id->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($sms_package_add->sms_pkg_total_allowed_sms->Visible) { // sms_pkg_total_allowed_sms ?>
@@ -241,16 +210,10 @@ loadjs.ready(["fsms_packageadd", "datetimepicker"], function() {
 <?php } ?>
 <?php if ($sms_package_add->sms_pkg_deal_details->Visible) { // sms_pkg_deal_details ?>
 	<div id="r_sms_pkg_deal_details" class="form-group row">
-		<label id="elh_sms_package_sms_pkg_deal_details" class="<?php echo $sms_package_add->LeftColumnClass ?>"><?php echo $sms_package_add->sms_pkg_deal_details->caption() ?><?php echo $sms_package_add->sms_pkg_deal_details->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_sms_package_sms_pkg_deal_details" for="x_sms_pkg_deal_details" class="<?php echo $sms_package_add->LeftColumnClass ?>"><?php echo $sms_package_add->sms_pkg_deal_details->caption() ?><?php echo $sms_package_add->sms_pkg_deal_details->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $sms_package_add->RightColumnClass ?>"><div <?php echo $sms_package_add->sms_pkg_deal_details->cellAttributes() ?>>
 <span id="el_sms_package_sms_pkg_deal_details">
-<?php $sms_package_add->sms_pkg_deal_details->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="sms_package" data-field="x_sms_pkg_deal_details" name="x_sms_pkg_deal_details" id="x_sms_pkg_deal_details" cols="35" rows="4" placeholder="<?php echo HtmlEncode($sms_package_add->sms_pkg_deal_details->getPlaceHolder()) ?>"<?php echo $sms_package_add->sms_pkg_deal_details->editAttributes() ?>><?php echo $sms_package_add->sms_pkg_deal_details->EditValue ?></textarea>
-<script>
-loadjs.ready(["fsms_packageadd", "editor"], function() {
-	ew.createEditor("fsms_packageadd", "x_sms_pkg_deal_details", 35, 4, <?php echo $sms_package_add->sms_pkg_deal_details->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $sms_package_add->sms_pkg_deal_details->CustomMsg ?></div></div>
 	</div>

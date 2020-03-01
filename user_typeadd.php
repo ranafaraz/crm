@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $user_type_add = new user_type_add();
 $user_type_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -129,16 +128,10 @@ $user_type_add->showMessage();
 <?php } ?>
 <?php if ($user_type_add->user_type_desc->Visible) { // user_type_desc ?>
 	<div id="r_user_type_desc" class="form-group row">
-		<label id="elh_user_type_user_type_desc" class="<?php echo $user_type_add->LeftColumnClass ?>"><?php echo $user_type_add->user_type_desc->caption() ?><?php echo $user_type_add->user_type_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_user_type_user_type_desc" for="x_user_type_desc" class="<?php echo $user_type_add->LeftColumnClass ?>"><?php echo $user_type_add->user_type_desc->caption() ?><?php echo $user_type_add->user_type_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $user_type_add->RightColumnClass ?>"><div <?php echo $user_type_add->user_type_desc->cellAttributes() ?>>
 <span id="el_user_type_user_type_desc">
-<?php $user_type_add->user_type_desc->EditAttrs->appendClass("editor"); ?>
-<textarea data-table="user_type" data-field="x_user_type_desc" name="x_user_type_desc" id="x_user_type_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($user_type_add->user_type_desc->getPlaceHolder()) ?>"<?php echo $user_type_add->user_type_desc->editAttributes() ?>><?php echo $user_type_add->user_type_desc->EditValue ?></textarea>
-<script>
-loadjs.ready(["fuser_typeadd", "editor"], function() {
-	ew.createEditor("fuser_typeadd", "x_user_type_desc", 35, 4, <?php echo $user_type_add->user_type_desc->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
+<input type="text" data-table="user_type" data-field="x_user_type_desc" name="x_user_type_desc" id="x_user_type_desc" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($user_type_add->user_type_desc->getPlaceHolder()) ?>" value="<?php echo $user_type_add->user_type_desc->EditValue ?>"<?php echo $user_type_add->user_type_desc->editAttributes() ?>>
 </span>
 <?php echo $user_type_add->user_type_desc->CustomMsg ?></div></div>
 	</div>

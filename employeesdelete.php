@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $employees_delete = new employees_delete();
 $employees_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -79,6 +78,9 @@ $employees_delete->showMessage();
 <?php if ($employees_delete->emp_designation_id->Visible) { // emp_designation_id ?>
 		<th class="<?php echo $employees_delete->emp_designation_id->headerCellClass() ?>"><span id="elh_employees_emp_designation_id" class="employees_emp_designation_id"><?php echo $employees_delete->emp_designation_id->caption() ?></span></th>
 <?php } ?>
+<?php if ($employees_delete->emp_city_id->Visible) { // emp_city_id ?>
+		<th class="<?php echo $employees_delete->emp_city_id->headerCellClass() ?>"><span id="elh_employees_emp_city_id" class="employees_emp_city_id"><?php echo $employees_delete->emp_city_id->caption() ?></span></th>
+<?php } ?>
 <?php if ($employees_delete->emp_name->Visible) { // emp_name ?>
 		<th class="<?php echo $employees_delete->emp_name->headerCellClass() ?>"><span id="elh_employees_emp_name" class="employees_emp_name"><?php echo $employees_delete->emp_name->caption() ?></span></th>
 <?php } ?>
@@ -90,9 +92,6 @@ $employees_delete->showMessage();
 <?php } ?>
 <?php if ($employees_delete->emp_address->Visible) { // emp_address ?>
 		<th class="<?php echo $employees_delete->emp_address->headerCellClass() ?>"><span id="elh_employees_emp_address" class="employees_emp_address"><?php echo $employees_delete->emp_address->caption() ?></span></th>
-<?php } ?>
-<?php if ($employees_delete->emp_city_id->Visible) { // emp_city_id ?>
-		<th class="<?php echo $employees_delete->emp_city_id->headerCellClass() ?>"><span id="elh_employees_emp_city_id" class="employees_emp_city_id"><?php echo $employees_delete->emp_city_id->caption() ?></span></th>
 <?php } ?>
 <?php if ($employees_delete->emp_contact->Visible) { // emp_contact ?>
 		<th class="<?php echo $employees_delete->emp_contact->headerCellClass() ?>"><span id="elh_employees_emp_contact" class="employees_emp_contact"><?php echo $employees_delete->emp_contact->caption() ?></span></th>
@@ -145,6 +144,13 @@ while (!$employees_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
+<?php if ($employees_delete->emp_city_id->Visible) { // emp_city_id ?>
+		<td <?php echo $employees_delete->emp_city_id->cellAttributes() ?>>
+<span id="el<?php echo $employees_delete->RowCount ?>_employees_emp_city_id" class="employees_emp_city_id">
+<span<?php echo $employees_delete->emp_city_id->viewAttributes() ?>><?php echo $employees_delete->emp_city_id->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
 <?php if ($employees_delete->emp_name->Visible) { // emp_name ?>
 		<td <?php echo $employees_delete->emp_name->cellAttributes() ?>>
 <span id="el<?php echo $employees_delete->RowCount ?>_employees_emp_name" class="employees_emp_name">
@@ -173,13 +179,6 @@ while (!$employees_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($employees_delete->emp_city_id->Visible) { // emp_city_id ?>
-		<td <?php echo $employees_delete->emp_city_id->cellAttributes() ?>>
-<span id="el<?php echo $employees_delete->RowCount ?>_employees_emp_city_id" class="employees_emp_city_id">
-<span<?php echo $employees_delete->emp_city_id->viewAttributes() ?>><?php echo $employees_delete->emp_city_id->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($employees_delete->emp_contact->Visible) { // emp_contact ?>
 		<td <?php echo $employees_delete->emp_contact->cellAttributes() ?>>
 <span id="el<?php echo $employees_delete->RowCount ?>_employees_emp_contact" class="employees_emp_contact">
@@ -197,7 +196,7 @@ while (!$employees_delete->Recordset->EOF) {
 <?php if ($employees_delete->emp_photo->Visible) { // emp_photo ?>
 		<td <?php echo $employees_delete->emp_photo->cellAttributes() ?>>
 <span id="el<?php echo $employees_delete->RowCount ?>_employees_emp_photo" class="employees_emp_photo">
-<span><?php echo GetFileViewTag($employees_delete->emp_photo, $employees_delete->emp_photo->getViewValue(), FALSE) ?></span>
+<span<?php echo $employees_delete->emp_photo->viewAttributes() ?>><?php echo $employees_delete->emp_photo->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

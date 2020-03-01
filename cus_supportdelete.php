@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $cus_support_delete = new cus_support_delete();
 $cus_support_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -79,9 +78,6 @@ $cus_support_delete->showMessage();
 <?php if ($cus_support_delete->cus_sup_emp_id->Visible) { // cus_sup_emp_id ?>
 		<th class="<?php echo $cus_support_delete->cus_sup_emp_id->headerCellClass() ?>"><span id="elh_cus_support_cus_sup_emp_id" class="cus_support_cus_sup_emp_id"><?php echo $cus_support_delete->cus_sup_emp_id->caption() ?></span></th>
 <?php } ?>
-<?php if ($cus_support_delete->cus_sup_query->Visible) { // cus_sup_query ?>
-		<th class="<?php echo $cus_support_delete->cus_sup_query->headerCellClass() ?>"><span id="elh_cus_support_cus_sup_query" class="cus_support_cus_sup_query"><?php echo $cus_support_delete->cus_sup_query->caption() ?></span></th>
-<?php } ?>
 <?php if ($cus_support_delete->cus_sup_date->Visible) { // cus_sup_date ?>
 		<th class="<?php echo $cus_support_delete->cus_sup_date->headerCellClass() ?>"><span id="elh_cus_support_cus_sup_date" class="cus_support_cus_sup_date"><?php echo $cus_support_delete->cus_sup_date->caption() ?></span></th>
 <?php } ?>
@@ -130,13 +126,6 @@ while (!$cus_support_delete->Recordset->EOF) {
 		<td <?php echo $cus_support_delete->cus_sup_emp_id->cellAttributes() ?>>
 <span id="el<?php echo $cus_support_delete->RowCount ?>_cus_support_cus_sup_emp_id" class="cus_support_cus_sup_emp_id">
 <span<?php echo $cus_support_delete->cus_sup_emp_id->viewAttributes() ?>><?php echo $cus_support_delete->cus_sup_emp_id->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($cus_support_delete->cus_sup_query->Visible) { // cus_sup_query ?>
-		<td <?php echo $cus_support_delete->cus_sup_query->cellAttributes() ?>>
-<span id="el<?php echo $cus_support_delete->RowCount ?>_cus_support_cus_sup_query" class="cus_support_cus_sup_query">
-<span<?php echo $cus_support_delete->cus_sup_query->viewAttributes() ?>><?php echo $cus_support_delete->cus_sup_query->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

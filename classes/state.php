@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -71,13 +71,10 @@ class state extends DbTable
 		$this->fields['state_id'] = &$this->state_id;
 
 		// state_country_id
-		$this->state_country_id = new DbField('state', 'state', 'x_state_country_id', 'state_country_id', '`state_country_id`', '`state_country_id`', 3, 12, -1, FALSE, '`state_country_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->state_country_id = new DbField('state', 'state', 'x_state_country_id', 'state_country_id', '`state_country_id`', '`state_country_id`', 3, 12, -1, FALSE, '`state_country_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->state_country_id->Nullable = FALSE; // NOT NULL field
 		$this->state_country_id->Required = TRUE; // Required field
 		$this->state_country_id->Sortable = TRUE; // Allow sort
-		$this->state_country_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->state_country_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->state_country_id->Lookup = new Lookup('state_country_id', 'country', FALSE, 'country_id', ["country_name","","",""], [], [], [], [], [], [], '', '');
 		$this->state_country_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['state_country_id'] = &$this->state_country_id;
 
@@ -360,7 +357,7 @@ class state extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -696,25 +693,8 @@ class state extends DbTable
 		$this->state_id->ViewCustomAttributes = "";
 
 		// state_country_id
-		$curVal = strval($this->state_country_id->CurrentValue);
-		if ($curVal != "") {
-			$this->state_country_id->ViewValue = $this->state_country_id->lookupCacheOption($curVal);
-			if ($this->state_country_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`country_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->state_country_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->state_country_id->ViewValue = $this->state_country_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->state_country_id->ViewValue = NULL;
-		}
+		$this->state_country_id->ViewValue = $this->state_country_id->CurrentValue;
+		$this->state_country_id->ViewValue = FormatNumber($this->state_country_id->ViewValue, 0, -2, -2, -2);
 		$this->state_country_id->ViewCustomAttributes = "";
 
 		// state_name
@@ -758,7 +738,10 @@ class state extends DbTable
 		$this->state_id->ViewCustomAttributes = "";
 
 		// state_country_id
+		$this->state_country_id->EditAttrs["class"] = "form-control";
 		$this->state_country_id->EditCustomAttributes = "";
+		$this->state_country_id->EditValue = $this->state_country_id->CurrentValue;
+		$this->state_country_id->PlaceHolder = RemoveHtml($this->state_country_id->caption());
 
 		// state_name
 		$this->state_name->EditAttrs["class"] = "form-control";

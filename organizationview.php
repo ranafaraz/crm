@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $organization_view = new organization_view();
 $organization_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $organization_view->showMessage();
 ?>
-<?php if (!$organization_view->IsModal) { ?>
-<?php if (!$organization_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $organization_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="forganizationview" id="forganizationview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -144,7 +135,7 @@ $organization_view->showMessage();
 		<td class="<?php echo $organization_view->TableLeftColumnClass ?>"><span id="elh_organization_org_logo"><?php echo $organization_view->org_logo->caption() ?></span></td>
 		<td data-name="org_logo" <?php echo $organization_view->org_logo->cellAttributes() ?>>
 <span id="el_organization_org_logo">
-<span><?php echo GetFileViewTag($organization_view->org_logo, $organization_view->org_logo->getViewValue(), FALSE) ?></span>
+<span<?php echo $organization_view->org_logo->viewAttributes() ?>><?php echo $organization_view->org_logo->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -190,12 +181,6 @@ $organization_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$organization_view->IsModal) { ?>
-<?php if (!$organization_view->isExport()) { ?>
-<?php echo $organization_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $organization_view->showPageFooter();

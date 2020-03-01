@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -72,13 +72,10 @@ class sms_template extends DbTable
 		$this->fields['sms_temp_id'] = &$this->sms_temp_id;
 
 		// sms_temp_branch_id
-		$this->sms_temp_branch_id = new DbField('sms_template', 'sms_template', 'x_sms_temp_branch_id', 'sms_temp_branch_id', '`sms_temp_branch_id`', '`sms_temp_branch_id`', 3, 12, -1, FALSE, '`sms_temp_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->sms_temp_branch_id = new DbField('sms_template', 'sms_template', 'x_sms_temp_branch_id', 'sms_temp_branch_id', '`sms_temp_branch_id`', '`sms_temp_branch_id`', 3, 12, -1, FALSE, '`sms_temp_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->sms_temp_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->sms_temp_branch_id->Required = TRUE; // Required field
 		$this->sms_temp_branch_id->Sortable = TRUE; // Allow sort
-		$this->sms_temp_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->sms_temp_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->sms_temp_branch_id->Lookup = new Lookup('sms_temp_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->sms_temp_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['sms_temp_branch_id'] = &$this->sms_temp_branch_id;
 
@@ -90,7 +87,7 @@ class sms_template extends DbTable
 		$this->fields['sms_temp_caption'] = &$this->sms_temp_caption;
 
 		// sms_temp_msg
-		$this->sms_temp_msg = new DbField('sms_template', 'sms_template', 'x_sms_temp_msg', 'sms_temp_msg', '`sms_temp_msg`', '`sms_temp_msg`', 200, 200, -1, FALSE, '`sms_temp_msg`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->sms_temp_msg = new DbField('sms_template', 'sms_template', 'x_sms_temp_msg', 'sms_temp_msg', '`sms_temp_msg`', '`sms_temp_msg`', 200, 200, -1, FALSE, '`sms_temp_msg`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->sms_temp_msg->Nullable = FALSE; // NOT NULL field
 		$this->sms_temp_msg->Required = TRUE; // Required field
 		$this->sms_temp_msg->Sortable = TRUE; // Allow sort
@@ -368,7 +365,7 @@ class sms_template extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -707,25 +704,8 @@ class sms_template extends DbTable
 		$this->sms_temp_id->ViewCustomAttributes = "";
 
 		// sms_temp_branch_id
-		$curVal = strval($this->sms_temp_branch_id->CurrentValue);
-		if ($curVal != "") {
-			$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->lookupCacheOption($curVal);
-			if ($this->sms_temp_branch_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->sms_temp_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->sms_temp_branch_id->ViewValue = NULL;
-		}
+		$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->CurrentValue;
+		$this->sms_temp_branch_id->ViewValue = FormatNumber($this->sms_temp_branch_id->ViewValue, 0, -2, -2, -2);
 		$this->sms_temp_branch_id->ViewCustomAttributes = "";
 
 		// sms_temp_caption
@@ -778,7 +758,10 @@ class sms_template extends DbTable
 		$this->sms_temp_id->ViewCustomAttributes = "";
 
 		// sms_temp_branch_id
+		$this->sms_temp_branch_id->EditAttrs["class"] = "form-control";
 		$this->sms_temp_branch_id->EditCustomAttributes = "";
+		$this->sms_temp_branch_id->EditValue = $this->sms_temp_branch_id->CurrentValue;
+		$this->sms_temp_branch_id->PlaceHolder = RemoveHtml($this->sms_temp_branch_id->caption());
 
 		// sms_temp_caption
 		$this->sms_temp_caption->EditAttrs["class"] = "form-control";
@@ -791,6 +774,8 @@ class sms_template extends DbTable
 		// sms_temp_msg
 		$this->sms_temp_msg->EditAttrs["class"] = "form-control";
 		$this->sms_temp_msg->EditCustomAttributes = "";
+		if (!$this->sms_temp_msg->Raw)
+			$this->sms_temp_msg->CurrentValue = HtmlDecode($this->sms_temp_msg->CurrentValue);
 		$this->sms_temp_msg->EditValue = $this->sms_temp_msg->CurrentValue;
 		$this->sms_temp_msg->PlaceHolder = RemoveHtml($this->sms_temp_msg->caption());
 
@@ -831,6 +816,7 @@ class sms_template extends DbTable
 					$doc->exportCaption($this->sms_temp_id);
 					$doc->exportCaption($this->sms_temp_branch_id);
 					$doc->exportCaption($this->sms_temp_caption);
+					$doc->exportCaption($this->sms_temp_msg);
 				}
 				$doc->endExportRow();
 			}
@@ -870,6 +856,7 @@ class sms_template extends DbTable
 						$doc->exportField($this->sms_temp_id);
 						$doc->exportField($this->sms_temp_branch_id);
 						$doc->exportField($this->sms_temp_caption);
+						$doc->exportField($this->sms_temp_msg);
 					}
 					$doc->endExportRow($rowCnt);
 				}

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $followup_delete = new followup_delete();
 $followup_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -88,17 +87,11 @@ $followup_delete->showMessage();
 <?php if ($followup_delete->followup_date->Visible) { // followup_date ?>
 		<th class="<?php echo $followup_delete->followup_date->headerCellClass() ?>"><span id="elh_followup_followup_date" class="followup_followup_date"><?php echo $followup_delete->followup_date->caption() ?></span></th>
 <?php } ?>
-<?php if ($followup_delete->followup_comments->Visible) { // followup_comments ?>
-		<th class="<?php echo $followup_delete->followup_comments->headerCellClass() ?>"><span id="elh_followup_followup_comments" class="followup_followup_comments"><?php echo $followup_delete->followup_comments->caption() ?></span></th>
-<?php } ?>
 <?php if ($followup_delete->followup_response->Visible) { // followup_response ?>
 		<th class="<?php echo $followup_delete->followup_response->headerCellClass() ?>"><span id="elh_followup_followup_response" class="followup_followup_response"><?php echo $followup_delete->followup_response->caption() ?></span></th>
 <?php } ?>
 <?php if ($followup_delete->nxt_FU_date->Visible) { // nxt_FU_date ?>
 		<th class="<?php echo $followup_delete->nxt_FU_date->headerCellClass() ?>"><span id="elh_followup_nxt_FU_date" class="followup_nxt_FU_date"><?php echo $followup_delete->nxt_FU_date->caption() ?></span></th>
-<?php } ?>
-<?php if ($followup_delete->nxt_FU_plans->Visible) { // nxt_FU_plans ?>
-		<th class="<?php echo $followup_delete->nxt_FU_plans->headerCellClass() ?>"><span id="elh_followup_nxt_FU_plans" class="followup_nxt_FU_plans"><?php echo $followup_delete->nxt_FU_plans->caption() ?></span></th>
 <?php } ?>
 <?php if ($followup_delete->current_FU_status->Visible) { // current_FU_status ?>
 		<th class="<?php echo $followup_delete->current_FU_status->headerCellClass() ?>"><span id="elh_followup_current_FU_status" class="followup_current_FU_status"><?php echo $followup_delete->current_FU_status->caption() ?></span></th>
@@ -166,13 +159,6 @@ while (!$followup_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($followup_delete->followup_comments->Visible) { // followup_comments ?>
-		<td <?php echo $followup_delete->followup_comments->cellAttributes() ?>>
-<span id="el<?php echo $followup_delete->RowCount ?>_followup_followup_comments" class="followup_followup_comments">
-<span<?php echo $followup_delete->followup_comments->viewAttributes() ?>><?php echo $followup_delete->followup_comments->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($followup_delete->followup_response->Visible) { // followup_response ?>
 		<td <?php echo $followup_delete->followup_response->cellAttributes() ?>>
 <span id="el<?php echo $followup_delete->RowCount ?>_followup_followup_response" class="followup_followup_response">
@@ -184,13 +170,6 @@ while (!$followup_delete->Recordset->EOF) {
 		<td <?php echo $followup_delete->nxt_FU_date->cellAttributes() ?>>
 <span id="el<?php echo $followup_delete->RowCount ?>_followup_nxt_FU_date" class="followup_nxt_FU_date">
 <span<?php echo $followup_delete->nxt_FU_date->viewAttributes() ?>><?php echo $followup_delete->nxt_FU_date->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($followup_delete->nxt_FU_plans->Visible) { // nxt_FU_plans ?>
-		<td <?php echo $followup_delete->nxt_FU_plans->cellAttributes() ?>>
-<span id="el<?php echo $followup_delete->RowCount ?>_followup_nxt_FU_plans" class="followup_nxt_FU_plans">
-<span<?php echo $followup_delete->nxt_FU_plans->viewAttributes() ?>><?php echo $followup_delete->nxt_FU_plans->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

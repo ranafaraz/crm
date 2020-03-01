@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class division_edit extends division
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'division';
@@ -325,7 +325,6 @@ class division_edit extends division
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class division_edit extends division
 			$GLOBALS["Table"] = &$GLOBALS["division"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'edit');
@@ -369,9 +364,6 @@ class division_edit extends division
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class division_edit extends division
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class division_edit extends division
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -640,22 +626,6 @@ class division_edit extends division
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canEdit()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("divisionlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -686,9 +656,8 @@ class division_edit extends division
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->division_state_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -881,11 +850,6 @@ class division_edit extends division
 			return;
 		$this->division_id->setDbValue($row['division_id']);
 		$this->division_state_id->setDbValue($row['division_state_id']);
-		if (array_key_exists('EV__division_state_id', $rs->fields)) {
-			$this->division_state_id->VirtualValue = $rs->fields('EV__division_state_id'); // Set up virtual field value
-		} else {
-			$this->division_state_id->VirtualValue = ""; // Clear value
-		}
 		$this->division_name->setDbValue($row['division_name']);
 		$this->division_desc->setDbValue($row['division_desc']);
 	}
@@ -944,33 +908,11 @@ class division_edit extends division
 
 			// division_id
 			$this->division_id->ViewValue = $this->division_id->CurrentValue;
-			$this->division_id->CssClass = "font-weight-bold";
 			$this->division_id->ViewCustomAttributes = "";
 
 			// division_state_id
-			if ($this->division_state_id->VirtualValue != "") {
-				$this->division_state_id->ViewValue = $this->division_state_id->VirtualValue;
-			} else {
-				$curVal = strval($this->division_state_id->CurrentValue);
-				if ($curVal != "") {
-					$this->division_state_id->ViewValue = $this->division_state_id->lookupCacheOption($curVal);
-					if ($this->division_state_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`state_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->division_state_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->division_state_id->ViewValue = $this->division_state_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->division_state_id->ViewValue = $this->division_state_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->division_state_id->ViewValue = NULL;
-				}
-			}
+			$this->division_state_id->ViewValue = $this->division_state_id->CurrentValue;
+			$this->division_state_id->ViewValue = FormatNumber($this->division_state_id->ViewValue, 0, -2, -2, -2);
 			$this->division_state_id->ViewCustomAttributes = "";
 
 			// division_name
@@ -1006,40 +948,13 @@ class division_edit extends division
 			$this->division_id->EditAttrs["class"] = "form-control";
 			$this->division_id->EditCustomAttributes = "";
 			$this->division_id->EditValue = $this->division_id->CurrentValue;
-			$this->division_id->CssClass = "font-weight-bold";
 			$this->division_id->ViewCustomAttributes = "";
 
 			// division_state_id
+			$this->division_state_id->EditAttrs["class"] = "form-control";
 			$this->division_state_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->division_state_id->CurrentValue));
-			if ($curVal != "")
-				$this->division_state_id->ViewValue = $this->division_state_id->lookupCacheOption($curVal);
-			else
-				$this->division_state_id->ViewValue = $this->division_state_id->Lookup !== NULL && is_array($this->division_state_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->division_state_id->ViewValue !== NULL) { // Load from cache
-				$this->division_state_id->EditValue = array_values($this->division_state_id->Lookup->Options);
-				if ($this->division_state_id->ViewValue == "")
-					$this->division_state_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`state_id`" . SearchString("=", $this->division_state_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->division_state_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->division_state_id->ViewValue = $this->division_state_id->displayValue($arwrk);
-				} else {
-					$this->division_state_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->division_state_id->EditValue = $arwrk;
-			}
+			$this->division_state_id->EditValue = HtmlEncode($this->division_state_id->CurrentValue);
+			$this->division_state_id->PlaceHolder = RemoveHtml($this->division_state_id->caption());
 
 			// division_name
 			$this->division_name->EditAttrs["class"] = "form-control";
@@ -1103,6 +1018,9 @@ class division_edit extends division
 			if (!$this->division_state_id->IsDetailKey && $this->division_state_id->FormValue != NULL && $this->division_state_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->division_state_id->caption(), $this->division_state_id->RequiredErrorMessage));
 			}
+		}
+		if (!CheckInteger($this->division_state_id->FormValue)) {
+			AddMessage($FormError, $this->division_state_id->errorMessage());
 		}
 		if ($this->division_name->Required) {
 			if (!$this->division_name->IsDetailKey && $this->division_name->FormValue != NULL && $this->division_name->FormValue == "") {
@@ -1241,8 +1159,6 @@ class division_edit extends division
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_division_state_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1263,8 +1179,6 @@ class division_edit extends division
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_division_state_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

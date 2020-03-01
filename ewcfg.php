@@ -3,7 +3,7 @@
 /**
  * PHPMaker 2020 configuration file
  */
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Prerequisite
 if (version_compare(PHP_VERSION, "5.6.0") < 0) // Is PHP 5.6 or later
@@ -88,7 +88,7 @@ define(PROJECT_NAMESPACE . "ALLOW_ALL", 511); // All (1 + 2 + 4 + 8 + 16 + 32 + 
 define(PROJECT_NAMESPACE . "PRODUCT_VERSION", "16.0.7");
 
 // Project
-define(PROJECT_NAMESPACE . "PROJECT_NAME", "dexdevs_crm"); // Project name
+define(PROJECT_NAMESPACE . "PROJECT_NAME", "project1"); // Project name
 
 /**
  * Character encoding
@@ -161,20 +161,20 @@ $CONFIG = [
 
 	// General
 	"UNFORMAT_YEAR" => 50, // Unformat year
-	"RANDOM_KEY" => 'GJs4MfnlJ9iwEy4D', // Random key for encryption
+	"RANDOM_KEY" => '7t72NEwZ3BTg0z9s', // Random key for encryption
 	"ENCRYPTION_KEY" => '', // Encryption key for data protection
-	"PROJECT_STYLESHEET_FILENAME" => "css/dexdevs_crm.css", // Project stylesheet file name
+	"PROJECT_STYLESHEET_FILENAME" => "css/project1.css", // Project stylesheet file name
 	"PROJECT_CHARSET" => "utf-8", // Project charset
 	"IS_UTF8" => TRUE, // Project charset
 	"EMAIL_CHARSET" => "utf-8", // Email charset
 	"HIGHLIGHT_COMPARE" => TRUE, // Highlight compare mode, TRUE(case-insensitive)|FALSE(case-sensitive)
-	"PROJECT_ID" => "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}", // Project ID (GUID)
+	"PROJECT_ID" => "{5525D2B6-89E2-4D25-84CF-86BD784D9909}", // Project ID (GUID)
 	"RELATED_PROJECT_ID" => "", // Related Project ID (GUID)
 	"COMPOSITE_KEY_SEPARATOR" => ",", // Composite key separator
 	"LAZY_LOAD" => TRUE, // Lazy loading of images
 	"BODY_CLASS" => "hold-transition layout-fixed",
-	"SIDEBAR_CLASS" => "main-sidebar sidebar-light-primary",
-	"NAVBAR_CLASS" => "main-header navbar navbar-expand navbar-light-white border-bottom",
+	"SIDEBAR_CLASS" => "main-sidebar sidebar-dark-danger",
+	"NAVBAR_CLASS" => "main-header navbar navbar-expand navbar-dark-danger",
 
 	// Check Token
 	"CHECK_TOKEN" => TRUE,
@@ -218,7 +218,7 @@ $CONFIG = [
 
 	// Database connection info
 	"CONNECTION_INFO" => [
-		"DB" => ["id" => "DB", "type" => "MYSQL", "qs" => "`", "qe" => "`", "host" => "localhost", "port" => 3306, "user" => "root", "pass" => "", "db" => "dexdevs_crm"]
+		"DB" => ["id" => "DB", "type" => "MYSQL", "qs" => "`", "qe" => "`", "host" => "localhost", "port" => 3306, "user" => "dexdmvtx_crm", "pass" => "gpYhb*\$mYahs", "db" => "dexdmvtx_crm"]
 	],
 
 	// Database error function
@@ -317,8 +317,8 @@ $CONFIG = [
 
 	// Security
 	"ENCRYPTION_ENABLED" => FALSE, // Encryption enabled
-	"ADMIN_USER_NAME" => "admin", // Administrator user name
-	"ADMIN_PASSWORD" => "admin", // Administrator password
+	"ADMIN_USER_NAME" => "", // Administrator user name
+	"ADMIN_PASSWORD" => "", // Administrator password
 	"USE_CUSTOM_LOGIN" => TRUE, // Use custom login
 	"ALLOW_LOGIN_BY_URL" => FALSE, // Allow login by URL
 	"ALLOW_LOGIN_BY_SESSION" => FALSE, // Allow login by session variables
@@ -335,13 +335,13 @@ $CONFIG = [
 	"USER_ID_ALLOW" => 104,
 
 	// User table/field names
-	"USER_TABLE_NAME" => "user",
-	"LOGIN_USERNAME_FIELD_NAME" => "user_name",
-	"LOGIN_PASSWORD_FIELD_NAME" => "user_password",
-	"USER_ID_FIELD_NAME" => "",
-	"PARENT_USER_ID_FIELD_NAME" => "",
-	"USER_LEVEL_FIELD_NAME" => "",
-	"USER_PROFILE_FIELD_NAME" => "",
+	"USER_TABLE_NAME" => "",
+	"LOGIN_USERNAME_FIELD_NAME" => "",
+	"LOGIN_PASSWORD_FIELD_NAME" => "",
+	"USER_ID_FIELD_NAME" => "null",
+	"PARENT_USER_ID_FIELD_NAME" => "null",
+	"USER_LEVEL_FIELD_NAME" => "null",
+	"USER_PROFILE_FIELD_NAME" => "null",
 	"REGISTER_ACTIVATE_FIELD_NAME" => "",
 	"USER_EMAIL_FIELD_NAME" => "",
 
@@ -404,7 +404,7 @@ $CONFIG = [
 	"UPLOAD_CONVERT_ACCENTED_CHARS" => FALSE, // Convert accented chars in upload file name
 	"USE_COLORBOX" => TRUE, // Use Colorbox
 	"MULTIPLE_UPLOAD_SEPARATOR" => ",", // Multiple upload separator
-	"DELETE_UPLOADED_FILES" => TRUE, // Delete uploaded file on deleting record
+	"DELETE_UPLOADED_FILES" => FALSE, // Delete uploaded file on deleting record
 	"FILE_NOT_FOUND" => "/9j/4AAQSkZJRgABAQAAAQABAAD/7QAuUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAABIcAigADEZpbGVOb3RGb3VuZAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wgARCAABAAEDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACP/EABQBAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhADEAAAAD+f/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPwB//8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAgBAgEBPwB//8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAgBAwEBPwB//9k=", // 1x1 jpeg with IPTC data "2#040"="FileNotFound"
 
 	// API
@@ -439,7 +439,7 @@ $CONFIG = [
 	"RESIZE_OPTIONS" => ["keepAspectRatio" => FALSE, "resizeUp" => !TRUE, "jpegQuality" => 100],
 
 	// Audit trail
-	"AUDIT_TRAIL_PATH" => "sytem_logs/", // Audit trail path (relative to app root)
+	"AUDIT_TRAIL_PATH" => "", // Audit trail path (relative to app root)
 
 	// Import records
 	"IMPORT_CSV_DELIMITER" => ",", // Import to CSV delimiter
@@ -1184,7 +1184,9 @@ $ClientVariables = [];
 $API_ACTIONS = [];
 
 // User level
-include_once "userlevelsettings.php";
+$USER_LEVELS = [];
+$USER_LEVEL_PRIVS = [];
+$USER_LEVEL_TABLES = [];
 ?>
 <?php
 $CONFIG["PDF_STYLESHEET_FILENAME"] = "css/ewpdf.css"; // Export PDF CSS styles

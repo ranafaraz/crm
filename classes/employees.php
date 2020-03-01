@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -28,11 +28,11 @@ class employees extends DbTable
 	public $emp_id;
 	public $emp_branch_id;
 	public $emp_designation_id;
+	public $emp_city_id;
 	public $emp_name;
 	public $emp_father;
 	public $emp_cnic;
 	public $emp_address;
-	public $emp_city_id;
 	public $emp_contact;
 	public $emp_email;
 	public $emp_photo;
@@ -79,26 +79,28 @@ class employees extends DbTable
 		$this->fields['emp_id'] = &$this->emp_id;
 
 		// emp_branch_id
-		$this->emp_branch_id = new DbField('employees', 'employees', 'x_emp_branch_id', 'emp_branch_id', '`emp_branch_id`', '`emp_branch_id`', 3, 12, -1, FALSE, '`emp_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->emp_branch_id = new DbField('employees', 'employees', 'x_emp_branch_id', 'emp_branch_id', '`emp_branch_id`', '`emp_branch_id`', 3, 12, -1, FALSE, '`emp_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->emp_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->emp_branch_id->Required = TRUE; // Required field
 		$this->emp_branch_id->Sortable = TRUE; // Allow sort
-		$this->emp_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->emp_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->emp_branch_id->Lookup = new Lookup('emp_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->emp_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['emp_branch_id'] = &$this->emp_branch_id;
 
 		// emp_designation_id
-		$this->emp_designation_id = new DbField('employees', 'employees', 'x_emp_designation_id', 'emp_designation_id', '`emp_designation_id`', '`emp_designation_id`', 3, 12, -1, FALSE, '`emp_designation_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->emp_designation_id = new DbField('employees', 'employees', 'x_emp_designation_id', 'emp_designation_id', '`emp_designation_id`', '`emp_designation_id`', 3, 12, -1, FALSE, '`emp_designation_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->emp_designation_id->Nullable = FALSE; // NOT NULL field
 		$this->emp_designation_id->Required = TRUE; // Required field
 		$this->emp_designation_id->Sortable = TRUE; // Allow sort
-		$this->emp_designation_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->emp_designation_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->emp_designation_id->Lookup = new Lookup('emp_designation_id', 'designation', FALSE, 'designation_id', ["designation_caption","","",""], [], [], [], [], [], [], '', '');
 		$this->emp_designation_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['emp_designation_id'] = &$this->emp_designation_id;
+
+		// emp_city_id
+		$this->emp_city_id = new DbField('employees', 'employees', 'x_emp_city_id', 'emp_city_id', '`emp_city_id`', '`emp_city_id`', 3, 12, -1, FALSE, '`emp_city_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->emp_city_id->Nullable = FALSE; // NOT NULL field
+		$this->emp_city_id->Required = TRUE; // Required field
+		$this->emp_city_id->Sortable = TRUE; // Allow sort
+		$this->emp_city_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
+		$this->fields['emp_city_id'] = &$this->emp_city_id;
 
 		// emp_name
 		$this->emp_name = new DbField('employees', 'employees', 'x_emp_name', 'emp_name', '`emp_name`', '`emp_name`', 200, 50, -1, FALSE, '`emp_name`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
@@ -122,22 +124,11 @@ class employees extends DbTable
 		$this->fields['emp_cnic'] = &$this->emp_cnic;
 
 		// emp_address
-		$this->emp_address = new DbField('employees', 'employees', 'x_emp_address', 'emp_address', '`emp_address`', '`emp_address`', 200, 100, -1, FALSE, '`emp_address`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->emp_address = new DbField('employees', 'employees', 'x_emp_address', 'emp_address', '`emp_address`', '`emp_address`', 200, 100, -1, FALSE, '`emp_address`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->emp_address->Nullable = FALSE; // NOT NULL field
 		$this->emp_address->Required = TRUE; // Required field
 		$this->emp_address->Sortable = TRUE; // Allow sort
 		$this->fields['emp_address'] = &$this->emp_address;
-
-		// emp_city_id
-		$this->emp_city_id = new DbField('employees', 'employees', 'x_emp_city_id', 'emp_city_id', '`emp_city_id`', '`emp_city_id`', 3, 12, -1, FALSE, '`EV__emp_city_id`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
-		$this->emp_city_id->Nullable = FALSE; // NOT NULL field
-		$this->emp_city_id->Required = TRUE; // Required field
-		$this->emp_city_id->Sortable = TRUE; // Allow sort
-		$this->emp_city_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->emp_city_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->emp_city_id->Lookup = new Lookup('emp_city_id', 'city', FALSE, 'city_id', ["city_name","","",""], [], [], [], [], [], [], '', '');
-		$this->emp_city_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
-		$this->fields['emp_city_id'] = &$this->emp_city_id;
 
 		// emp_contact
 		$this->emp_contact = new DbField('employees', 'employees', 'x_emp_contact', 'emp_contact', '`emp_contact`', '`emp_contact`', 200, 20, -1, FALSE, '`emp_contact`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
@@ -154,11 +145,10 @@ class employees extends DbTable
 		$this->fields['emp_email'] = &$this->emp_email;
 
 		// emp_photo
-		$this->emp_photo = new DbField('employees', 'employees', 'x_emp_photo', 'emp_photo', '`emp_photo`', '`emp_photo`', 200, 100, -1, TRUE, '`emp_photo`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
+		$this->emp_photo = new DbField('employees', 'employees', 'x_emp_photo', 'emp_photo', '`emp_photo`', '`emp_photo`', 200, 100, -1, FALSE, '`emp_photo`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->emp_photo->Nullable = FALSE; // NOT NULL field
 		$this->emp_photo->Required = TRUE; // Required field
 		$this->emp_photo->Sortable = TRUE; // Allow sort
-		$this->emp_photo->ImageResize = TRUE;
 		$this->fields['emp_photo'] = &$this->emp_photo;
 	}
 
@@ -193,21 +183,9 @@ class employees extends DbTable
 			}
 			$fld->setSort($thisSort);
 			$this->setSessionOrderBy($sortField . " " . $thisSort); // Save to Session
-			$sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
-			$this->setSessionOrderByList($sortFieldList . " " . $thisSort); // Save to Session
 		} else {
 			$fld->setSort("");
 		}
-	}
-
-	// Session ORDER BY for List page
-	public function getSessionOrderByList()
-	{
-		return @$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")];
-	}
-	public function setSessionOrderByList($v)
-	{
-		$_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
 	}
 
 	// Table level SQL
@@ -234,22 +212,6 @@ class employees extends DbTable
 	public function setSqlSelect($v)
 	{
 		$this->SqlSelect = $v;
-	}
-	public function getSqlSelectList() // Select for List page
-	{
-		$select = "";
-		$select = "SELECT * FROM (" .
-			"SELECT *, (SELECT `city_name` FROM `city` `TMP_LOOKUPTABLE` WHERE `TMP_LOOKUPTABLE`.`city_id` = `employees`.`emp_city_id` LIMIT 1) AS `EV__emp_city_id` FROM `employees`" .
-			") `TMP_TABLE`";
-		return ($this->SqlSelectList != "") ? $this->SqlSelectList : $select;
-	}
-	public function sqlSelectList() // For backward compatibility
-	{
-		return $this->getSqlSelectList();
-	}
-	public function setSqlSelectList($v)
-	{
-		$this->SqlSelectList = $v;
 	}
 	public function getSqlWhere() // Where
 	{
@@ -405,13 +367,8 @@ class employees extends DbTable
 		AddFilter($filter, $this->CurrentFilter);
 		$filter = $this->applyUserIDFilters($filter);
 		$this->Recordset_Selecting($filter);
-		if ($this->useVirtualFields()) {
-			$select = $this->getSqlSelectList();
-			$sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-		} else {
-			$select = $this->getSqlSelect();
-			$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
-		}
+		$select = $this->getSqlSelect();
+		$sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
 		return BuildSelectSql($select, $this->getSqlWhere(), $this->getSqlGroupBy(),
 			$this->getSqlHaving(), $this->getSqlOrderBy(), $filter, $sort);
 	}
@@ -419,26 +376,8 @@ class employees extends DbTable
 	// Get ORDER BY clause
 	public function getOrderBy()
 	{
-		$sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
+		$sort = $this->getSessionOrderBy();
 		return BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sort);
-	}
-
-	// Check if virtual fields is used in SQL
-	protected function useVirtualFields()
-	{
-		$where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
-		$orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-		if ($where != "")
-			$where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
-		if ($orderBy != "")
-			$orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
-		if ($this->emp_city_id->AdvancedSearch->SearchValue != "" ||
-			$this->emp_city_id->AdvancedSearch->SearchValue2 != "" ||
-			ContainsString($where, " " . $this->emp_city_id->VirtualExpression . " "))
-			return TRUE;
-		if (ContainsString($orderBy, " " . $this->emp_city_id->VirtualExpression . " "))
-			return TRUE;
-		return FALSE;
 	}
 
 	// Get record count based on filter (for detail record count in master table pages)
@@ -466,10 +405,7 @@ class employees extends DbTable
 		$select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : "SELECT * FROM " . $this->getSqlFrom();
 		$groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
 		$having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-		if ($this->useVirtualFields())
-			$sql = BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
-		else
-			$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+		$sql = BuildSelectSql($select, $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
 		$cnt = $this->getRecordCount($sql);
 		return $cnt;
 	}
@@ -487,7 +423,7 @@ class employees extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -570,25 +506,20 @@ class employees extends DbTable
 		$this->emp_id->DbValue = $row['emp_id'];
 		$this->emp_branch_id->DbValue = $row['emp_branch_id'];
 		$this->emp_designation_id->DbValue = $row['emp_designation_id'];
+		$this->emp_city_id->DbValue = $row['emp_city_id'];
 		$this->emp_name->DbValue = $row['emp_name'];
 		$this->emp_father->DbValue = $row['emp_father'];
 		$this->emp_cnic->DbValue = $row['emp_cnic'];
 		$this->emp_address->DbValue = $row['emp_address'];
-		$this->emp_city_id->DbValue = $row['emp_city_id'];
 		$this->emp_contact->DbValue = $row['emp_contact'];
 		$this->emp_email->DbValue = $row['emp_email'];
-		$this->emp_photo->Upload->DbValue = $row['emp_photo'];
+		$this->emp_photo->DbValue = $row['emp_photo'];
 	}
 
 	// Delete uploaded files
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
-		$oldFiles = EmptyValue($row['emp_photo']) ? [] : [$row['emp_photo']];
-		foreach ($oldFiles as $oldFile) {
-			if (file_exists($this->emp_photo->oldPhysicalUploadPath() . $oldFile))
-				@unlink($this->emp_photo->oldPhysicalUploadPath() . $oldFile);
-		}
 	}
 
 	// Record filter WHERE clause
@@ -816,14 +747,14 @@ class employees extends DbTable
 		$this->emp_id->setDbValue($rs->fields('emp_id'));
 		$this->emp_branch_id->setDbValue($rs->fields('emp_branch_id'));
 		$this->emp_designation_id->setDbValue($rs->fields('emp_designation_id'));
+		$this->emp_city_id->setDbValue($rs->fields('emp_city_id'));
 		$this->emp_name->setDbValue($rs->fields('emp_name'));
 		$this->emp_father->setDbValue($rs->fields('emp_father'));
 		$this->emp_cnic->setDbValue($rs->fields('emp_cnic'));
 		$this->emp_address->setDbValue($rs->fields('emp_address'));
-		$this->emp_city_id->setDbValue($rs->fields('emp_city_id'));
 		$this->emp_contact->setDbValue($rs->fields('emp_contact'));
 		$this->emp_email->setDbValue($rs->fields('emp_email'));
-		$this->emp_photo->Upload->DbValue = $rs->fields('emp_photo');
+		$this->emp_photo->setDbValue($rs->fields('emp_photo'));
 	}
 
 	// Render list row values
@@ -838,63 +769,33 @@ class employees extends DbTable
 		// emp_id
 		// emp_branch_id
 		// emp_designation_id
+		// emp_city_id
 		// emp_name
 		// emp_father
 		// emp_cnic
 		// emp_address
-		// emp_city_id
 		// emp_contact
 		// emp_email
 		// emp_photo
 		// emp_id
 
 		$this->emp_id->ViewValue = $this->emp_id->CurrentValue;
-		$this->emp_id->CssClass = "font-weight-bold";
 		$this->emp_id->ViewCustomAttributes = "";
 
 		// emp_branch_id
-		$curVal = strval($this->emp_branch_id->CurrentValue);
-		if ($curVal != "") {
-			$this->emp_branch_id->ViewValue = $this->emp_branch_id->lookupCacheOption($curVal);
-			if ($this->emp_branch_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->emp_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->emp_branch_id->ViewValue = $this->emp_branch_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->emp_branch_id->ViewValue = $this->emp_branch_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->emp_branch_id->ViewValue = NULL;
-		}
+		$this->emp_branch_id->ViewValue = $this->emp_branch_id->CurrentValue;
+		$this->emp_branch_id->ViewValue = FormatNumber($this->emp_branch_id->ViewValue, 0, -2, -2, -2);
 		$this->emp_branch_id->ViewCustomAttributes = "";
 
 		// emp_designation_id
-		$curVal = strval($this->emp_designation_id->CurrentValue);
-		if ($curVal != "") {
-			$this->emp_designation_id->ViewValue = $this->emp_designation_id->lookupCacheOption($curVal);
-			if ($this->emp_designation_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`designation_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->emp_designation_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->emp_designation_id->ViewValue = $this->emp_designation_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->emp_designation_id->ViewValue = $this->emp_designation_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->emp_designation_id->ViewValue = NULL;
-		}
+		$this->emp_designation_id->ViewValue = $this->emp_designation_id->CurrentValue;
+		$this->emp_designation_id->ViewValue = FormatNumber($this->emp_designation_id->ViewValue, 0, -2, -2, -2);
 		$this->emp_designation_id->ViewCustomAttributes = "";
+
+		// emp_city_id
+		$this->emp_city_id->ViewValue = $this->emp_city_id->CurrentValue;
+		$this->emp_city_id->ViewValue = FormatNumber($this->emp_city_id->ViewValue, 0, -2, -2, -2);
+		$this->emp_city_id->ViewCustomAttributes = "";
 
 		// emp_name
 		$this->emp_name->ViewValue = $this->emp_name->CurrentValue;
@@ -912,32 +813,6 @@ class employees extends DbTable
 		$this->emp_address->ViewValue = $this->emp_address->CurrentValue;
 		$this->emp_address->ViewCustomAttributes = "";
 
-		// emp_city_id
-		if ($this->emp_city_id->VirtualValue != "") {
-			$this->emp_city_id->ViewValue = $this->emp_city_id->VirtualValue;
-		} else {
-			$curVal = strval($this->emp_city_id->CurrentValue);
-			if ($curVal != "") {
-				$this->emp_city_id->ViewValue = $this->emp_city_id->lookupCacheOption($curVal);
-				if ($this->emp_city_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->emp_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->emp_city_id->ViewValue = $this->emp_city_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->emp_city_id->ViewValue = $this->emp_city_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->emp_city_id->ViewValue = NULL;
-			}
-		}
-		$this->emp_city_id->ViewCustomAttributes = "";
-
 		// emp_contact
 		$this->emp_contact->ViewValue = $this->emp_contact->CurrentValue;
 		$this->emp_contact->ViewCustomAttributes = "";
@@ -947,14 +822,7 @@ class employees extends DbTable
 		$this->emp_email->ViewCustomAttributes = "";
 
 		// emp_photo
-		if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
-			$this->emp_photo->ImageWidth = 200;
-			$this->emp_photo->ImageHeight = 0;
-			$this->emp_photo->ImageAlt = $this->emp_photo->alt();
-			$this->emp_photo->ViewValue = $this->emp_photo->Upload->DbValue;
-		} else {
-			$this->emp_photo->ViewValue = "";
-		}
+		$this->emp_photo->ViewValue = $this->emp_photo->CurrentValue;
 		$this->emp_photo->ViewCustomAttributes = "";
 
 		// emp_id
@@ -971,6 +839,11 @@ class employees extends DbTable
 		$this->emp_designation_id->LinkCustomAttributes = "";
 		$this->emp_designation_id->HrefValue = "";
 		$this->emp_designation_id->TooltipValue = "";
+
+		// emp_city_id
+		$this->emp_city_id->LinkCustomAttributes = "";
+		$this->emp_city_id->HrefValue = "";
+		$this->emp_city_id->TooltipValue = "";
 
 		// emp_name
 		$this->emp_name->LinkCustomAttributes = "";
@@ -992,11 +865,6 @@ class employees extends DbTable
 		$this->emp_address->HrefValue = "";
 		$this->emp_address->TooltipValue = "";
 
-		// emp_city_id
-		$this->emp_city_id->LinkCustomAttributes = "";
-		$this->emp_city_id->HrefValue = "";
-		$this->emp_city_id->TooltipValue = "";
-
 		// emp_contact
 		$this->emp_contact->LinkCustomAttributes = "";
 		$this->emp_contact->HrefValue = "";
@@ -1009,22 +877,8 @@ class employees extends DbTable
 
 		// emp_photo
 		$this->emp_photo->LinkCustomAttributes = "";
-		if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
-			$this->emp_photo->HrefValue = GetFileUploadUrl($this->emp_photo, $this->emp_photo->htmlDecode($this->emp_photo->Upload->DbValue)); // Add prefix/suffix
-			$this->emp_photo->LinkAttrs["target"] = ""; // Add target
-			if ($this->isExport())
-				$this->emp_photo->HrefValue = FullUrl($this->emp_photo->HrefValue, "href");
-		} else {
-			$this->emp_photo->HrefValue = "";
-		}
-		$this->emp_photo->ExportHrefValue = $this->emp_photo->UploadPath . $this->emp_photo->Upload->DbValue;
+		$this->emp_photo->HrefValue = "";
 		$this->emp_photo->TooltipValue = "";
-		if ($this->emp_photo->UseColorbox) {
-			if (EmptyValue($this->emp_photo->TooltipValue))
-				$this->emp_photo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-			$this->emp_photo->LinkAttrs["data-rel"] = "employees_x_emp_photo";
-			$this->emp_photo->LinkAttrs->appendClass("ew-lightbox");
-		}
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -1045,14 +899,25 @@ class employees extends DbTable
 		$this->emp_id->EditAttrs["class"] = "form-control";
 		$this->emp_id->EditCustomAttributes = "";
 		$this->emp_id->EditValue = $this->emp_id->CurrentValue;
-		$this->emp_id->CssClass = "font-weight-bold";
 		$this->emp_id->ViewCustomAttributes = "";
 
 		// emp_branch_id
+		$this->emp_branch_id->EditAttrs["class"] = "form-control";
 		$this->emp_branch_id->EditCustomAttributes = "";
+		$this->emp_branch_id->EditValue = $this->emp_branch_id->CurrentValue;
+		$this->emp_branch_id->PlaceHolder = RemoveHtml($this->emp_branch_id->caption());
 
 		// emp_designation_id
+		$this->emp_designation_id->EditAttrs["class"] = "form-control";
 		$this->emp_designation_id->EditCustomAttributes = "";
+		$this->emp_designation_id->EditValue = $this->emp_designation_id->CurrentValue;
+		$this->emp_designation_id->PlaceHolder = RemoveHtml($this->emp_designation_id->caption());
+
+		// emp_city_id
+		$this->emp_city_id->EditAttrs["class"] = "form-control";
+		$this->emp_city_id->EditCustomAttributes = "";
+		$this->emp_city_id->EditValue = $this->emp_city_id->CurrentValue;
+		$this->emp_city_id->PlaceHolder = RemoveHtml($this->emp_city_id->caption());
 
 		// emp_name
 		$this->emp_name->EditAttrs["class"] = "form-control";
@@ -1081,11 +946,10 @@ class employees extends DbTable
 		// emp_address
 		$this->emp_address->EditAttrs["class"] = "form-control";
 		$this->emp_address->EditCustomAttributes = "";
+		if (!$this->emp_address->Raw)
+			$this->emp_address->CurrentValue = HtmlDecode($this->emp_address->CurrentValue);
 		$this->emp_address->EditValue = $this->emp_address->CurrentValue;
 		$this->emp_address->PlaceHolder = RemoveHtml($this->emp_address->caption());
-
-		// emp_city_id
-		$this->emp_city_id->EditCustomAttributes = "";
 
 		// emp_contact
 		$this->emp_contact->EditAttrs["class"] = "form-control";
@@ -1106,16 +970,10 @@ class employees extends DbTable
 		// emp_photo
 		$this->emp_photo->EditAttrs["class"] = "form-control";
 		$this->emp_photo->EditCustomAttributes = "";
-		if (!EmptyValue($this->emp_photo->Upload->DbValue)) {
-			$this->emp_photo->ImageWidth = 200;
-			$this->emp_photo->ImageHeight = 0;
-			$this->emp_photo->ImageAlt = $this->emp_photo->alt();
-			$this->emp_photo->EditValue = $this->emp_photo->Upload->DbValue;
-		} else {
-			$this->emp_photo->EditValue = "";
-		}
-		if (!EmptyValue($this->emp_photo->CurrentValue))
-				$this->emp_photo->Upload->FileName = $this->emp_photo->CurrentValue;
+		if (!$this->emp_photo->Raw)
+			$this->emp_photo->CurrentValue = HtmlDecode($this->emp_photo->CurrentValue);
+		$this->emp_photo->EditValue = $this->emp_photo->CurrentValue;
+		$this->emp_photo->PlaceHolder = RemoveHtml($this->emp_photo->caption());
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -1149,11 +1007,11 @@ class employees extends DbTable
 					$doc->exportCaption($this->emp_id);
 					$doc->exportCaption($this->emp_branch_id);
 					$doc->exportCaption($this->emp_designation_id);
+					$doc->exportCaption($this->emp_city_id);
 					$doc->exportCaption($this->emp_name);
 					$doc->exportCaption($this->emp_father);
 					$doc->exportCaption($this->emp_cnic);
 					$doc->exportCaption($this->emp_address);
-					$doc->exportCaption($this->emp_city_id);
 					$doc->exportCaption($this->emp_contact);
 					$doc->exportCaption($this->emp_email);
 					$doc->exportCaption($this->emp_photo);
@@ -1161,11 +1019,11 @@ class employees extends DbTable
 					$doc->exportCaption($this->emp_id);
 					$doc->exportCaption($this->emp_branch_id);
 					$doc->exportCaption($this->emp_designation_id);
+					$doc->exportCaption($this->emp_city_id);
 					$doc->exportCaption($this->emp_name);
 					$doc->exportCaption($this->emp_father);
 					$doc->exportCaption($this->emp_cnic);
 					$doc->exportCaption($this->emp_address);
-					$doc->exportCaption($this->emp_city_id);
 					$doc->exportCaption($this->emp_contact);
 					$doc->exportCaption($this->emp_email);
 					$doc->exportCaption($this->emp_photo);
@@ -1203,11 +1061,11 @@ class employees extends DbTable
 						$doc->exportField($this->emp_id);
 						$doc->exportField($this->emp_branch_id);
 						$doc->exportField($this->emp_designation_id);
+						$doc->exportField($this->emp_city_id);
 						$doc->exportField($this->emp_name);
 						$doc->exportField($this->emp_father);
 						$doc->exportField($this->emp_cnic);
 						$doc->exportField($this->emp_address);
-						$doc->exportField($this->emp_city_id);
 						$doc->exportField($this->emp_contact);
 						$doc->exportField($this->emp_email);
 						$doc->exportField($this->emp_photo);
@@ -1215,11 +1073,11 @@ class employees extends DbTable
 						$doc->exportField($this->emp_id);
 						$doc->exportField($this->emp_branch_id);
 						$doc->exportField($this->emp_designation_id);
+						$doc->exportField($this->emp_city_id);
 						$doc->exportField($this->emp_name);
 						$doc->exportField($this->emp_father);
 						$doc->exportField($this->emp_cnic);
 						$doc->exportField($this->emp_address);
-						$doc->exportField($this->emp_city_id);
 						$doc->exportField($this->emp_contact);
 						$doc->exportField($this->emp_email);
 						$doc->exportField($this->emp_photo);
@@ -1241,98 +1099,8 @@ class employees extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
-		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
-		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// Set up field name / file name field / file type field
-		$fldName = "";
-		$fileNameFld = "";
-		$fileTypeFld = "";
-		if ($fldparm == 'emp_photo') {
-			$fldName = "emp_photo";
-			$fileNameFld = "emp_photo";
-		} else {
-			return FALSE; // Incorrect field
-		}
-
-		// Set up key values
-		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
-		if (count($ar) == 1) {
-			$this->emp_id->CurrentValue = $ar[0];
-		} else {
-			return FALSE; // Incorrect key
-		}
-
-		// Set up filter (WHERE Clause)
-		$filter = $this->getRecordFilter();
-		$this->CurrentFilter = $filter;
-		$sql = $this->getCurrentSql();
-		$conn = $this->getConnection();
-		$dbtype = GetConnectionType($this->Dbid);
-		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
-			$val = $rs->fields($fldName);
-			if (!EmptyValue($val)) {
-				$fld = $this->fields[$fldName];
-
-				// Binary data
-				if ($fld->DataType == DATATYPE_BLOB) {
-					if ($dbtype != "MYSQL") {
-						if (is_array($val) || is_object($val)) // Byte array
-							$val = BytesToString($val);
-					}
-					if ($resize)
-						ResizeBinary($val, $width, $height);
-
-					// Write file type
-					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
-						AddHeader("Content-type", $rs->fields($fileTypeFld));
-					} else {
-						AddHeader("Content-type", ContentType($val));
-					}
-
-					// Write file name
-					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
-						$fileName = $rs->fields($fileNameFld);
-						$pathinfo = pathinfo($fileName);
-						$ext = strtolower(@$pathinfo["extension"]);
-						$isPdf = SameText($ext, "pdf");
-						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
-							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
-					}
-
-					// Write file data
-					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
-						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
-						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
-							$val .= "\0\0\0\0";
-					}
-
-					// Clear any debug message
-					if (ob_get_length())
-						ob_end_clean();
-
-					// Write binary data
-					Write($val);
-
-				// Upload to folder
-				} else {
-					if ($fld->UploadMultiple)
-						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
-					else
-						$files = [$val];
-					$data = [];
-					$ar = [];
-					foreach ($files as $file) {
-						if (!EmptyValue($file))
-							$ar[$file] = FullUrl($fld->hrefPath() . $file);
-					}
-					$data[$fld->Param] = $ar;
-					WriteJson($data);
-				}
-			}
-			$rs->close();
-			return TRUE;
-		}
+		// No binary fields
 		return FALSE;
 	}
 

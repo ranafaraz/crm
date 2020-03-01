@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $reference_letter_view = new reference_letter_view();
 $reference_letter_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $reference_letter_view->showMessage();
 ?>
-<?php if (!$reference_letter_view->IsModal) { ?>
-<?php if (!$reference_letter_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $reference_letter_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="freference_letterview" id="freference_letterview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -134,7 +125,7 @@ $reference_letter_view->showMessage();
 		<td class="<?php echo $reference_letter_view->TableLeftColumnClass ?>"><span id="elh_reference_letter_ref_letter_scanned"><?php echo $reference_letter_view->ref_letter_scanned->caption() ?></span></td>
 		<td data-name="ref_letter_scanned" <?php echo $reference_letter_view->ref_letter_scanned->cellAttributes() ?>>
 <span id="el_reference_letter_ref_letter_scanned">
-<span><?php echo GetFileViewTag($reference_letter_view->ref_letter_scanned, $reference_letter_view->ref_letter_scanned->getViewValue(), FALSE) ?></span>
+<span<?php echo $reference_letter_view->ref_letter_scanned->viewAttributes() ?>><?php echo $reference_letter_view->ref_letter_scanned->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -160,12 +151,6 @@ $reference_letter_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$reference_letter_view->IsModal) { ?>
-<?php if (!$reference_letter_view->isExport()) { ?>
-<?php echo $reference_letter_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $reference_letter_view->showPageFooter();

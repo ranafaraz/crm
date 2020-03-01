@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $acc_transaction_add = new acc_transaction_add();
 $acc_transaction_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -61,11 +60,17 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $acc_transaction_add->acc_trans_branch_id->caption(), $acc_transaction_add->acc_trans_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_acc_trans_branch_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($acc_transaction_add->acc_trans_branch_id->errorMessage()) ?>");
 			<?php if ($acc_transaction_add->acc_trans_acc_head_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_acc_trans_acc_head_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $acc_transaction_add->acc_trans_acc_head_id->caption(), $acc_transaction_add->acc_trans_acc_head_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_acc_trans_acc_head_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($acc_transaction_add->acc_trans_acc_head_id->errorMessage()) ?>");
 			<?php if ($acc_transaction_add->acc_trans_narration->Required) { ?>
 				elm = this.getElements("x" + infix + "_acc_trans_narration");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -115,10 +120,6 @@ loadjs.ready("head", function() {
 	facc_transactionadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	facc_transactionadd.lists["x_acc_trans_branch_id"] = <?php echo $acc_transaction_add->acc_trans_branch_id->Lookup->toClientList($acc_transaction_add) ?>;
-	facc_transactionadd.lists["x_acc_trans_branch_id"].options = <?php echo JsonEncode($acc_transaction_add->acc_trans_branch_id->lookupOptions()) ?>;
-	facc_transactionadd.lists["x_acc_trans_acc_head_id"] = <?php echo $acc_transaction_add->acc_trans_acc_head_id->Lookup->toClientList($acc_transaction_add) ?>;
-	facc_transactionadd.lists["x_acc_trans_acc_head_id"].options = <?php echo JsonEncode($acc_transaction_add->acc_trans_acc_head_id->lookupOptions()) ?>;
 	loadjs.done("facc_transactionadd");
 });
 </script>
@@ -147,23 +148,7 @@ $acc_transaction_add->showMessage();
 		<label id="elh_acc_transaction_acc_trans_branch_id" for="x_acc_trans_branch_id" class="<?php echo $acc_transaction_add->LeftColumnClass ?>"><?php echo $acc_transaction_add->acc_trans_branch_id->caption() ?><?php echo $acc_transaction_add->acc_trans_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $acc_transaction_add->RightColumnClass ?>"><div <?php echo $acc_transaction_add->acc_trans_branch_id->cellAttributes() ?>>
 <span id="el_acc_transaction_acc_trans_branch_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($acc_transaction_add->acc_trans_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $acc_transaction_add->acc_trans_branch_id->ViewValue ?></button>
-		<div id="dsl_x_acc_trans_branch_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $acc_transaction_add->acc_trans_branch_id->radioButtonListHtml(TRUE, "x_acc_trans_branch_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_acc_trans_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="acc_transaction" data-field="x_acc_trans_branch_id" data-value-separator="<?php echo $acc_transaction_add->acc_trans_branch_id->displayValueSeparatorAttribute() ?>" name="x_acc_trans_branch_id" id="x_acc_trans_branch_id" value="{value}"<?php echo $acc_transaction_add->acc_trans_branch_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$acc_transaction_add->acc_trans_branch_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $acc_transaction_add->acc_trans_branch_id->Lookup->getParamTag($acc_transaction_add, "p_x_acc_trans_branch_id") ?>
+<input type="text" data-table="acc_transaction" data-field="x_acc_trans_branch_id" name="x_acc_trans_branch_id" id="x_acc_trans_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($acc_transaction_add->acc_trans_branch_id->getPlaceHolder()) ?>" value="<?php echo $acc_transaction_add->acc_trans_branch_id->EditValue ?>"<?php echo $acc_transaction_add->acc_trans_branch_id->editAttributes() ?>>
 </span>
 <?php echo $acc_transaction_add->acc_trans_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -173,39 +158,17 @@ $acc_transaction_add->showMessage();
 		<label id="elh_acc_transaction_acc_trans_acc_head_id" for="x_acc_trans_acc_head_id" class="<?php echo $acc_transaction_add->LeftColumnClass ?>"><?php echo $acc_transaction_add->acc_trans_acc_head_id->caption() ?><?php echo $acc_transaction_add->acc_trans_acc_head_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $acc_transaction_add->RightColumnClass ?>"><div <?php echo $acc_transaction_add->acc_trans_acc_head_id->cellAttributes() ?>>
 <span id="el_acc_transaction_acc_trans_acc_head_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($acc_transaction_add->acc_trans_acc_head_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $acc_transaction_add->acc_trans_acc_head_id->ViewValue ?></button>
-		<div id="dsl_x_acc_trans_acc_head_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $acc_transaction_add->acc_trans_acc_head_id->radioButtonListHtml(TRUE, "x_acc_trans_acc_head_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_acc_trans_acc_head_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="acc_transaction" data-field="x_acc_trans_acc_head_id" data-value-separator="<?php echo $acc_transaction_add->acc_trans_acc_head_id->displayValueSeparatorAttribute() ?>" name="x_acc_trans_acc_head_id" id="x_acc_trans_acc_head_id" value="{value}"<?php echo $acc_transaction_add->acc_trans_acc_head_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$acc_transaction_add->acc_trans_acc_head_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $acc_transaction_add->acc_trans_acc_head_id->Lookup->getParamTag($acc_transaction_add, "p_x_acc_trans_acc_head_id") ?>
+<input type="text" data-table="acc_transaction" data-field="x_acc_trans_acc_head_id" name="x_acc_trans_acc_head_id" id="x_acc_trans_acc_head_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($acc_transaction_add->acc_trans_acc_head_id->getPlaceHolder()) ?>" value="<?php echo $acc_transaction_add->acc_trans_acc_head_id->EditValue ?>"<?php echo $acc_transaction_add->acc_trans_acc_head_id->editAttributes() ?>>
 </span>
 <?php echo $acc_transaction_add->acc_trans_acc_head_id->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($acc_transaction_add->acc_trans_narration->Visible) { // acc_trans_narration ?>
 	<div id="r_acc_trans_narration" class="form-group row">
-		<label id="elh_acc_transaction_acc_trans_narration" class="<?php echo $acc_transaction_add->LeftColumnClass ?>"><?php echo $acc_transaction_add->acc_trans_narration->caption() ?><?php echo $acc_transaction_add->acc_trans_narration->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_acc_transaction_acc_trans_narration" for="x_acc_trans_narration" class="<?php echo $acc_transaction_add->LeftColumnClass ?>"><?php echo $acc_transaction_add->acc_trans_narration->caption() ?><?php echo $acc_transaction_add->acc_trans_narration->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $acc_transaction_add->RightColumnClass ?>"><div <?php echo $acc_transaction_add->acc_trans_narration->cellAttributes() ?>>
 <span id="el_acc_transaction_acc_trans_narration">
-<?php $acc_transaction_add->acc_trans_narration->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="acc_transaction" data-field="x_acc_trans_narration" name="x_acc_trans_narration" id="x_acc_trans_narration" cols="35" rows="4" placeholder="<?php echo HtmlEncode($acc_transaction_add->acc_trans_narration->getPlaceHolder()) ?>"<?php echo $acc_transaction_add->acc_trans_narration->editAttributes() ?>><?php echo $acc_transaction_add->acc_trans_narration->EditValue ?></textarea>
-<script>
-loadjs.ready(["facc_transactionadd", "editor"], function() {
-	ew.createEditor("facc_transactionadd", "x_acc_trans_narration", 35, 4, <?php echo $acc_transaction_add->acc_trans_narration->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $acc_transaction_add->acc_trans_narration->CustomMsg ?></div></div>
 	</div>

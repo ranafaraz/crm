@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $followup_no_list = new followup_no_list();
 $followup_no_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $followup_no_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$followup_no_list->isExport() && !$followup_no->CurrentAction) { ?>
 <form name="ffollowup_nolistsrch" id="ffollowup_nolistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="ffollowup_nolistsrch-search-panel" class="<?php echo $followup_no_list->SearchPanelClass ?>">
@@ -113,33 +111,59 @@ $followup_no_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $followup_no_list->showPageHeader(); ?>
 <?php
 $followup_no_list->showMessage();
 ?>
 <?php if ($followup_no_list->TotalRecords > 0 || $followup_no->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$followup_no_list->isExport()) { ?>
-<div>
-<?php if (!$followup_no_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $followup_no_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $followup_no_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="ffollowup_nolist" id="ffollowup_nolist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($followup_no_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> followup_no">
+<form name="ffollowup_nolist" id="ffollowup_nolist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="followup_no">
-<div class="row ew-multi-column-row">
+<div id="gmp_followup_no" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($followup_no_list->TotalRecords > 0 || $followup_no_list->isGridEdit()) { ?>
+<table id="tbl_followup_nolist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$followup_no->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$followup_no_list->renderListOptions();
+
+// Render list options (header, left)
+$followup_no_list->ListOptions->render("header", "left");
+?>
+<?php if ($followup_no_list->followup_no_id->Visible) { // followup_no_id ?>
+	<?php if ($followup_no_list->SortUrl($followup_no_list->followup_no_id) == "") { ?>
+		<th data-name="followup_no_id" class="<?php echo $followup_no_list->followup_no_id->headerCellClass() ?>"><div id="elh_followup_no_followup_no_id" class="followup_no_followup_no_id"><div class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="followup_no_id" class="<?php echo $followup_no_list->followup_no_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $followup_no_list->SortUrl($followup_no_list->followup_no_id) ?>', 1);"><div id="elh_followup_no_followup_no_id" class="followup_no_followup_no_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($followup_no_list->followup_no_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($followup_no_list->followup_no_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($followup_no_list->followup_no_caption->Visible) { // followup_no_caption ?>
+	<?php if ($followup_no_list->SortUrl($followup_no_list->followup_no_caption) == "") { ?>
+		<th data-name="followup_no_caption" class="<?php echo $followup_no_list->followup_no_caption->headerCellClass() ?>"><div id="elh_followup_no_followup_no_caption" class="followup_no_followup_no_caption"><div class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_caption->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="followup_no_caption" class="<?php echo $followup_no_list->followup_no_caption->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $followup_no_list->SortUrl($followup_no_list->followup_no_caption) ?>', 1);"><div id="elh_followup_no_followup_no_caption" class="followup_no_followup_no_caption">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($followup_no_list->followup_no_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($followup_no_list->followup_no_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$followup_no_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($followup_no_list->ExportAll && $followup_no_list->isExport()) {
 	$followup_no_list->StopRecord = $followup_no_list->TotalRecords;
@@ -160,6 +184,11 @@ if ($followup_no_list->Recordset && !$followup_no_list->Recordset->EOF) {
 } elseif (!$followup_no->AllowAddDeleteRow && $followup_no_list->StopRecord == 0) {
 	$followup_no_list->StopRecord = $followup_no->GridAddRowCount;
 }
+
+// Initialize aggregate
+$followup_no->RowType = ROWTYPE_AGGREGATEINIT;
+$followup_no->resetAttributes();
+$followup_no_list->renderRow();
 while ($followup_no_list->RecordCount < $followup_no_list->StopRecord) {
 	$followup_no_list->RecordCount++;
 	if ($followup_no_list->RecordCount >= $followup_no_list->StartRecord) {
@@ -186,96 +215,42 @@ while ($followup_no_list->RecordCount < $followup_no_list->StopRecord) {
 		// Render list options
 		$followup_no_list->renderListOptions();
 ?>
-<div class="<?php echo $followup_no_list->getMultiColumnClass() ?>" <?php echo $followup_no->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($followup_no->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($followup_no_list->followup_no_id->Visible) { // followup_no_id ?>
-		<?php if ($followup_no->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $followup_no_list->TableLeftColumnClass ?>"><span class="followup_no_followup_no_id">
-<?php if ($followup_no_list->isExport() || $followup_no_list->SortUrl($followup_no_list->followup_no_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $followup_no_list->SortUrl($followup_no_list->followup_no_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($followup_no_list->followup_no_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($followup_no_list->followup_no_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $followup_no_list->followup_no_id->cellAttributes() ?>>
-<span id="el<?php echo $followup_no_list->RowCount ?>_followup_no_followup_no_id">
-<span<?php echo $followup_no_list->followup_no_id->viewAttributes() ?>><?php echo $followup_no_list->followup_no_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row followup_no_followup_no_id">
-			<label class="<?php echo $followup_no_list->LeftColumnClass ?>"><?php echo $followup_no_list->followup_no_id->caption() ?></label>
-			<div class="<?php echo $followup_no_list->RightColumnClass ?>"><div <?php echo $followup_no_list->followup_no_id->cellAttributes() ?>>
-<span id="el<?php echo $followup_no_list->RowCount ?>_followup_no_followup_no_id">
-<span<?php echo $followup_no_list->followup_no_id->viewAttributes() ?>><?php echo $followup_no_list->followup_no_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($followup_no_list->followup_no_caption->Visible) { // followup_no_caption ?>
-		<?php if ($followup_no->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $followup_no_list->TableLeftColumnClass ?>"><span class="followup_no_followup_no_caption">
-<?php if ($followup_no_list->isExport() || $followup_no_list->SortUrl($followup_no_list->followup_no_caption) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_caption->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $followup_no_list->SortUrl($followup_no_list->followup_no_caption) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $followup_no_list->followup_no_caption->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($followup_no_list->followup_no_caption->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($followup_no_list->followup_no_caption->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $followup_no_list->followup_no_caption->cellAttributes() ?>>
-<span id="el<?php echo $followup_no_list->RowCount ?>_followup_no_followup_no_caption">
-<span<?php echo $followup_no_list->followup_no_caption->viewAttributes() ?>><?php echo $followup_no_list->followup_no_caption->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row followup_no_followup_no_caption">
-			<label class="<?php echo $followup_no_list->LeftColumnClass ?>"><?php echo $followup_no_list->followup_no_caption->caption() ?></label>
-			<div class="<?php echo $followup_no_list->RightColumnClass ?>"><div <?php echo $followup_no_list->followup_no_caption->cellAttributes() ?>>
-<span id="el<?php echo $followup_no_list->RowCount ?>_followup_no_followup_no_caption">
-<span<?php echo $followup_no_list->followup_no_caption->viewAttributes() ?>><?php echo $followup_no_list->followup_no_caption->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($followup_no->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$followup_no_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $followup_no->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$followup_no_list->ListOptions->render("body", "bottom", $followup_no_list->RowCount);
+// Render list options (body, left)
+$followup_no_list->ListOptions->render("body", "left", $followup_no_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($followup_no_list->followup_no_id->Visible) { // followup_no_id ?>
+		<td data-name="followup_no_id" <?php echo $followup_no_list->followup_no_id->cellAttributes() ?>>
+<span id="el<?php echo $followup_no_list->RowCount ?>_followup_no_followup_no_id">
+<span<?php echo $followup_no_list->followup_no_id->viewAttributes() ?>><?php echo $followup_no_list->followup_no_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($followup_no_list->followup_no_caption->Visible) { // followup_no_caption ?>
+		<td data-name="followup_no_caption" <?php echo $followup_no_list->followup_no_caption->cellAttributes() ?>>
+<span id="el<?php echo $followup_no_list->RowCount ?>_followup_no_followup_no_caption">
+<span<?php echo $followup_no_list->followup_no_caption->viewAttributes() ?>><?php echo $followup_no_list->followup_no_caption->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$followup_no_list->ListOptions->render("body", "right", $followup_no_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$followup_no_list->isGridAdd())
 		$followup_no_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$followup_no->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -287,7 +262,7 @@ if ($followup_no_list->Recordset)
 	$followup_no_list->Recordset->Close();
 ?>
 <?php if (!$followup_no_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$followup_no_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $followup_no_list->Pager->render() ?>
@@ -299,7 +274,7 @@ if ($followup_no_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($followup_no_list->TotalRecords == 0 && !$followup_no->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

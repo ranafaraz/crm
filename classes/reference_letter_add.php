@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class reference_letter_add extends reference_letter
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'reference_letter';
@@ -325,7 +325,6 @@ class reference_letter_add extends reference_letter
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class reference_letter_add extends reference_letter
 			$GLOBALS["Table"] = &$GLOBALS["reference_letter"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'add');
@@ -369,9 +364,6 @@ class reference_letter_add extends reference_letter
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class reference_letter_add extends reference_letter
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class reference_letter_add extends reference_letter
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -644,22 +630,6 @@ class reference_letter_add extends reference_letter
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canAdd()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("reference_letterlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -694,9 +664,8 @@ class reference_letter_add extends reference_letter
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->ref_letter_branch_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -800,9 +769,6 @@ class reference_letter_add extends reference_letter
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
-		$this->ref_letter_scanned->Upload->Index = $CurrentForm->Index;
-		$this->ref_letter_scanned->Upload->uploadFile();
-		$this->ref_letter_scanned->CurrentValue = $this->ref_letter_scanned->Upload->FileName;
 	}
 
 	// Load default values
@@ -818,9 +784,8 @@ class reference_letter_add extends reference_letter
 		$this->ref_letter_by_whom->OldValue = $this->ref_letter_by_whom->CurrentValue;
 		$this->ref_letter_content->CurrentValue = NULL;
 		$this->ref_letter_content->OldValue = $this->ref_letter_content->CurrentValue;
-		$this->ref_letter_scanned->Upload->DbValue = NULL;
-		$this->ref_letter_scanned->OldValue = $this->ref_letter_scanned->Upload->DbValue;
-		$this->ref_letter_scanned->CurrentValue = NULL; // Clear file related field
+		$this->ref_letter_scanned->CurrentValue = NULL;
+		$this->ref_letter_scanned->OldValue = $this->ref_letter_scanned->CurrentValue;
 		$this->ref_letter_date->CurrentValue = NULL;
 		$this->ref_letter_date->OldValue = $this->ref_letter_date->CurrentValue;
 		$this->ref_letter_comments->CurrentValue = NULL;
@@ -833,7 +798,6 @@ class reference_letter_add extends reference_letter
 
 		// Load from form
 		global $CurrentForm;
-		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'ref_letter_branch_id' first before field var 'x_ref_letter_branch_id'
 		$val = $CurrentForm->hasValue("ref_letter_branch_id") ? $CurrentForm->getValue("ref_letter_branch_id") : $CurrentForm->getValue("x_ref_letter_branch_id");
@@ -871,6 +835,15 @@ class reference_letter_add extends reference_letter
 				$this->ref_letter_content->setFormValue($val);
 		}
 
+		// Check field name 'ref_letter_scanned' first before field var 'x_ref_letter_scanned'
+		$val = $CurrentForm->hasValue("ref_letter_scanned") ? $CurrentForm->getValue("ref_letter_scanned") : $CurrentForm->getValue("x_ref_letter_scanned");
+		if (!$this->ref_letter_scanned->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->ref_letter_scanned->Visible = FALSE; // Disable update for API request
+			else
+				$this->ref_letter_scanned->setFormValue($val);
+		}
+
 		// Check field name 'ref_letter_date' first before field var 'x_ref_letter_date'
 		$val = $CurrentForm->hasValue("ref_letter_date") ? $CurrentForm->getValue("ref_letter_date") : $CurrentForm->getValue("x_ref_letter_date");
 		if (!$this->ref_letter_date->IsDetailKey) {
@@ -902,6 +875,7 @@ class reference_letter_add extends reference_letter
 		$this->ref_letter_to_whom->CurrentValue = $this->ref_letter_to_whom->FormValue;
 		$this->ref_letter_by_whom->CurrentValue = $this->ref_letter_by_whom->FormValue;
 		$this->ref_letter_content->CurrentValue = $this->ref_letter_content->FormValue;
+		$this->ref_letter_scanned->CurrentValue = $this->ref_letter_scanned->FormValue;
 		$this->ref_letter_date->CurrentValue = $this->ref_letter_date->FormValue;
 		$this->ref_letter_date->CurrentValue = UnFormatDateTime($this->ref_letter_date->CurrentValue, 0);
 		$this->ref_letter_comments->CurrentValue = $this->ref_letter_comments->FormValue;
@@ -947,8 +921,7 @@ class reference_letter_add extends reference_letter
 		$this->ref_letter_to_whom->setDbValue($row['ref_letter_to_whom']);
 		$this->ref_letter_by_whom->setDbValue($row['ref_letter_by_whom']);
 		$this->ref_letter_content->setDbValue($row['ref_letter_content']);
-		$this->ref_letter_scanned->Upload->DbValue = $row['ref_letter_scanned'];
-		$this->ref_letter_scanned->setDbValue($this->ref_letter_scanned->Upload->DbValue);
+		$this->ref_letter_scanned->setDbValue($row['ref_letter_scanned']);
 		$this->ref_letter_date->setDbValue($row['ref_letter_date']);
 		$this->ref_letter_comments->setDbValue($row['ref_letter_comments']);
 	}
@@ -963,7 +936,7 @@ class reference_letter_add extends reference_letter
 		$row['ref_letter_to_whom'] = $this->ref_letter_to_whom->CurrentValue;
 		$row['ref_letter_by_whom'] = $this->ref_letter_by_whom->CurrentValue;
 		$row['ref_letter_content'] = $this->ref_letter_content->CurrentValue;
-		$row['ref_letter_scanned'] = $this->ref_letter_scanned->Upload->DbValue;
+		$row['ref_letter_scanned'] = $this->ref_letter_scanned->CurrentValue;
 		$row['ref_letter_date'] = $this->ref_letter_date->CurrentValue;
 		$row['ref_letter_comments'] = $this->ref_letter_comments->CurrentValue;
 		return $row;
@@ -1016,29 +989,11 @@ class reference_letter_add extends reference_letter
 
 			// ref_letter_id
 			$this->ref_letter_id->ViewValue = $this->ref_letter_id->CurrentValue;
-			$this->ref_letter_id->CssClass = "font-weight-bold";
 			$this->ref_letter_id->ViewCustomAttributes = "";
 
 			// ref_letter_branch_id
-			$curVal = strval($this->ref_letter_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->lookupCacheOption($curVal);
-				if ($this->ref_letter_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->ref_letter_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->ref_letter_branch_id->ViewValue = NULL;
-			}
+			$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->CurrentValue;
+			$this->ref_letter_branch_id->ViewValue = FormatNumber($this->ref_letter_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->ref_letter_branch_id->ViewCustomAttributes = "";
 
 			// ref_letter_to_whom
@@ -1054,14 +1009,7 @@ class reference_letter_add extends reference_letter
 			$this->ref_letter_content->ViewCustomAttributes = "";
 
 			// ref_letter_scanned
-			if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
-				$this->ref_letter_scanned->ImageWidth = 200;
-				$this->ref_letter_scanned->ImageHeight = 0;
-				$this->ref_letter_scanned->ImageAlt = $this->ref_letter_scanned->alt();
-				$this->ref_letter_scanned->ViewValue = $this->ref_letter_scanned->Upload->DbValue;
-			} else {
-				$this->ref_letter_scanned->ViewValue = "";
-			}
+			$this->ref_letter_scanned->ViewValue = $this->ref_letter_scanned->CurrentValue;
 			$this->ref_letter_scanned->ViewCustomAttributes = "";
 
 			// ref_letter_date
@@ -1095,22 +1043,8 @@ class reference_letter_add extends reference_letter
 
 			// ref_letter_scanned
 			$this->ref_letter_scanned->LinkCustomAttributes = "";
-			if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
-				$this->ref_letter_scanned->HrefValue = "%u"; // Add prefix/suffix
-				$this->ref_letter_scanned->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->ref_letter_scanned->HrefValue = FullUrl($this->ref_letter_scanned->HrefValue, "href");
-			} else {
-				$this->ref_letter_scanned->HrefValue = "";
-			}
-			$this->ref_letter_scanned->ExportHrefValue = $this->ref_letter_scanned->UploadPath . $this->ref_letter_scanned->Upload->DbValue;
+			$this->ref_letter_scanned->HrefValue = "";
 			$this->ref_letter_scanned->TooltipValue = "";
-			if ($this->ref_letter_scanned->UseColorbox) {
-				if (EmptyValue($this->ref_letter_scanned->TooltipValue))
-					$this->ref_letter_scanned->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->ref_letter_scanned->LinkAttrs["data-rel"] = "reference_letter_x_ref_letter_scanned";
-				$this->ref_letter_scanned->LinkAttrs->appendClass("ew-lightbox");
-			}
 
 			// ref_letter_date
 			$this->ref_letter_date->LinkCustomAttributes = "";
@@ -1124,36 +1058,10 @@ class reference_letter_add extends reference_letter
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// ref_letter_branch_id
+			$this->ref_letter_branch_id->EditAttrs["class"] = "form-control";
 			$this->ref_letter_branch_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->ref_letter_branch_id->CurrentValue));
-			if ($curVal != "")
-				$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->lookupCacheOption($curVal);
-			else
-				$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->Lookup !== NULL && is_array($this->ref_letter_branch_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->ref_letter_branch_id->ViewValue !== NULL) { // Load from cache
-				$this->ref_letter_branch_id->EditValue = array_values($this->ref_letter_branch_id->Lookup->Options);
-				if ($this->ref_letter_branch_id->ViewValue == "")
-					$this->ref_letter_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`branch_id`" . SearchString("=", $this->ref_letter_branch_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->ref_letter_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->ref_letter_branch_id->ViewValue = $this->ref_letter_branch_id->displayValue($arwrk);
-				} else {
-					$this->ref_letter_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->ref_letter_branch_id->EditValue = $arwrk;
-			}
+			$this->ref_letter_branch_id->EditValue = HtmlEncode($this->ref_letter_branch_id->CurrentValue);
+			$this->ref_letter_branch_id->PlaceHolder = RemoveHtml($this->ref_letter_branch_id->caption());
 
 			// ref_letter_to_whom
 			$this->ref_letter_to_whom->EditAttrs["class"] = "form-control";
@@ -1180,18 +1088,10 @@ class reference_letter_add extends reference_letter
 			// ref_letter_scanned
 			$this->ref_letter_scanned->EditAttrs["class"] = "form-control";
 			$this->ref_letter_scanned->EditCustomAttributes = "";
-			if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
-				$this->ref_letter_scanned->ImageWidth = 200;
-				$this->ref_letter_scanned->ImageHeight = 0;
-				$this->ref_letter_scanned->ImageAlt = $this->ref_letter_scanned->alt();
-				$this->ref_letter_scanned->EditValue = $this->ref_letter_scanned->Upload->DbValue;
-			} else {
-				$this->ref_letter_scanned->EditValue = "";
-			}
-			if (!EmptyValue($this->ref_letter_scanned->CurrentValue))
-					$this->ref_letter_scanned->Upload->FileName = $this->ref_letter_scanned->CurrentValue;
-			if ($this->isShow() || $this->isCopy())
-				RenderUploadField($this->ref_letter_scanned);
+			if (!$this->ref_letter_scanned->Raw)
+				$this->ref_letter_scanned->CurrentValue = HtmlDecode($this->ref_letter_scanned->CurrentValue);
+			$this->ref_letter_scanned->EditValue = HtmlEncode($this->ref_letter_scanned->CurrentValue);
+			$this->ref_letter_scanned->PlaceHolder = RemoveHtml($this->ref_letter_scanned->caption());
 
 			// ref_letter_date
 			$this->ref_letter_date->EditAttrs["class"] = "form-control";
@@ -1225,15 +1125,7 @@ class reference_letter_add extends reference_letter
 
 			// ref_letter_scanned
 			$this->ref_letter_scanned->LinkCustomAttributes = "";
-			if (!EmptyValue($this->ref_letter_scanned->Upload->DbValue)) {
-				$this->ref_letter_scanned->HrefValue = "%u"; // Add prefix/suffix
-				$this->ref_letter_scanned->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->ref_letter_scanned->HrefValue = FullUrl($this->ref_letter_scanned->HrefValue, "href");
-			} else {
-				$this->ref_letter_scanned->HrefValue = "";
-			}
-			$this->ref_letter_scanned->ExportHrefValue = $this->ref_letter_scanned->UploadPath . $this->ref_letter_scanned->Upload->DbValue;
+			$this->ref_letter_scanned->HrefValue = "";
 
 			// ref_letter_date
 			$this->ref_letter_date->LinkCustomAttributes = "";
@@ -1267,6 +1159,9 @@ class reference_letter_add extends reference_letter
 				AddMessage($FormError, str_replace("%s", $this->ref_letter_branch_id->caption(), $this->ref_letter_branch_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->ref_letter_branch_id->FormValue)) {
+			AddMessage($FormError, $this->ref_letter_branch_id->errorMessage());
+		}
 		if ($this->ref_letter_to_whom->Required) {
 			if (!$this->ref_letter_to_whom->IsDetailKey && $this->ref_letter_to_whom->FormValue != NULL && $this->ref_letter_to_whom->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->ref_letter_to_whom->caption(), $this->ref_letter_to_whom->RequiredErrorMessage));
@@ -1283,7 +1178,7 @@ class reference_letter_add extends reference_letter
 			}
 		}
 		if ($this->ref_letter_scanned->Required) {
-			if ($this->ref_letter_scanned->Upload->FileName == "" && !$this->ref_letter_scanned->Upload->KeepFile) {
+			if (!$this->ref_letter_scanned->IsDetailKey && $this->ref_letter_scanned->FormValue != NULL && $this->ref_letter_scanned->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->ref_letter_scanned->caption(), $this->ref_letter_scanned->RequiredErrorMessage));
 			}
 		}
@@ -1338,61 +1233,13 @@ class reference_letter_add extends reference_letter
 		$this->ref_letter_content->setDbValueDef($rsnew, $this->ref_letter_content->CurrentValue, "", FALSE);
 
 		// ref_letter_scanned
-		if ($this->ref_letter_scanned->Visible && !$this->ref_letter_scanned->Upload->KeepFile) {
-			$this->ref_letter_scanned->Upload->DbValue = ""; // No need to delete old file
-			if ($this->ref_letter_scanned->Upload->FileName == "") {
-				$rsnew['ref_letter_scanned'] = NULL;
-			} else {
-				$rsnew['ref_letter_scanned'] = $this->ref_letter_scanned->Upload->FileName;
-			}
-			$this->ref_letter_scanned->ImageWidth = 1000; // Resize width
-			$this->ref_letter_scanned->ImageHeight = 0; // Resize height
-		}
+		$this->ref_letter_scanned->setDbValueDef($rsnew, $this->ref_letter_scanned->CurrentValue, "", FALSE);
 
 		// ref_letter_date
 		$this->ref_letter_date->setDbValueDef($rsnew, UnFormatDateTime($this->ref_letter_date->CurrentValue, 0), CurrentDate(), FALSE);
 
 		// ref_letter_comments
 		$this->ref_letter_comments->setDbValueDef($rsnew, $this->ref_letter_comments->CurrentValue, "", FALSE);
-		if ($this->ref_letter_scanned->Visible && !$this->ref_letter_scanned->Upload->KeepFile) {
-			$oldFiles = EmptyValue($this->ref_letter_scanned->Upload->DbValue) ? [] : explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->ref_letter_scanned->htmlDecode(strval($this->ref_letter_scanned->Upload->DbValue)));
-			if (!EmptyValue($this->ref_letter_scanned->Upload->FileName)) {
-				$newFiles = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), strval($this->ref_letter_scanned->Upload->FileName));
-				$NewFileCount = count($newFiles);
-				for ($i = 0; $i < $NewFileCount; $i++) {
-					if ($newFiles[$i] != "") {
-						$file = $newFiles[$i];
-						$tempPath = UploadTempPath($this->ref_letter_scanned, $this->ref_letter_scanned->Upload->Index);
-						if (file_exists($tempPath . $file)) {
-							if (Config("DELETE_UPLOADED_FILES")) {
-								$oldFileFound = FALSE;
-								$oldFileCount = count($oldFiles);
-								for ($j = 0; $j < $oldFileCount; $j++) {
-									$oldFile = $oldFiles[$j];
-									if ($oldFile == $file) { // Old file found, no need to delete anymore
-										unset($oldFiles[$j]);
-										$oldFileFound = TRUE;
-										break;
-									}
-								}
-								if ($oldFileFound) // No need to check if file exists further
-									continue;
-							}
-							$file1 = UniqueFilename($this->ref_letter_scanned->physicalUploadPath(), $file); // Get new file name
-							if ($file1 != $file) { // Rename temp file
-								while (file_exists($tempPath . $file1) || file_exists($this->ref_letter_scanned->physicalUploadPath() . $file1)) // Make sure no file name clash
-									$file1 = UniqueFilename($this->ref_letter_scanned->physicalUploadPath(), $file1, TRUE); // Use indexed name
-								rename($tempPath . $file, $tempPath . $file1);
-								$newFiles[$i] = $file1;
-							}
-						}
-					}
-				}
-				$this->ref_letter_scanned->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
-				$this->ref_letter_scanned->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
-				$this->ref_letter_scanned->setDbValueDef($rsnew, $this->ref_letter_scanned->Upload->FileName, "", FALSE);
-			}
-		}
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1402,35 +1249,6 @@ class reference_letter_add extends reference_letter
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
-				if ($this->ref_letter_scanned->Visible && !$this->ref_letter_scanned->Upload->KeepFile) {
-					$oldFiles = EmptyValue($this->ref_letter_scanned->Upload->DbValue) ? [] : explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->ref_letter_scanned->htmlDecode(strval($this->ref_letter_scanned->Upload->DbValue)));
-					if (!EmptyValue($this->ref_letter_scanned->Upload->FileName)) {
-						$newFiles = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->ref_letter_scanned->Upload->FileName);
-						$newFiles2 = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->ref_letter_scanned->htmlDecode($rsnew['ref_letter_scanned']));
-						$newFileCount = count($newFiles);
-						for ($i = 0; $i < $newFileCount; $i++) {
-							if ($newFiles[$i] != "") {
-								$file = UploadTempPath($this->ref_letter_scanned, $this->ref_letter_scanned->Upload->Index) . $newFiles[$i];
-								if (file_exists($file)) {
-									if (@$newFiles2[$i] != "") // Use correct file name
-										$newFiles[$i] = $newFiles2[$i];
-									if (!$this->ref_letter_scanned->Upload->ResizeAndSaveToFile($this->ref_letter_scanned->ImageWidth, $this->ref_letter_scanned->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
-										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
-										return FALSE;
-									}
-								}
-							}
-						}
-					} else {
-						$newFiles = [];
-					}
-					if (Config("DELETE_UPLOADED_FILES")) {
-						foreach ($oldFiles as $oldFile) {
-							if ($oldFile != "" && !in_array($oldFile, $newFiles))
-								@unlink($this->ref_letter_scanned->oldPhysicalUploadPath() . $oldFile);
-						}
-					}
-				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1453,12 +1271,6 @@ class reference_letter_add extends reference_letter
 
 		// Clean upload path if any
 		if ($addRow) {
-
-			// ref_letter_scanned
-			if ($this->ref_letter_scanned->Upload->FileToken != "")
-				CleanUploadTempPath($this->ref_letter_scanned->Upload->FileToken, $this->ref_letter_scanned->Upload->Index);
-			else
-				CleanUploadTempPath($this->ref_letter_scanned, $this->ref_letter_scanned->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1494,8 +1306,6 @@ class reference_letter_add extends reference_letter
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_ref_letter_branch_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1516,8 +1326,6 @@ class reference_letter_add extends reference_letter
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_ref_letter_branch_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_availed_by_customer_view = new services_availed_by_customer_view();
 $services_availed_by_customer_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $services_availed_by_customer_view->showMessage();
 ?>
-<?php if (!$services_availed_by_customer_view->IsModal) { ?>
-<?php if (!$services_availed_by_customer_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $services_availed_by_customer_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fservices_availed_by_customerview" id="fservices_availed_by_customerview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -160,12 +151,6 @@ $services_availed_by_customer_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$services_availed_by_customer_view->IsModal) { ?>
-<?php if (!$services_availed_by_customer_view->isExport()) { ?>
-<?php echo $services_availed_by_customer_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $services_availed_by_customer_view->showPageFooter();

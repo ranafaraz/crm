@@ -1,5 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
-<?php if (!IsExport()) { ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php if (@!$SkipHeaderFooter) { ?>
 		<?php if (isset($DebugTimer)) $DebugTimer->stop() ?>
 		</div><!-- /.container-fluid -->
@@ -91,8 +90,6 @@
 </script>
 <!-- modal dialog -->
 <div id="ew-modal-dialog" class="modal" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h4 class="modal-title"></h4></div><div class="modal-body"></div><div class="modal-footer"></div></div></div></div>
-<!-- modal lookup dialog -->
-<div id="ew-modal-lookup-dialog" class="modal" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h4 class="modal-title"></h4></div><div class="modal-body"></div><div class="modal-footer"></div></div></div></div>
 <!-- import dialog -->
 <div id="ew-import-dialog" class="modal" role="dialog" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h4 class="modal-title"></h4></div>
 <div class="modal-body">
@@ -116,8 +113,6 @@
 <!-- drill down -->
 <div id="ew-drilldown-panel"></div>
 <?php } ?>
-<?php } ?>
-<?php if (!IsExport() || IsExport("print")) { ?>
 <script>
 
 // User event handlers
@@ -129,6 +124,5 @@ ew.ready(ew.bundleIds, "<?php echo $RELATIVE_PATH ?>js/userevt.js", "load", func
 
 });
 </script>
-<?php } ?>
 </body>
 </html>

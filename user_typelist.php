@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $user_type_list = new user_type_list();
 $user_type_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $user_type_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$user_type_list->isExport() && !$user_type->CurrentAction) { ?>
 <form name="fuser_typelistsrch" id="fuser_typelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fuser_typelistsrch-search-panel" class="<?php echo $user_type_list->SearchPanelClass ?>">
@@ -113,33 +111,68 @@ $user_type_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $user_type_list->showPageHeader(); ?>
 <?php
 $user_type_list->showMessage();
 ?>
 <?php if ($user_type_list->TotalRecords > 0 || $user_type->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$user_type_list->isExport()) { ?>
-<div>
-<?php if (!$user_type_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $user_type_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $user_type_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fuser_typelist" id="fuser_typelist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($user_type_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> user_type">
+<form name="fuser_typelist" id="fuser_typelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="user_type">
-<div class="row ew-multi-column-row">
+<div id="gmp_user_type" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($user_type_list->TotalRecords > 0 || $user_type_list->isGridEdit()) { ?>
+<table id="tbl_user_typelist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$user_type->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$user_type_list->renderListOptions();
+
+// Render list options (header, left)
+$user_type_list->ListOptions->render("header", "left");
+?>
+<?php if ($user_type_list->user_type_id->Visible) { // user_type_id ?>
+	<?php if ($user_type_list->SortUrl($user_type_list->user_type_id) == "") { ?>
+		<th data-name="user_type_id" class="<?php echo $user_type_list->user_type_id->headerCellClass() ?>"><div id="elh_user_type_user_type_id" class="user_type_user_type_id"><div class="ew-table-header-caption"><?php echo $user_type_list->user_type_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_type_id" class="<?php echo $user_type_list->user_type_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_type_list->SortUrl($user_type_list->user_type_id) ?>', 1);"><div id="elh_user_type_user_type_id" class="user_type_user_type_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_type_list->user_type_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_type_list->user_type_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_type_list->user_type_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_type_list->user_type_name->Visible) { // user_type_name ?>
+	<?php if ($user_type_list->SortUrl($user_type_list->user_type_name) == "") { ?>
+		<th data-name="user_type_name" class="<?php echo $user_type_list->user_type_name->headerCellClass() ?>"><div id="elh_user_type_user_type_name" class="user_type_user_type_name"><div class="ew-table-header-caption"><?php echo $user_type_list->user_type_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_type_name" class="<?php echo $user_type_list->user_type_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_type_list->SortUrl($user_type_list->user_type_name) ?>', 1);"><div id="elh_user_type_user_type_name" class="user_type_user_type_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_type_list->user_type_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_type_list->user_type_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_type_list->user_type_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_type_list->user_type_desc->Visible) { // user_type_desc ?>
+	<?php if ($user_type_list->SortUrl($user_type_list->user_type_desc) == "") { ?>
+		<th data-name="user_type_desc" class="<?php echo $user_type_list->user_type_desc->headerCellClass() ?>"><div id="elh_user_type_user_type_desc" class="user_type_user_type_desc"><div class="ew-table-header-caption"><?php echo $user_type_list->user_type_desc->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_type_desc" class="<?php echo $user_type_list->user_type_desc->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_type_list->SortUrl($user_type_list->user_type_desc) ?>', 1);"><div id="elh_user_type_user_type_desc" class="user_type_user_type_desc">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_type_list->user_type_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_type_list->user_type_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_type_list->user_type_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$user_type_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($user_type_list->ExportAll && $user_type_list->isExport()) {
 	$user_type_list->StopRecord = $user_type_list->TotalRecords;
@@ -160,6 +193,11 @@ if ($user_type_list->Recordset && !$user_type_list->Recordset->EOF) {
 } elseif (!$user_type->AllowAddDeleteRow && $user_type_list->StopRecord == 0) {
 	$user_type_list->StopRecord = $user_type->GridAddRowCount;
 }
+
+// Initialize aggregate
+$user_type->RowType = ROWTYPE_AGGREGATEINIT;
+$user_type->resetAttributes();
+$user_type_list->renderRow();
 while ($user_type_list->RecordCount < $user_type_list->StopRecord) {
 	$user_type_list->RecordCount++;
 	if ($user_type_list->RecordCount >= $user_type_list->StartRecord) {
@@ -186,96 +224,49 @@ while ($user_type_list->RecordCount < $user_type_list->StopRecord) {
 		// Render list options
 		$user_type_list->renderListOptions();
 ?>
-<div class="<?php echo $user_type_list->getMultiColumnClass() ?>" <?php echo $user_type->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($user_type->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($user_type_list->user_type_id->Visible) { // user_type_id ?>
-		<?php if ($user_type->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_type_list->TableLeftColumnClass ?>"><span class="user_type_user_type_id">
-<?php if ($user_type_list->isExport() || $user_type_list->SortUrl($user_type_list->user_type_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_type_list->user_type_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_type_list->SortUrl($user_type_list->user_type_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_type_list->user_type_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_type_list->user_type_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_type_list->user_type_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_type_list->user_type_id->cellAttributes() ?>>
-<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_id">
-<span<?php echo $user_type_list->user_type_id->viewAttributes() ?>><?php echo $user_type_list->user_type_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_type_user_type_id">
-			<label class="<?php echo $user_type_list->LeftColumnClass ?>"><?php echo $user_type_list->user_type_id->caption() ?></label>
-			<div class="<?php echo $user_type_list->RightColumnClass ?>"><div <?php echo $user_type_list->user_type_id->cellAttributes() ?>>
-<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_id">
-<span<?php echo $user_type_list->user_type_id->viewAttributes() ?>><?php echo $user_type_list->user_type_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_type_list->user_type_name->Visible) { // user_type_name ?>
-		<?php if ($user_type->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_type_list->TableLeftColumnClass ?>"><span class="user_type_user_type_name">
-<?php if ($user_type_list->isExport() || $user_type_list->SortUrl($user_type_list->user_type_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_type_list->user_type_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_type_list->SortUrl($user_type_list->user_type_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_type_list->user_type_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_type_list->user_type_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_type_list->user_type_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_type_list->user_type_name->cellAttributes() ?>>
-<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_name">
-<span<?php echo $user_type_list->user_type_name->viewAttributes() ?>><?php echo $user_type_list->user_type_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_type_user_type_name">
-			<label class="<?php echo $user_type_list->LeftColumnClass ?>"><?php echo $user_type_list->user_type_name->caption() ?></label>
-			<div class="<?php echo $user_type_list->RightColumnClass ?>"><div <?php echo $user_type_list->user_type_name->cellAttributes() ?>>
-<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_name">
-<span<?php echo $user_type_list->user_type_name->viewAttributes() ?>><?php echo $user_type_list->user_type_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_type->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$user_type_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $user_type->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$user_type_list->ListOptions->render("body", "bottom", $user_type_list->RowCount);
+// Render list options (body, left)
+$user_type_list->ListOptions->render("body", "left", $user_type_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($user_type_list->user_type_id->Visible) { // user_type_id ?>
+		<td data-name="user_type_id" <?php echo $user_type_list->user_type_id->cellAttributes() ?>>
+<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_id">
+<span<?php echo $user_type_list->user_type_id->viewAttributes() ?>><?php echo $user_type_list->user_type_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_type_list->user_type_name->Visible) { // user_type_name ?>
+		<td data-name="user_type_name" <?php echo $user_type_list->user_type_name->cellAttributes() ?>>
+<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_name">
+<span<?php echo $user_type_list->user_type_name->viewAttributes() ?>><?php echo $user_type_list->user_type_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_type_list->user_type_desc->Visible) { // user_type_desc ?>
+		<td data-name="user_type_desc" <?php echo $user_type_list->user_type_desc->cellAttributes() ?>>
+<span id="el<?php echo $user_type_list->RowCount ?>_user_type_user_type_desc">
+<span<?php echo $user_type_list->user_type_desc->viewAttributes() ?>><?php echo $user_type_list->user_type_desc->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$user_type_list->ListOptions->render("body", "right", $user_type_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$user_type_list->isGridAdd())
 		$user_type_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$user_type->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -287,7 +278,7 @@ if ($user_type_list->Recordset)
 	$user_type_list->Recordset->Close();
 ?>
 <?php if (!$user_type_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$user_type_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $user_type_list->Pager->render() ?>
@@ -299,7 +290,7 @@ if ($user_type_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($user_type_list->TotalRecords == 0 && !$user_type->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

@@ -1,0 +1,3 @@
+db name: dexdmvtx_crm
+db user: dexdmvtx_crm
+db pass: gpYhb*$mYahs

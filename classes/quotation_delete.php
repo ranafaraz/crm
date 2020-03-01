@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class quotation_delete extends quotation
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'quotation';
@@ -325,7 +325,6 @@ class quotation_delete extends quotation
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class quotation_delete extends quotation
 			$GLOBALS["Table"] = &$GLOBALS["quotation"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class quotation_delete extends quotation
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class quotation_delete extends quotation
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class quotation_delete extends quotation
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("quotationlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->quote_id->setVisibility();
@@ -598,11 +571,8 @@ class quotation_delete extends quotation
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->quote_branch_id);
-		$this->setupLookupOptions($this->quote_business_id);
-		$this->setupLookupOptions($this->quote_service_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -669,7 +639,7 @@ class quotation_delete extends quotation
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -720,23 +690,8 @@ class quotation_delete extends quotation
 			return;
 		$this->quote_id->setDbValue($row['quote_id']);
 		$this->quote_branch_id->setDbValue($row['quote_branch_id']);
-		if (array_key_exists('EV__quote_branch_id', $rs->fields)) {
-			$this->quote_branch_id->VirtualValue = $rs->fields('EV__quote_branch_id'); // Set up virtual field value
-		} else {
-			$this->quote_branch_id->VirtualValue = ""; // Clear value
-		}
 		$this->quote_business_id->setDbValue($row['quote_business_id']);
-		if (array_key_exists('EV__quote_business_id', $rs->fields)) {
-			$this->quote_business_id->VirtualValue = $rs->fields('EV__quote_business_id'); // Set up virtual field value
-		} else {
-			$this->quote_business_id->VirtualValue = ""; // Clear value
-		}
 		$this->quote_service_id->setDbValue($row['quote_service_id']);
-		if (array_key_exists('EV__quote_service_id', $rs->fields)) {
-			$this->quote_service_id->VirtualValue = $rs->fields('EV__quote_service_id'); // Set up virtual field value
-		} else {
-			$this->quote_service_id->VirtualValue = ""; // Clear value
-		}
 		$this->quote_issue_date->setDbValue($row['quote_issue_date']);
 		$this->quote_due_date->setDbValue($row['quote_due_date']);
 		$this->quote_amount->setDbValue($row['quote_amount']);
@@ -785,85 +740,21 @@ class quotation_delete extends quotation
 
 			// quote_id
 			$this->quote_id->ViewValue = $this->quote_id->CurrentValue;
-			$this->quote_id->CssClass = "font-weight-bold";
 			$this->quote_id->ViewCustomAttributes = "";
 
 			// quote_branch_id
-			if ($this->quote_branch_id->VirtualValue != "") {
-				$this->quote_branch_id->ViewValue = $this->quote_branch_id->VirtualValue;
-			} else {
-				$curVal = strval($this->quote_branch_id->CurrentValue);
-				if ($curVal != "") {
-					$this->quote_branch_id->ViewValue = $this->quote_branch_id->lookupCacheOption($curVal);
-					if ($this->quote_branch_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->quote_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->quote_branch_id->ViewValue = $this->quote_branch_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->quote_branch_id->ViewValue = $this->quote_branch_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->quote_branch_id->ViewValue = NULL;
-				}
-			}
+			$this->quote_branch_id->ViewValue = $this->quote_branch_id->CurrentValue;
+			$this->quote_branch_id->ViewValue = FormatNumber($this->quote_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->quote_branch_id->ViewCustomAttributes = "";
 
 			// quote_business_id
-			if ($this->quote_business_id->VirtualValue != "") {
-				$this->quote_business_id->ViewValue = $this->quote_business_id->VirtualValue;
-			} else {
-				$curVal = strval($this->quote_business_id->CurrentValue);
-				if ($curVal != "") {
-					$this->quote_business_id->ViewValue = $this->quote_business_id->lookupCacheOption($curVal);
-					if ($this->quote_business_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->quote_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->quote_business_id->ViewValue = $this->quote_business_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->quote_business_id->ViewValue = $this->quote_business_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->quote_business_id->ViewValue = NULL;
-				}
-			}
+			$this->quote_business_id->ViewValue = $this->quote_business_id->CurrentValue;
+			$this->quote_business_id->ViewValue = FormatNumber($this->quote_business_id->ViewValue, 0, -2, -2, -2);
 			$this->quote_business_id->ViewCustomAttributes = "";
 
 			// quote_service_id
-			if ($this->quote_service_id->VirtualValue != "") {
-				$this->quote_service_id->ViewValue = $this->quote_service_id->VirtualValue;
-			} else {
-				$curVal = strval($this->quote_service_id->CurrentValue);
-				if ($curVal != "") {
-					$this->quote_service_id->ViewValue = $this->quote_service_id->lookupCacheOption($curVal);
-					if ($this->quote_service_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->quote_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->quote_service_id->ViewValue = $this->quote_service_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->quote_service_id->ViewValue = $this->quote_service_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->quote_service_id->ViewValue = NULL;
-				}
-			}
+			$this->quote_service_id->ViewValue = $this->quote_service_id->CurrentValue;
+			$this->quote_service_id->ViewValue = FormatNumber($this->quote_service_id->ViewValue, 0, -2, -2, -2);
 			$this->quote_service_id->ViewCustomAttributes = "";
 
 			// quote_issue_date
@@ -926,10 +817,6 @@ class quotation_delete extends quotation
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -1037,12 +924,6 @@ class quotation_delete extends quotation
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_quote_branch_id":
-					break;
-				case "x_quote_business_id":
-					break;
-				case "x_quote_service_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1063,12 +944,6 @@ class quotation_delete extends quotation
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_quote_branch_id":
-							break;
-						case "x_quote_business_id":
-							break;
-						case "x_quote_service_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

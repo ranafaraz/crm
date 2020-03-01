@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $district_edit = new district_edit();
 $district_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -66,6 +65,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $district_edit->district_division_id->caption(), $district_edit->district_division_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_district_division_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($district_edit->district_division_id->errorMessage()) ?>");
 			<?php if ($district_edit->district_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_district_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -99,8 +101,6 @@ loadjs.ready("head", function() {
 	fdistrictedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fdistrictedit.lists["x_district_division_id"] = <?php echo $district_edit->district_division_id->Lookup->toClientList($district_edit) ?>;
-	fdistrictedit.lists["x_district_division_id"].options = <?php echo JsonEncode($district_edit->district_division_id->lookupOptions()) ?>;
 	loadjs.done("fdistrictedit");
 });
 </script>
@@ -140,23 +140,7 @@ $district_edit->showMessage();
 		<label id="elh_district_district_division_id" for="x_district_division_id" class="<?php echo $district_edit->LeftColumnClass ?>"><?php echo $district_edit->district_division_id->caption() ?><?php echo $district_edit->district_division_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $district_edit->RightColumnClass ?>"><div <?php echo $district_edit->district_division_id->cellAttributes() ?>>
 <span id="el_district_district_division_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($district_edit->district_division_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $district_edit->district_division_id->ViewValue ?></button>
-		<div id="dsl_x_district_division_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $district_edit->district_division_id->radioButtonListHtml(TRUE, "x_district_division_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_district_division_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="district" data-field="x_district_division_id" data-value-separator="<?php echo $district_edit->district_division_id->displayValueSeparatorAttribute() ?>" name="x_district_division_id" id="x_district_division_id" value="{value}"<?php echo $district_edit->district_division_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$district_edit->district_division_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $district_edit->district_division_id->Lookup->getParamTag($district_edit, "p_x_district_division_id") ?>
+<input type="text" data-table="district" data-field="x_district_division_id" name="x_district_division_id" id="x_district_division_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($district_edit->district_division_id->getPlaceHolder()) ?>" value="<?php echo $district_edit->district_division_id->EditValue ?>"<?php echo $district_edit->district_division_id->editAttributes() ?>>
 </span>
 <?php echo $district_edit->district_division_id->CustomMsg ?></div></div>
 	</div>

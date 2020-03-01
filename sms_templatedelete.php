@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $sms_template_delete = new sms_template_delete();
 $sms_template_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -79,6 +78,9 @@ $sms_template_delete->showMessage();
 <?php if ($sms_template_delete->sms_temp_caption->Visible) { // sms_temp_caption ?>
 		<th class="<?php echo $sms_template_delete->sms_temp_caption->headerCellClass() ?>"><span id="elh_sms_template_sms_temp_caption" class="sms_template_sms_temp_caption"><?php echo $sms_template_delete->sms_temp_caption->caption() ?></span></th>
 <?php } ?>
+<?php if ($sms_template_delete->sms_temp_msg->Visible) { // sms_temp_msg ?>
+		<th class="<?php echo $sms_template_delete->sms_temp_msg->headerCellClass() ?>"><span id="elh_sms_template_sms_temp_msg" class="sms_template_sms_temp_msg"><?php echo $sms_template_delete->sms_temp_msg->caption() ?></span></th>
+<?php } ?>
 	</tr>
 	</thead>
 	<tbody>
@@ -118,6 +120,13 @@ while (!$sms_template_delete->Recordset->EOF) {
 		<td <?php echo $sms_template_delete->sms_temp_caption->cellAttributes() ?>>
 <span id="el<?php echo $sms_template_delete->RowCount ?>_sms_template_sms_temp_caption" class="sms_template_sms_temp_caption">
 <span<?php echo $sms_template_delete->sms_temp_caption->viewAttributes() ?>><?php echo $sms_template_delete->sms_temp_caption->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($sms_template_delete->sms_temp_msg->Visible) { // sms_temp_msg ?>
+		<td <?php echo $sms_template_delete->sms_temp_msg->cellAttributes() ?>>
+<span id="el<?php echo $sms_template_delete->RowCount ?>_sms_template_sms_temp_msg" class="sms_template_sms_temp_msg">
+<span<?php echo $sms_template_delete->sms_temp_msg->viewAttributes() ?>><?php echo $sms_template_delete->sms_temp_msg->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $user_view = new user_view();
 $user_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $user_view->showMessage();
 ?>
-<?php if (!$user_view->IsModal) { ?>
-<?php if (!$user_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $user_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fuserview" id="fuserview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -139,16 +130,6 @@ $user_view->showMessage();
 </td>
 	</tr>
 <?php } ?>
-<?php if ($user_view->user_cnic->Visible) { // user_cnic ?>
-	<tr id="r_user_cnic">
-		<td class="<?php echo $user_view->TableLeftColumnClass ?>"><span id="elh_user_user_cnic"><?php echo $user_view->user_cnic->caption() ?></span></td>
-		<td data-name="user_cnic" <?php echo $user_view->user_cnic->cellAttributes() ?>>
-<span id="el_user_user_cnic">
-<span<?php echo $user_view->user_cnic->viewAttributes() ?>><?php echo $user_view->user_cnic->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
 <?php if ($user_view->user_father->Visible) { // user_father ?>
 	<tr id="r_user_father">
 		<td class="<?php echo $user_view->TableLeftColumnClass ?>"><span id="elh_user_user_father"><?php echo $user_view->user_father->caption() ?></span></td>
@@ -164,18 +145,22 @@ $user_view->showMessage();
 		<td class="<?php echo $user_view->TableLeftColumnClass ?>"><span id="elh_user_user_photo"><?php echo $user_view->user_photo->caption() ?></span></td>
 		<td data-name="user_photo" <?php echo $user_view->user_photo->cellAttributes() ?>>
 <span id="el_user_user_photo">
-<span><?php echo GetFileViewTag($user_view->user_photo, $user_view->user_photo->getViewValue(), FALSE) ?></span>
+<span<?php echo $user_view->user_photo->viewAttributes() ?>><?php echo $user_view->user_photo->getViewValue() ?></span>
+</span>
+</td>
+	</tr>
+<?php } ?>
+<?php if ($user_view->user_cnic->Visible) { // user_cnic ?>
+	<tr id="r_user_cnic">
+		<td class="<?php echo $user_view->TableLeftColumnClass ?>"><span id="elh_user_user_cnic"><?php echo $user_view->user_cnic->caption() ?></span></td>
+		<td data-name="user_cnic" <?php echo $user_view->user_cnic->cellAttributes() ?>>
+<span id="el_user_user_cnic">
+<span<?php echo $user_view->user_cnic->viewAttributes() ?>><?php echo $user_view->user_cnic->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$user_view->IsModal) { ?>
-<?php if (!$user_view->isExport()) { ?>
-<?php echo $user_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $user_view->showPageFooter();

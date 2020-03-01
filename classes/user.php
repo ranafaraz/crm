@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -31,9 +31,9 @@ class user extends DbTable
 	public $user_name;
 	public $user_password;
 	public $user_email;
-	public $user_cnic;
 	public $user_father;
 	public $user_photo;
+	public $user_cnic;
 
 	// Constructor
 	public function __construct()
@@ -77,23 +77,16 @@ class user extends DbTable
 		$this->fields['user_id'] = &$this->user_id;
 
 		// user_branch_id
-		$this->user_branch_id = new DbField('user', 'user', 'x_user_branch_id', 'user_branch_id', '`user_branch_id`', '`user_branch_id`', 3, 12, -1, FALSE, '`user_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->user_branch_id = new DbField('user', 'user', 'x_user_branch_id', 'user_branch_id', '`user_branch_id`', '`user_branch_id`', 3, 12, -1, FALSE, '`user_branch_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->user_branch_id->Nullable = FALSE; // NOT NULL field
 		$this->user_branch_id->Required = TRUE; // Required field
 		$this->user_branch_id->Sortable = TRUE; // Allow sort
-		$this->user_branch_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->user_branch_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->user_branch_id->Lookup = new Lookup('user_branch_id', 'branch', FALSE, 'branch_id', ["branch_name","","",""], [], [], [], [], [], [], '', '');
 		$this->user_branch_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['user_branch_id'] = &$this->user_branch_id;
 
 		// user_type_id
-		$this->user_type_id = new DbField('user', 'user', 'x_user_type_id', 'user_type_id', '`user_type_id`', '`user_type_id`', 3, 12, -1, FALSE, '`user_type_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
-		$this->user_type_id->Required = TRUE; // Required field
+		$this->user_type_id = new DbField('user', 'user', 'x_user_type_id', 'user_type_id', '`user_type_id`', '`user_type_id`', 3, 12, -1, FALSE, '`user_type_id`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->user_type_id->Sortable = TRUE; // Allow sort
-		$this->user_type_id->UsePleaseSelect = TRUE; // Use PleaseSelect by default
-		$this->user_type_id->PleaseSelectText = $Language->phrase("PleaseSelect"); // "PleaseSelect" text
-		$this->user_type_id->Lookup = new Lookup('user_type_id', 'userlevels', FALSE, 'userlevelid', ["userlevelname","","",""], [], [], [], [], [], [], '', '');
 		$this->user_type_id->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
 		$this->fields['user_type_id'] = &$this->user_type_id;
 
@@ -105,7 +98,7 @@ class user extends DbTable
 		$this->fields['user_name'] = &$this->user_name;
 
 		// user_password
-		$this->user_password = new DbField('user', 'user', 'x_user_password', 'user_password', '`user_password`', '`user_password`', 200, 255, -1, FALSE, '`user_password`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'PASSWORD');
+		$this->user_password = new DbField('user', 'user', 'x_user_password', 'user_password', '`user_password`', '`user_password`', 200, 255, -1, FALSE, '`user_password`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->user_password->Nullable = FALSE; // NOT NULL field
 		$this->user_password->Required = TRUE; // Required field
 		$this->user_password->Sortable = TRUE; // Allow sort
@@ -118,13 +111,6 @@ class user extends DbTable
 		$this->user_email->Sortable = TRUE; // Allow sort
 		$this->fields['user_email'] = &$this->user_email;
 
-		// user_cnic
-		$this->user_cnic = new DbField('user', 'user', 'x_user_cnic', 'user_cnic', '`user_cnic`', '`user_cnic`', 200, 16, -1, FALSE, '`user_cnic`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
-		$this->user_cnic->Nullable = FALSE; // NOT NULL field
-		$this->user_cnic->Required = TRUE; // Required field
-		$this->user_cnic->Sortable = TRUE; // Allow sort
-		$this->fields['user_cnic'] = &$this->user_cnic;
-
 		// user_father
 		$this->user_father = new DbField('user', 'user', 'x_user_father', 'user_father', '`user_father`', '`user_father`', 200, 50, -1, FALSE, '`user_father`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->user_father->Nullable = FALSE; // NOT NULL field
@@ -133,12 +119,18 @@ class user extends DbTable
 		$this->fields['user_father'] = &$this->user_father;
 
 		// user_photo
-		$this->user_photo = new DbField('user', 'user', 'x_user_photo', 'user_photo', '`user_photo`', '`user_photo`', 201, 65535, -1, TRUE, '`user_photo`', FALSE, FALSE, FALSE, 'IMAGE', 'FILE');
+		$this->user_photo = new DbField('user', 'user', 'x_user_photo', 'user_photo', '`user_photo`', '`user_photo`', 201, 65535, -1, FALSE, '`user_photo`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->user_photo->Nullable = FALSE; // NOT NULL field
 		$this->user_photo->Required = TRUE; // Required field
 		$this->user_photo->Sortable = TRUE; // Allow sort
-		$this->user_photo->ImageResize = TRUE;
 		$this->fields['user_photo'] = &$this->user_photo;
+
+		// user_cnic
+		$this->user_cnic = new DbField('user', 'user', 'x_user_cnic', 'user_cnic', '`user_cnic`', '`user_cnic`', 200, 16, -1, FALSE, '`user_cnic`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->user_cnic->Nullable = FALSE; // NOT NULL field
+		$this->user_cnic->Required = TRUE; // Required field
+		$this->user_cnic->Sortable = TRUE; // Allow sort
+		$this->fields['user_cnic'] = &$this->user_cnic;
 	}
 
 	// Field Visibility
@@ -407,14 +399,12 @@ class user extends DbTable
 		foreach ($rs as $name => $value) {
 			if (!isset($this->fields[$name]) || $this->fields[$name]->IsCustom)
 				continue;
-			if (Config("ENCRYPTED_PASSWORD") && $name == Config("LOGIN_PASSWORD_FIELD_NAME"))
-				$value = Config("CASE_SENSITIVE_PASSWORD") ? EncryptPassword($value) : EncryptPassword(strtolower($value));
 			$names .= $this->fields[$name]->Expression . ",";
 			$values .= QuotedValue($value, $this->fields[$name]->DataType, $this->Dbid) . ",";
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -438,11 +428,6 @@ class user extends DbTable
 		foreach ($rs as $name => $value) {
 			if (!isset($this->fields[$name]) || $this->fields[$name]->IsCustom || $this->fields[$name]->IsAutoIncrement)
 				continue;
-			if (Config("ENCRYPTED_PASSWORD") && $name == Config("LOGIN_PASSWORD_FIELD_NAME")) {
-				if ($value == $this->fields[$name]->OldValue) // No need to update hashed password if not changed
-					continue;
-				$value = Config("CASE_SENSITIVE_PASSWORD") ? EncryptPassword($value) : EncryptPassword(strtolower($value));
-			}
 			$sql .= $this->fields[$name]->Expression . "=";
 			$sql .= QuotedValue($value, $this->fields[$name]->DataType, $this->Dbid) . ",";
 		}
@@ -505,20 +490,15 @@ class user extends DbTable
 		$this->user_name->DbValue = $row['user_name'];
 		$this->user_password->DbValue = $row['user_password'];
 		$this->user_email->DbValue = $row['user_email'];
-		$this->user_cnic->DbValue = $row['user_cnic'];
 		$this->user_father->DbValue = $row['user_father'];
-		$this->user_photo->Upload->DbValue = $row['user_photo'];
+		$this->user_photo->DbValue = $row['user_photo'];
+		$this->user_cnic->DbValue = $row['user_cnic'];
 	}
 
 	// Delete uploaded files
 	public function deleteUploadedFiles($row)
 	{
 		$this->loadDbValues($row);
-		$oldFiles = EmptyValue($row['user_photo']) ? [] : [$row['user_photo']];
-		foreach ($oldFiles as $oldFile) {
-			if (file_exists($this->user_photo->oldPhysicalUploadPath() . $oldFile))
-				@unlink($this->user_photo->oldPhysicalUploadPath() . $oldFile);
-		}
 	}
 
 	// Record filter WHERE clause
@@ -749,9 +729,9 @@ class user extends DbTable
 		$this->user_name->setDbValue($rs->fields('user_name'));
 		$this->user_password->setDbValue($rs->fields('user_password'));
 		$this->user_email->setDbValue($rs->fields('user_email'));
-		$this->user_cnic->setDbValue($rs->fields('user_cnic'));
 		$this->user_father->setDbValue($rs->fields('user_father'));
-		$this->user_photo->Upload->DbValue = $rs->fields('user_photo');
+		$this->user_photo->setDbValue($rs->fields('user_photo'));
+		$this->user_cnic->setDbValue($rs->fields('user_cnic'));
 	}
 
 	// Render list row values
@@ -769,56 +749,22 @@ class user extends DbTable
 		// user_name
 		// user_password
 		// user_email
-		// user_cnic
 		// user_father
 		// user_photo
+		// user_cnic
 		// user_id
 
 		$this->user_id->ViewValue = $this->user_id->CurrentValue;
 		$this->user_id->ViewCustomAttributes = "";
 
 		// user_branch_id
-		$curVal = strval($this->user_branch_id->CurrentValue);
-		if ($curVal != "") {
-			$this->user_branch_id->ViewValue = $this->user_branch_id->lookupCacheOption($curVal);
-			if ($this->user_branch_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->user_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->user_branch_id->ViewValue = $this->user_branch_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->user_branch_id->ViewValue = NULL;
-		}
+		$this->user_branch_id->ViewValue = $this->user_branch_id->CurrentValue;
+		$this->user_branch_id->ViewValue = FormatNumber($this->user_branch_id->ViewValue, 0, -2, -2, -2);
 		$this->user_branch_id->ViewCustomAttributes = "";
 
 		// user_type_id
-		$curVal = strval($this->user_type_id->CurrentValue);
-		if ($curVal != "") {
-			$this->user_type_id->ViewValue = $this->user_type_id->lookupCacheOption($curVal);
-			if ($this->user_type_id->ViewValue === NULL) { // Lookup from database
-				$filterWrk = "`userlevelid`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-				$sqlWrk = $this->user_type_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = $rswrk->fields('df');
-					$this->user_type_id->ViewValue = $this->user_type_id->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
-				}
-			}
-		} else {
-			$this->user_type_id->ViewValue = NULL;
-		}
+		$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
+		$this->user_type_id->ViewValue = FormatNumber($this->user_type_id->ViewValue, 0, -2, -2, -2);
 		$this->user_type_id->ViewCustomAttributes = "";
 
 		// user_name
@@ -826,31 +772,24 @@ class user extends DbTable
 		$this->user_name->ViewCustomAttributes = "";
 
 		// user_password
-		$this->user_password->ViewValue = $Language->phrase("PasswordMask");
+		$this->user_password->ViewValue = $this->user_password->CurrentValue;
 		$this->user_password->ViewCustomAttributes = "";
 
 		// user_email
 		$this->user_email->ViewValue = $this->user_email->CurrentValue;
 		$this->user_email->ViewCustomAttributes = "";
 
-		// user_cnic
-		$this->user_cnic->ViewValue = $this->user_cnic->CurrentValue;
-		$this->user_cnic->ViewCustomAttributes = "";
-
 		// user_father
 		$this->user_father->ViewValue = $this->user_father->CurrentValue;
 		$this->user_father->ViewCustomAttributes = "";
 
 		// user_photo
-		if (!EmptyValue($this->user_photo->Upload->DbValue)) {
-			$this->user_photo->ImageWidth = 200;
-			$this->user_photo->ImageHeight = 0;
-			$this->user_photo->ImageAlt = $this->user_photo->alt();
-			$this->user_photo->ViewValue = $this->user_photo->Upload->DbValue;
-		} else {
-			$this->user_photo->ViewValue = "";
-		}
+		$this->user_photo->ViewValue = $this->user_photo->CurrentValue;
 		$this->user_photo->ViewCustomAttributes = "";
+
+		// user_cnic
+		$this->user_cnic->ViewValue = $this->user_cnic->CurrentValue;
+		$this->user_cnic->ViewCustomAttributes = "";
 
 		// user_id
 		$this->user_id->LinkCustomAttributes = "";
@@ -882,11 +821,6 @@ class user extends DbTable
 		$this->user_email->HrefValue = "";
 		$this->user_email->TooltipValue = "";
 
-		// user_cnic
-		$this->user_cnic->LinkCustomAttributes = "";
-		$this->user_cnic->HrefValue = "";
-		$this->user_cnic->TooltipValue = "";
-
 		// user_father
 		$this->user_father->LinkCustomAttributes = "";
 		$this->user_father->HrefValue = "";
@@ -894,22 +828,13 @@ class user extends DbTable
 
 		// user_photo
 		$this->user_photo->LinkCustomAttributes = "";
-		if (!EmptyValue($this->user_photo->Upload->DbValue)) {
-			$this->user_photo->HrefValue = GetFileUploadUrl($this->user_photo, $this->user_photo->htmlDecode($this->user_photo->Upload->DbValue)); // Add prefix/suffix
-			$this->user_photo->LinkAttrs["target"] = ""; // Add target
-			if ($this->isExport())
-				$this->user_photo->HrefValue = FullUrl($this->user_photo->HrefValue, "href");
-		} else {
-			$this->user_photo->HrefValue = "";
-		}
-		$this->user_photo->ExportHrefValue = $this->user_photo->UploadPath . $this->user_photo->Upload->DbValue;
+		$this->user_photo->HrefValue = "";
 		$this->user_photo->TooltipValue = "";
-		if ($this->user_photo->UseColorbox) {
-			if (EmptyValue($this->user_photo->TooltipValue))
-				$this->user_photo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-			$this->user_photo->LinkAttrs["data-rel"] = "user_x_user_photo";
-			$this->user_photo->LinkAttrs->appendClass("ew-lightbox");
-		}
+
+		// user_cnic
+		$this->user_cnic->LinkCustomAttributes = "";
+		$this->user_cnic->HrefValue = "";
+		$this->user_cnic->TooltipValue = "";
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -933,10 +858,16 @@ class user extends DbTable
 		$this->user_id->ViewCustomAttributes = "";
 
 		// user_branch_id
+		$this->user_branch_id->EditAttrs["class"] = "form-control";
 		$this->user_branch_id->EditCustomAttributes = "";
+		$this->user_branch_id->EditValue = $this->user_branch_id->CurrentValue;
+		$this->user_branch_id->PlaceHolder = RemoveHtml($this->user_branch_id->caption());
 
 		// user_type_id
+		$this->user_type_id->EditAttrs["class"] = "form-control";
 		$this->user_type_id->EditCustomAttributes = "";
+		$this->user_type_id->EditValue = $this->user_type_id->CurrentValue;
+		$this->user_type_id->PlaceHolder = RemoveHtml($this->user_type_id->caption());
 
 		// user_name
 		$this->user_name->EditAttrs["class"] = "form-control";
@@ -947,8 +878,10 @@ class user extends DbTable
 		$this->user_name->PlaceHolder = RemoveHtml($this->user_name->caption());
 
 		// user_password
-		$this->user_password->EditAttrs["class"] = "form-control ew-password-strength";
+		$this->user_password->EditAttrs["class"] = "form-control";
 		$this->user_password->EditCustomAttributes = "";
+		if (!$this->user_password->Raw)
+			$this->user_password->CurrentValue = HtmlDecode($this->user_password->CurrentValue);
 		$this->user_password->EditValue = $this->user_password->CurrentValue;
 		$this->user_password->PlaceHolder = RemoveHtml($this->user_password->caption());
 
@@ -959,14 +892,6 @@ class user extends DbTable
 			$this->user_email->CurrentValue = HtmlDecode($this->user_email->CurrentValue);
 		$this->user_email->EditValue = $this->user_email->CurrentValue;
 		$this->user_email->PlaceHolder = RemoveHtml($this->user_email->caption());
-
-		// user_cnic
-		$this->user_cnic->EditAttrs["class"] = "form-control";
-		$this->user_cnic->EditCustomAttributes = "";
-		if (!$this->user_cnic->Raw)
-			$this->user_cnic->CurrentValue = HtmlDecode($this->user_cnic->CurrentValue);
-		$this->user_cnic->EditValue = $this->user_cnic->CurrentValue;
-		$this->user_cnic->PlaceHolder = RemoveHtml($this->user_cnic->caption());
 
 		// user_father
 		$this->user_father->EditAttrs["class"] = "form-control";
@@ -979,16 +904,16 @@ class user extends DbTable
 		// user_photo
 		$this->user_photo->EditAttrs["class"] = "form-control";
 		$this->user_photo->EditCustomAttributes = "";
-		if (!EmptyValue($this->user_photo->Upload->DbValue)) {
-			$this->user_photo->ImageWidth = 200;
-			$this->user_photo->ImageHeight = 0;
-			$this->user_photo->ImageAlt = $this->user_photo->alt();
-			$this->user_photo->EditValue = $this->user_photo->Upload->DbValue;
-		} else {
-			$this->user_photo->EditValue = "";
-		}
-		if (!EmptyValue($this->user_photo->CurrentValue))
-				$this->user_photo->Upload->FileName = $this->user_photo->CurrentValue;
+		$this->user_photo->EditValue = $this->user_photo->CurrentValue;
+		$this->user_photo->PlaceHolder = RemoveHtml($this->user_photo->caption());
+
+		// user_cnic
+		$this->user_cnic->EditAttrs["class"] = "form-control";
+		$this->user_cnic->EditCustomAttributes = "";
+		if (!$this->user_cnic->Raw)
+			$this->user_cnic->CurrentValue = HtmlDecode($this->user_cnic->CurrentValue);
+		$this->user_cnic->EditValue = $this->user_cnic->CurrentValue;
+		$this->user_cnic->PlaceHolder = RemoveHtml($this->user_cnic->caption());
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -1025,9 +950,9 @@ class user extends DbTable
 					$doc->exportCaption($this->user_name);
 					$doc->exportCaption($this->user_password);
 					$doc->exportCaption($this->user_email);
-					$doc->exportCaption($this->user_cnic);
 					$doc->exportCaption($this->user_father);
 					$doc->exportCaption($this->user_photo);
+					$doc->exportCaption($this->user_cnic);
 				} else {
 					$doc->exportCaption($this->user_id);
 					$doc->exportCaption($this->user_branch_id);
@@ -1035,8 +960,8 @@ class user extends DbTable
 					$doc->exportCaption($this->user_name);
 					$doc->exportCaption($this->user_password);
 					$doc->exportCaption($this->user_email);
-					$doc->exportCaption($this->user_cnic);
 					$doc->exportCaption($this->user_father);
+					$doc->exportCaption($this->user_cnic);
 				}
 				$doc->endExportRow();
 			}
@@ -1074,9 +999,9 @@ class user extends DbTable
 						$doc->exportField($this->user_name);
 						$doc->exportField($this->user_password);
 						$doc->exportField($this->user_email);
-						$doc->exportField($this->user_cnic);
 						$doc->exportField($this->user_father);
 						$doc->exportField($this->user_photo);
+						$doc->exportField($this->user_cnic);
 					} else {
 						$doc->exportField($this->user_id);
 						$doc->exportField($this->user_branch_id);
@@ -1084,8 +1009,8 @@ class user extends DbTable
 						$doc->exportField($this->user_name);
 						$doc->exportField($this->user_password);
 						$doc->exportField($this->user_email);
-						$doc->exportField($this->user_cnic);
 						$doc->exportField($this->user_father);
+						$doc->exportField($this->user_cnic);
 					}
 					$doc->endExportRow($rowCnt);
 				}
@@ -1104,98 +1029,8 @@ class user extends DbTable
 	// Get file data
 	public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0)
 	{
-		$width = ($width > 0) ? $width : Config("THUMBNAIL_DEFAULT_WIDTH");
-		$height = ($height > 0) ? $height : Config("THUMBNAIL_DEFAULT_HEIGHT");
 
-		// Set up field name / file name field / file type field
-		$fldName = "";
-		$fileNameFld = "";
-		$fileTypeFld = "";
-		if ($fldparm == 'user_photo') {
-			$fldName = "user_photo";
-			$fileNameFld = "user_photo";
-		} else {
-			return FALSE; // Incorrect field
-		}
-
-		// Set up key values
-		$ar = explode(Config("COMPOSITE_KEY_SEPARATOR"), $key);
-		if (count($ar) == 1) {
-			$this->user_id->CurrentValue = $ar[0];
-		} else {
-			return FALSE; // Incorrect key
-		}
-
-		// Set up filter (WHERE Clause)
-		$filter = $this->getRecordFilter();
-		$this->CurrentFilter = $filter;
-		$sql = $this->getCurrentSql();
-		$conn = $this->getConnection();
-		$dbtype = GetConnectionType($this->Dbid);
-		if (($rs = $conn->execute($sql)) && !$rs->EOF) {
-			$val = $rs->fields($fldName);
-			if (!EmptyValue($val)) {
-				$fld = $this->fields[$fldName];
-
-				// Binary data
-				if ($fld->DataType == DATATYPE_BLOB) {
-					if ($dbtype != "MYSQL") {
-						if (is_array($val) || is_object($val)) // Byte array
-							$val = BytesToString($val);
-					}
-					if ($resize)
-						ResizeBinary($val, $width, $height);
-
-					// Write file type
-					if ($fileTypeFld != "" && !EmptyValue($rs->fields($fileTypeFld))) {
-						AddHeader("Content-type", $rs->fields($fileTypeFld));
-					} else {
-						AddHeader("Content-type", ContentType($val));
-					}
-
-					// Write file name
-					if ($fileNameFld != "" && !EmptyValue($rs->fields($fileNameFld))) {
-						$fileName = $rs->fields($fileNameFld);
-						$pathinfo = pathinfo($fileName);
-						$ext = strtolower(@$pathinfo["extension"]);
-						$isPdf = SameText($ext, "pdf");
-						if (!Config("EMBED_PDF") || !$isPdf) // Skip header if embed PDF
-							AddHeader("Content-Disposition", "attachment; filename=\"" . $fileName . "\"");
-					}
-
-					// Write file data
-					if (StartsString("PK", $val) && ContainsString($val, "[Content_Types].xml") &&
-						ContainsString($val, "_rels") && ContainsString($val, "docProps")) { // Fix Office 2007 documents
-						if (!EndsString("\0\0\0", $val)) // Not ends with 3 or 4 \0
-							$val .= "\0\0\0\0";
-					}
-
-					// Clear any debug message
-					if (ob_get_length())
-						ob_end_clean();
-
-					// Write binary data
-					Write($val);
-
-				// Upload to folder
-				} else {
-					if ($fld->UploadMultiple)
-						$files = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $val);
-					else
-						$files = [$val];
-					$data = [];
-					$ar = [];
-					foreach ($files as $file) {
-						if (!EmptyValue($file))
-							$ar[$file] = FullUrl($fld->hrefPath() . $file);
-					}
-					$data[$fld->Param] = $ar;
-					WriteJson($data);
-				}
-			}
-			$rs->close();
-			return TRUE;
-		}
+		// No binary fields
 		return FALSE;
 	}
 

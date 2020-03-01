@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class cus_support_add extends cus_support
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'cus_support';
@@ -325,7 +325,6 @@ class cus_support_add extends cus_support
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class cus_support_add extends cus_support
 			$GLOBALS["Table"] = &$GLOBALS["cus_support"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'add');
@@ -369,9 +364,6 @@ class cus_support_add extends cus_support
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class cus_support_add extends cus_support
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class cus_support_add extends cus_support
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -644,22 +630,6 @@ class cus_support_add extends cus_support
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canAdd()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("cus_supportlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -695,10 +665,8 @@ class cus_support_add extends cus_support
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->cus_sup_branch_id);
-		$this->setupLookupOptions($this->cus_sup_emp_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -802,9 +770,6 @@ class cus_support_add extends cus_support
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
-		$this->cus_sup_screen_shots->Upload->Index = $CurrentForm->Index;
-		$this->cus_sup_screen_shots->Upload->uploadFile();
-		$this->cus_sup_screen_shots->CurrentValue = $this->cus_sup_screen_shots->Upload->FileName;
 	}
 
 	// Load default values
@@ -818,9 +783,8 @@ class cus_support_add extends cus_support
 		$this->cus_sup_emp_id->OldValue = $this->cus_sup_emp_id->CurrentValue;
 		$this->cus_sup_query->CurrentValue = NULL;
 		$this->cus_sup_query->OldValue = $this->cus_sup_query->CurrentValue;
-		$this->cus_sup_screen_shots->Upload->DbValue = NULL;
-		$this->cus_sup_screen_shots->OldValue = $this->cus_sup_screen_shots->Upload->DbValue;
-		$this->cus_sup_screen_shots->CurrentValue = NULL; // Clear file related field
+		$this->cus_sup_screen_shots->CurrentValue = NULL;
+		$this->cus_sup_screen_shots->OldValue = $this->cus_sup_screen_shots->CurrentValue;
 		$this->cus_sup_date->CurrentValue = NULL;
 		$this->cus_sup_date->OldValue = $this->cus_sup_date->CurrentValue;
 		$this->cus_sup_status->CurrentValue = NULL;
@@ -837,7 +801,6 @@ class cus_support_add extends cus_support
 
 		// Load from form
 		global $CurrentForm;
-		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'cus_sup_branch_id' first before field var 'x_cus_sup_branch_id'
 		$val = $CurrentForm->hasValue("cus_sup_branch_id") ? $CurrentForm->getValue("cus_sup_branch_id") : $CurrentForm->getValue("x_cus_sup_branch_id");
@@ -866,6 +829,15 @@ class cus_support_add extends cus_support
 				$this->cus_sup_query->setFormValue($val);
 		}
 
+		// Check field name 'cus_sup_screen_shots' first before field var 'x_cus_sup_screen_shots'
+		$val = $CurrentForm->hasValue("cus_sup_screen_shots") ? $CurrentForm->getValue("cus_sup_screen_shots") : $CurrentForm->getValue("x_cus_sup_screen_shots");
+		if (!$this->cus_sup_screen_shots->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->cus_sup_screen_shots->Visible = FALSE; // Disable update for API request
+			else
+				$this->cus_sup_screen_shots->setFormValue($val);
+		}
+
 		// Check field name 'cus_sup_date' first before field var 'x_cus_sup_date'
 		$val = $CurrentForm->hasValue("cus_sup_date") ? $CurrentForm->getValue("cus_sup_date") : $CurrentForm->getValue("x_cus_sup_date");
 		if (!$this->cus_sup_date->IsDetailKey) {
@@ -873,7 +845,7 @@ class cus_support_add extends cus_support
 				$this->cus_sup_date->Visible = FALSE; // Disable update for API request
 			else
 				$this->cus_sup_date->setFormValue($val);
-			$this->cus_sup_date->CurrentValue = UnFormatDateTime($this->cus_sup_date->CurrentValue, 1);
+			$this->cus_sup_date->CurrentValue = UnFormatDateTime($this->cus_sup_date->CurrentValue, 0);
 		}
 
 		// Check field name 'cus_sup_status' first before field var 'x_cus_sup_status'
@@ -901,7 +873,7 @@ class cus_support_add extends cus_support
 				$this->cus_sup_resolved_on->Visible = FALSE; // Disable update for API request
 			else
 				$this->cus_sup_resolved_on->setFormValue($val);
-			$this->cus_sup_resolved_on->CurrentValue = UnFormatDateTime($this->cus_sup_resolved_on->CurrentValue, 1);
+			$this->cus_sup_resolved_on->CurrentValue = UnFormatDateTime($this->cus_sup_resolved_on->CurrentValue, 0);
 		}
 
 		// Check field name 'cus_sup_id' first before field var 'x_cus_sup_id'
@@ -915,12 +887,13 @@ class cus_support_add extends cus_support
 		$this->cus_sup_branch_id->CurrentValue = $this->cus_sup_branch_id->FormValue;
 		$this->cus_sup_emp_id->CurrentValue = $this->cus_sup_emp_id->FormValue;
 		$this->cus_sup_query->CurrentValue = $this->cus_sup_query->FormValue;
+		$this->cus_sup_screen_shots->CurrentValue = $this->cus_sup_screen_shots->FormValue;
 		$this->cus_sup_date->CurrentValue = $this->cus_sup_date->FormValue;
-		$this->cus_sup_date->CurrentValue = UnFormatDateTime($this->cus_sup_date->CurrentValue, 1);
+		$this->cus_sup_date->CurrentValue = UnFormatDateTime($this->cus_sup_date->CurrentValue, 0);
 		$this->cus_sup_status->CurrentValue = $this->cus_sup_status->FormValue;
 		$this->cus_sup_comments->CurrentValue = $this->cus_sup_comments->FormValue;
 		$this->cus_sup_resolved_on->CurrentValue = $this->cus_sup_resolved_on->FormValue;
-		$this->cus_sup_resolved_on->CurrentValue = UnFormatDateTime($this->cus_sup_resolved_on->CurrentValue, 1);
+		$this->cus_sup_resolved_on->CurrentValue = UnFormatDateTime($this->cus_sup_resolved_on->CurrentValue, 0);
 	}
 
 	// Load row based on key values
@@ -961,14 +934,8 @@ class cus_support_add extends cus_support
 		$this->cus_sup_id->setDbValue($row['cus_sup_id']);
 		$this->cus_sup_branch_id->setDbValue($row['cus_sup_branch_id']);
 		$this->cus_sup_emp_id->setDbValue($row['cus_sup_emp_id']);
-		if (array_key_exists('EV__cus_sup_emp_id', $rs->fields)) {
-			$this->cus_sup_emp_id->VirtualValue = $rs->fields('EV__cus_sup_emp_id'); // Set up virtual field value
-		} else {
-			$this->cus_sup_emp_id->VirtualValue = ""; // Clear value
-		}
 		$this->cus_sup_query->setDbValue($row['cus_sup_query']);
-		$this->cus_sup_screen_shots->Upload->DbValue = $row['cus_sup_screen_shots'];
-		$this->cus_sup_screen_shots->setDbValue($this->cus_sup_screen_shots->Upload->DbValue);
+		$this->cus_sup_screen_shots->setDbValue($row['cus_sup_screen_shots']);
 		$this->cus_sup_date->setDbValue($row['cus_sup_date']);
 		$this->cus_sup_status->setDbValue($row['cus_sup_status']);
 		$this->cus_sup_comments->setDbValue($row['cus_sup_comments']);
@@ -984,7 +951,7 @@ class cus_support_add extends cus_support
 		$row['cus_sup_branch_id'] = $this->cus_sup_branch_id->CurrentValue;
 		$row['cus_sup_emp_id'] = $this->cus_sup_emp_id->CurrentValue;
 		$row['cus_sup_query'] = $this->cus_sup_query->CurrentValue;
-		$row['cus_sup_screen_shots'] = $this->cus_sup_screen_shots->Upload->DbValue;
+		$row['cus_sup_screen_shots'] = $this->cus_sup_screen_shots->CurrentValue;
 		$row['cus_sup_date'] = $this->cus_sup_date->CurrentValue;
 		$row['cus_sup_status'] = $this->cus_sup_status->CurrentValue;
 		$row['cus_sup_comments'] = $this->cus_sup_comments->CurrentValue;
@@ -1040,55 +1007,16 @@ class cus_support_add extends cus_support
 
 			// cus_sup_id
 			$this->cus_sup_id->ViewValue = $this->cus_sup_id->CurrentValue;
-			$this->cus_sup_id->CssClass = "font-weight-bold";
 			$this->cus_sup_id->ViewCustomAttributes = "";
 
 			// cus_sup_branch_id
-			$curVal = strval($this->cus_sup_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->lookupCacheOption($curVal);
-				if ($this->cus_sup_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->cus_sup_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->cus_sup_branch_id->ViewValue = NULL;
-			}
+			$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->CurrentValue;
+			$this->cus_sup_branch_id->ViewValue = FormatNumber($this->cus_sup_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->cus_sup_branch_id->ViewCustomAttributes = "";
 
 			// cus_sup_emp_id
-			if ($this->cus_sup_emp_id->VirtualValue != "") {
-				$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->VirtualValue;
-			} else {
-				$curVal = strval($this->cus_sup_emp_id->CurrentValue);
-				if ($curVal != "") {
-					$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->lookupCacheOption($curVal);
-					if ($this->cus_sup_emp_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`emp_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->cus_sup_emp_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->cus_sup_emp_id->ViewValue = NULL;
-				}
-			}
+			$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->CurrentValue;
+			$this->cus_sup_emp_id->ViewValue = FormatNumber($this->cus_sup_emp_id->ViewValue, 0, -2, -2, -2);
 			$this->cus_sup_emp_id->ViewCustomAttributes = "";
 
 			// cus_sup_query
@@ -1096,19 +1024,12 @@ class cus_support_add extends cus_support
 			$this->cus_sup_query->ViewCustomAttributes = "";
 
 			// cus_sup_screen_shots
-			if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-				$this->cus_sup_screen_shots->ImageWidth = 200;
-				$this->cus_sup_screen_shots->ImageHeight = 0;
-				$this->cus_sup_screen_shots->ImageAlt = $this->cus_sup_screen_shots->alt();
-				$this->cus_sup_screen_shots->ViewValue = $this->cus_sup_screen_shots->Upload->DbValue;
-			} else {
-				$this->cus_sup_screen_shots->ViewValue = "";
-			}
+			$this->cus_sup_screen_shots->ViewValue = $this->cus_sup_screen_shots->CurrentValue;
 			$this->cus_sup_screen_shots->ViewCustomAttributes = "";
 
 			// cus_sup_date
 			$this->cus_sup_date->ViewValue = $this->cus_sup_date->CurrentValue;
-			$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 1);
+			$this->cus_sup_date->ViewValue = FormatDateTime($this->cus_sup_date->ViewValue, 0);
 			$this->cus_sup_date->ViewCustomAttributes = "";
 
 			// cus_sup_status
@@ -1125,7 +1046,7 @@ class cus_support_add extends cus_support
 
 			// cus_sup_resolved_on
 			$this->cus_sup_resolved_on->ViewValue = $this->cus_sup_resolved_on->CurrentValue;
-			$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 1);
+			$this->cus_sup_resolved_on->ViewValue = FormatDateTime($this->cus_sup_resolved_on->ViewValue, 0);
 			$this->cus_sup_resolved_on->ViewCustomAttributes = "";
 
 			// cus_sup_branch_id
@@ -1145,22 +1066,8 @@ class cus_support_add extends cus_support
 
 			// cus_sup_screen_shots
 			$this->cus_sup_screen_shots->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-				$this->cus_sup_screen_shots->HrefValue = "%u"; // Add prefix/suffix
-				$this->cus_sup_screen_shots->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->cus_sup_screen_shots->HrefValue = FullUrl($this->cus_sup_screen_shots->HrefValue, "href");
-			} else {
-				$this->cus_sup_screen_shots->HrefValue = "";
-			}
-			$this->cus_sup_screen_shots->ExportHrefValue = $this->cus_sup_screen_shots->UploadPath . $this->cus_sup_screen_shots->Upload->DbValue;
+			$this->cus_sup_screen_shots->HrefValue = "";
 			$this->cus_sup_screen_shots->TooltipValue = "";
-			if ($this->cus_sup_screen_shots->UseColorbox) {
-				if (EmptyValue($this->cus_sup_screen_shots->TooltipValue))
-					$this->cus_sup_screen_shots->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->cus_sup_screen_shots->LinkAttrs["data-rel"] = "cus_support_x_cus_sup_screen_shots";
-				$this->cus_sup_screen_shots->LinkAttrs->appendClass("ew-lightbox");
-			}
 
 			// cus_sup_date
 			$this->cus_sup_date->LinkCustomAttributes = "";
@@ -1184,68 +1091,16 @@ class cus_support_add extends cus_support
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// cus_sup_branch_id
+			$this->cus_sup_branch_id->EditAttrs["class"] = "form-control";
 			$this->cus_sup_branch_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->cus_sup_branch_id->CurrentValue));
-			if ($curVal != "")
-				$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->lookupCacheOption($curVal);
-			else
-				$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->Lookup !== NULL && is_array($this->cus_sup_branch_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->cus_sup_branch_id->ViewValue !== NULL) { // Load from cache
-				$this->cus_sup_branch_id->EditValue = array_values($this->cus_sup_branch_id->Lookup->Options);
-				if ($this->cus_sup_branch_id->ViewValue == "")
-					$this->cus_sup_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`branch_id`" . SearchString("=", $this->cus_sup_branch_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->cus_sup_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->cus_sup_branch_id->ViewValue = $this->cus_sup_branch_id->displayValue($arwrk);
-				} else {
-					$this->cus_sup_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->cus_sup_branch_id->EditValue = $arwrk;
-			}
+			$this->cus_sup_branch_id->EditValue = HtmlEncode($this->cus_sup_branch_id->CurrentValue);
+			$this->cus_sup_branch_id->PlaceHolder = RemoveHtml($this->cus_sup_branch_id->caption());
 
 			// cus_sup_emp_id
+			$this->cus_sup_emp_id->EditAttrs["class"] = "form-control";
 			$this->cus_sup_emp_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->cus_sup_emp_id->CurrentValue));
-			if ($curVal != "")
-				$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->lookupCacheOption($curVal);
-			else
-				$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->Lookup !== NULL && is_array($this->cus_sup_emp_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->cus_sup_emp_id->ViewValue !== NULL) { // Load from cache
-				$this->cus_sup_emp_id->EditValue = array_values($this->cus_sup_emp_id->Lookup->Options);
-				if ($this->cus_sup_emp_id->ViewValue == "")
-					$this->cus_sup_emp_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`emp_id`" . SearchString("=", $this->cus_sup_emp_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->cus_sup_emp_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->cus_sup_emp_id->ViewValue = $this->cus_sup_emp_id->displayValue($arwrk);
-				} else {
-					$this->cus_sup_emp_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->cus_sup_emp_id->EditValue = $arwrk;
-			}
+			$this->cus_sup_emp_id->EditValue = HtmlEncode($this->cus_sup_emp_id->CurrentValue);
+			$this->cus_sup_emp_id->PlaceHolder = RemoveHtml($this->cus_sup_emp_id->caption());
 
 			// cus_sup_query
 			$this->cus_sup_query->EditAttrs["class"] = "form-control";
@@ -1256,18 +1111,8 @@ class cus_support_add extends cus_support
 			// cus_sup_screen_shots
 			$this->cus_sup_screen_shots->EditAttrs["class"] = "form-control";
 			$this->cus_sup_screen_shots->EditCustomAttributes = "";
-			if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-				$this->cus_sup_screen_shots->ImageWidth = 200;
-				$this->cus_sup_screen_shots->ImageHeight = 0;
-				$this->cus_sup_screen_shots->ImageAlt = $this->cus_sup_screen_shots->alt();
-				$this->cus_sup_screen_shots->EditValue = $this->cus_sup_screen_shots->Upload->DbValue;
-			} else {
-				$this->cus_sup_screen_shots->EditValue = "";
-			}
-			if (!EmptyValue($this->cus_sup_screen_shots->CurrentValue))
-					$this->cus_sup_screen_shots->Upload->FileName = $this->cus_sup_screen_shots->CurrentValue;
-			if ($this->isShow() || $this->isCopy())
-				RenderUploadField($this->cus_sup_screen_shots);
+			$this->cus_sup_screen_shots->EditValue = HtmlEncode($this->cus_sup_screen_shots->CurrentValue);
+			$this->cus_sup_screen_shots->PlaceHolder = RemoveHtml($this->cus_sup_screen_shots->caption());
 
 			// cus_sup_date
 			$this->cus_sup_date->EditAttrs["class"] = "form-control";
@@ -1307,15 +1152,7 @@ class cus_support_add extends cus_support
 
 			// cus_sup_screen_shots
 			$this->cus_sup_screen_shots->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cus_sup_screen_shots->Upload->DbValue)) {
-				$this->cus_sup_screen_shots->HrefValue = "%u"; // Add prefix/suffix
-				$this->cus_sup_screen_shots->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->cus_sup_screen_shots->HrefValue = FullUrl($this->cus_sup_screen_shots->HrefValue, "href");
-			} else {
-				$this->cus_sup_screen_shots->HrefValue = "";
-			}
-			$this->cus_sup_screen_shots->ExportHrefValue = $this->cus_sup_screen_shots->UploadPath . $this->cus_sup_screen_shots->Upload->DbValue;
+			$this->cus_sup_screen_shots->HrefValue = "";
 
 			// cus_sup_date
 			$this->cus_sup_date->LinkCustomAttributes = "";
@@ -1357,10 +1194,16 @@ class cus_support_add extends cus_support
 				AddMessage($FormError, str_replace("%s", $this->cus_sup_branch_id->caption(), $this->cus_sup_branch_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->cus_sup_branch_id->FormValue)) {
+			AddMessage($FormError, $this->cus_sup_branch_id->errorMessage());
+		}
 		if ($this->cus_sup_emp_id->Required) {
 			if (!$this->cus_sup_emp_id->IsDetailKey && $this->cus_sup_emp_id->FormValue != NULL && $this->cus_sup_emp_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->cus_sup_emp_id->caption(), $this->cus_sup_emp_id->RequiredErrorMessage));
 			}
+		}
+		if (!CheckInteger($this->cus_sup_emp_id->FormValue)) {
+			AddMessage($FormError, $this->cus_sup_emp_id->errorMessage());
 		}
 		if ($this->cus_sup_query->Required) {
 			if (!$this->cus_sup_query->IsDetailKey && $this->cus_sup_query->FormValue != NULL && $this->cus_sup_query->FormValue == "") {
@@ -1368,7 +1211,7 @@ class cus_support_add extends cus_support
 			}
 		}
 		if ($this->cus_sup_screen_shots->Required) {
-			if ($this->cus_sup_screen_shots->Upload->FileName == "" && !$this->cus_sup_screen_shots->Upload->KeepFile) {
+			if (!$this->cus_sup_screen_shots->IsDetailKey && $this->cus_sup_screen_shots->FormValue != NULL && $this->cus_sup_screen_shots->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->cus_sup_screen_shots->caption(), $this->cus_sup_screen_shots->RequiredErrorMessage));
 			}
 		}
@@ -1433,19 +1276,10 @@ class cus_support_add extends cus_support
 		$this->cus_sup_query->setDbValueDef($rsnew, $this->cus_sup_query->CurrentValue, "", FALSE);
 
 		// cus_sup_screen_shots
-		if ($this->cus_sup_screen_shots->Visible && !$this->cus_sup_screen_shots->Upload->KeepFile) {
-			$this->cus_sup_screen_shots->Upload->DbValue = ""; // No need to delete old file
-			if ($this->cus_sup_screen_shots->Upload->FileName == "") {
-				$rsnew['cus_sup_screen_shots'] = NULL;
-			} else {
-				$rsnew['cus_sup_screen_shots'] = $this->cus_sup_screen_shots->Upload->FileName;
-			}
-			$this->cus_sup_screen_shots->ImageWidth = 1000; // Resize width
-			$this->cus_sup_screen_shots->ImageHeight = 0; // Resize height
-		}
+		$this->cus_sup_screen_shots->setDbValueDef($rsnew, $this->cus_sup_screen_shots->CurrentValue, "", FALSE);
 
 		// cus_sup_date
-		$this->cus_sup_date->setDbValueDef($rsnew, UnFormatDateTime($this->cus_sup_date->CurrentValue, 1), CurrentDate(), FALSE);
+		$this->cus_sup_date->setDbValueDef($rsnew, UnFormatDateTime($this->cus_sup_date->CurrentValue, 0), CurrentDate(), FALSE);
 
 		// cus_sup_status
 		$this->cus_sup_status->setDbValueDef($rsnew, $this->cus_sup_status->CurrentValue, "", FALSE);
@@ -1454,46 +1288,7 @@ class cus_support_add extends cus_support
 		$this->cus_sup_comments->setDbValueDef($rsnew, $this->cus_sup_comments->CurrentValue, "", FALSE);
 
 		// cus_sup_resolved_on
-		$this->cus_sup_resolved_on->setDbValueDef($rsnew, UnFormatDateTime($this->cus_sup_resolved_on->CurrentValue, 1), CurrentDate(), FALSE);
-		if ($this->cus_sup_screen_shots->Visible && !$this->cus_sup_screen_shots->Upload->KeepFile) {
-			$oldFiles = EmptyValue($this->cus_sup_screen_shots->Upload->DbValue) ? [] : explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->cus_sup_screen_shots->htmlDecode(strval($this->cus_sup_screen_shots->Upload->DbValue)));
-			if (!EmptyValue($this->cus_sup_screen_shots->Upload->FileName)) {
-				$newFiles = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), strval($this->cus_sup_screen_shots->Upload->FileName));
-				$NewFileCount = count($newFiles);
-				for ($i = 0; $i < $NewFileCount; $i++) {
-					if ($newFiles[$i] != "") {
-						$file = $newFiles[$i];
-						$tempPath = UploadTempPath($this->cus_sup_screen_shots, $this->cus_sup_screen_shots->Upload->Index);
-						if (file_exists($tempPath . $file)) {
-							if (Config("DELETE_UPLOADED_FILES")) {
-								$oldFileFound = FALSE;
-								$oldFileCount = count($oldFiles);
-								for ($j = 0; $j < $oldFileCount; $j++) {
-									$oldFile = $oldFiles[$j];
-									if ($oldFile == $file) { // Old file found, no need to delete anymore
-										unset($oldFiles[$j]);
-										$oldFileFound = TRUE;
-										break;
-									}
-								}
-								if ($oldFileFound) // No need to check if file exists further
-									continue;
-							}
-							$file1 = UniqueFilename($this->cus_sup_screen_shots->physicalUploadPath(), $file); // Get new file name
-							if ($file1 != $file) { // Rename temp file
-								while (file_exists($tempPath . $file1) || file_exists($this->cus_sup_screen_shots->physicalUploadPath() . $file1)) // Make sure no file name clash
-									$file1 = UniqueFilename($this->cus_sup_screen_shots->physicalUploadPath(), $file1, TRUE); // Use indexed name
-								rename($tempPath . $file, $tempPath . $file1);
-								$newFiles[$i] = $file1;
-							}
-						}
-					}
-				}
-				$this->cus_sup_screen_shots->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
-				$this->cus_sup_screen_shots->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
-				$this->cus_sup_screen_shots->setDbValueDef($rsnew, $this->cus_sup_screen_shots->Upload->FileName, "", FALSE);
-			}
-		}
+		$this->cus_sup_resolved_on->setDbValueDef($rsnew, UnFormatDateTime($this->cus_sup_resolved_on->CurrentValue, 0), CurrentDate(), FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -1503,35 +1298,6 @@ class cus_support_add extends cus_support
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
-				if ($this->cus_sup_screen_shots->Visible && !$this->cus_sup_screen_shots->Upload->KeepFile) {
-					$oldFiles = EmptyValue($this->cus_sup_screen_shots->Upload->DbValue) ? [] : explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->cus_sup_screen_shots->htmlDecode(strval($this->cus_sup_screen_shots->Upload->DbValue)));
-					if (!EmptyValue($this->cus_sup_screen_shots->Upload->FileName)) {
-						$newFiles = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->cus_sup_screen_shots->Upload->FileName);
-						$newFiles2 = explode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $this->cus_sup_screen_shots->htmlDecode($rsnew['cus_sup_screen_shots']));
-						$newFileCount = count($newFiles);
-						for ($i = 0; $i < $newFileCount; $i++) {
-							if ($newFiles[$i] != "") {
-								$file = UploadTempPath($this->cus_sup_screen_shots, $this->cus_sup_screen_shots->Upload->Index) . $newFiles[$i];
-								if (file_exists($file)) {
-									if (@$newFiles2[$i] != "") // Use correct file name
-										$newFiles[$i] = $newFiles2[$i];
-									if (!$this->cus_sup_screen_shots->Upload->ResizeAndSaveToFile($this->cus_sup_screen_shots->ImageWidth, $this->cus_sup_screen_shots->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
-										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
-										return FALSE;
-									}
-								}
-							}
-						}
-					} else {
-						$newFiles = [];
-					}
-					if (Config("DELETE_UPLOADED_FILES")) {
-						foreach ($oldFiles as $oldFile) {
-							if ($oldFile != "" && !in_array($oldFile, $newFiles))
-								@unlink($this->cus_sup_screen_shots->oldPhysicalUploadPath() . $oldFile);
-						}
-					}
-				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -1554,12 +1320,6 @@ class cus_support_add extends cus_support
 
 		// Clean upload path if any
 		if ($addRow) {
-
-			// cus_sup_screen_shots
-			if ($this->cus_sup_screen_shots->Upload->FileToken != "")
-				CleanUploadTempPath($this->cus_sup_screen_shots->Upload->FileToken, $this->cus_sup_screen_shots->Upload->Index);
-			else
-				CleanUploadTempPath($this->cus_sup_screen_shots, $this->cus_sup_screen_shots->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -1595,10 +1355,6 @@ class cus_support_add extends cus_support
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_cus_sup_branch_id":
-					break;
-				case "x_cus_sup_emp_id":
-					break;
 				case "x_cus_sup_status":
 					break;
 				default:
@@ -1621,10 +1377,6 @@ class cus_support_add extends cus_support
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_cus_sup_branch_id":
-							break;
-						case "x_cus_sup_emp_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_edit = new services_edit();
 $services_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -66,6 +65,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $services_edit->service_branch_id->caption(), $services_edit->service_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_service_branch_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($services_edit->service_branch_id->errorMessage()) ?>");
 			<?php if ($services_edit->service_caption->Required) { ?>
 				elm = this.getElements("x" + infix + "_service_caption");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -77,10 +79,9 @@ loadjs.ready("head", function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $services_edit->service_desc->caption(), $services_edit->service_desc->RequiredErrorMessage)) ?>");
 			<?php } ?>
 			<?php if ($services_edit->service_logo->Required) { ?>
-				felm = this.getElements("x" + infix + "_service_logo");
-				elm = this.getElements("fn_x" + infix + "_service_logo");
-				if (felm && elm && !ew.hasValue(elm))
-					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $services_edit->service_logo->caption(), $services_edit->service_logo->RequiredErrorMessage)) ?>");
+				elm = this.getElements("x" + infix + "_service_logo");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $services_edit->service_logo->caption(), $services_edit->service_logo->RequiredErrorMessage)) ?>");
 			<?php } ?>
 
 				// Call Form_CustomValidate event
@@ -110,8 +111,6 @@ loadjs.ready("head", function() {
 	fservicesedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fservicesedit.lists["x_service_branch_id"] = <?php echo $services_edit->service_branch_id->Lookup->toClientList($services_edit) ?>;
-	fservicesedit.lists["x_service_branch_id"].options = <?php echo JsonEncode($services_edit->service_branch_id->lookupOptions()) ?>;
 	loadjs.done("fservicesedit");
 });
 </script>
@@ -151,23 +150,7 @@ $services_edit->showMessage();
 		<label id="elh_services_service_branch_id" for="x_service_branch_id" class="<?php echo $services_edit->LeftColumnClass ?>"><?php echo $services_edit->service_branch_id->caption() ?><?php echo $services_edit->service_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_edit->RightColumnClass ?>"><div <?php echo $services_edit->service_branch_id->cellAttributes() ?>>
 <span id="el_services_service_branch_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($services_edit->service_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $services_edit->service_branch_id->ViewValue ?></button>
-		<div id="dsl_x_service_branch_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $services_edit->service_branch_id->radioButtonListHtml(TRUE, "x_service_branch_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_service_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="services" data-field="x_service_branch_id" data-value-separator="<?php echo $services_edit->service_branch_id->displayValueSeparatorAttribute() ?>" name="x_service_branch_id" id="x_service_branch_id" value="{value}"<?php echo $services_edit->service_branch_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$services_edit->service_branch_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $services_edit->service_branch_id->Lookup->getParamTag($services_edit, "p_x_service_branch_id") ?>
+<input type="text" data-table="services" data-field="x_service_branch_id" name="x_service_branch_id" id="x_service_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($services_edit->service_branch_id->getPlaceHolder()) ?>" value="<?php echo $services_edit->service_branch_id->EditValue ?>"<?php echo $services_edit->service_branch_id->editAttributes() ?>>
 </span>
 <?php echo $services_edit->service_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -177,46 +160,27 @@ $services_edit->showMessage();
 		<label id="elh_services_service_caption" for="x_service_caption" class="<?php echo $services_edit->LeftColumnClass ?>"><?php echo $services_edit->service_caption->caption() ?><?php echo $services_edit->service_caption->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_edit->RightColumnClass ?>"><div <?php echo $services_edit->service_caption->cellAttributes() ?>>
 <span id="el_services_service_caption">
-<input type="text" data-table="services" data-field="x_service_caption" name="x_service_caption" id="x_service_caption" size="30" maxlength="50" placeholder="<?php echo HtmlEncode($services_edit->service_caption->getPlaceHolder()) ?>" value="<?php echo $services_edit->service_caption->EditValue ?>"<?php echo $services_edit->service_caption->editAttributes() ?>>
+<input type="text" data-table="services" data-field="x_service_caption" name="x_service_caption" id="x_service_caption" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($services_edit->service_caption->getPlaceHolder()) ?>" value="<?php echo $services_edit->service_caption->EditValue ?>"<?php echo $services_edit->service_caption->editAttributes() ?>>
 </span>
 <?php echo $services_edit->service_caption->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($services_edit->service_desc->Visible) { // service_desc ?>
 	<div id="r_service_desc" class="form-group row">
-		<label id="elh_services_service_desc" class="<?php echo $services_edit->LeftColumnClass ?>"><?php echo $services_edit->service_desc->caption() ?><?php echo $services_edit->service_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_services_service_desc" for="x_service_desc" class="<?php echo $services_edit->LeftColumnClass ?>"><?php echo $services_edit->service_desc->caption() ?><?php echo $services_edit->service_desc->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_edit->RightColumnClass ?>"><div <?php echo $services_edit->service_desc->cellAttributes() ?>>
 <span id="el_services_service_desc">
-<?php $services_edit->service_desc->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="services" data-field="x_service_desc" name="x_service_desc" id="x_service_desc" cols="35" rows="4" placeholder="<?php echo HtmlEncode($services_edit->service_desc->getPlaceHolder()) ?>"<?php echo $services_edit->service_desc->editAttributes() ?>><?php echo $services_edit->service_desc->EditValue ?></textarea>
-<script>
-loadjs.ready(["fservicesedit", "editor"], function() {
-	ew.createEditor("fservicesedit", "x_service_desc", 0, 0, <?php echo $services_edit->service_desc->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $services_edit->service_desc->CustomMsg ?></div></div>
 	</div>
 <?php } ?>
 <?php if ($services_edit->service_logo->Visible) { // service_logo ?>
 	<div id="r_service_logo" class="form-group row">
-		<label id="elh_services_service_logo" class="<?php echo $services_edit->LeftColumnClass ?>"><?php echo $services_edit->service_logo->caption() ?><?php echo $services_edit->service_logo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_services_service_logo" for="x_service_logo" class="<?php echo $services_edit->LeftColumnClass ?>"><?php echo $services_edit->service_logo->caption() ?><?php echo $services_edit->service_logo->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $services_edit->RightColumnClass ?>"><div <?php echo $services_edit->service_logo->cellAttributes() ?>>
 <span id="el_services_service_logo">
-<div id="fd_x_service_logo">
-<div class="input-group">
-	<div class="custom-file">
-		<input type="file" class="custom-file-input" title="<?php echo $services_edit->service_logo->title() ?>" data-table="services" data-field="x_service_logo" name="x_service_logo" id="x_service_logo" lang="<?php echo CurrentLanguageID() ?>"<?php echo $services_edit->service_logo->editAttributes() ?><?php if ($services_edit->service_logo->ReadOnly || $services_edit->service_logo->Disabled) echo " disabled"; ?>>
-		<label class="custom-file-label ew-file-label" for="x_service_logo"><?php echo $Language->phrase("ChooseFile") ?></label>
-	</div>
-</div>
-<input type="hidden" name="fn_x_service_logo" id= "fn_x_service_logo" value="<?php echo $services_edit->service_logo->Upload->FileName ?>">
-<input type="hidden" name="fa_x_service_logo" id= "fa_x_service_logo" value="<?php echo (Post("fa_x_service_logo") == "0") ? "0" : "1" ?>">
-<input type="hidden" name="fs_x_service_logo" id= "fs_x_service_logo" value="100">
-<input type="hidden" name="fx_x_service_logo" id= "fx_x_service_logo" value="<?php echo $services_edit->service_logo->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_service_logo" id= "fm_x_service_logo" value="<?php echo $services_edit->service_logo->UploadMaxFileSize ?>">
-</div>
-<table id="ft_x_service_logo" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<input type="text" data-table="services" data-field="x_service_logo" name="x_service_logo" id="x_service_logo" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($services_edit->service_logo->getPlaceHolder()) ?>" value="<?php echo $services_edit->service_logo->EditValue ?>"<?php echo $services_edit->service_logo->editAttributes() ?>>
 </span>
 <?php echo $services_edit->service_logo->CustomMsg ?></div></div>
 	</div>

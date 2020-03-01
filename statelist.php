@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $state_list = new state_list();
 $state_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $state_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$state_list->isExport() && !$state->CurrentAction) { ?>
 <form name="fstatelistsrch" id="fstatelistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fstatelistsrch-search-panel" class="<?php echo $state_list->SearchPanelClass ?>">
@@ -113,33 +111,68 @@ $state_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $state_list->showPageHeader(); ?>
 <?php
 $state_list->showMessage();
 ?>
 <?php if ($state_list->TotalRecords > 0 || $state->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$state_list->isExport()) { ?>
-<div>
-<?php if (!$state_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $state_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $state_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fstatelist" id="fstatelist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($state_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> state">
+<form name="fstatelist" id="fstatelist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="state">
-<div class="row ew-multi-column-row">
+<div id="gmp_state" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($state_list->TotalRecords > 0 || $state_list->isGridEdit()) { ?>
+<table id="tbl_statelist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$state->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$state_list->renderListOptions();
+
+// Render list options (header, left)
+$state_list->ListOptions->render("header", "left");
+?>
+<?php if ($state_list->state_id->Visible) { // state_id ?>
+	<?php if ($state_list->SortUrl($state_list->state_id) == "") { ?>
+		<th data-name="state_id" class="<?php echo $state_list->state_id->headerCellClass() ?>"><div id="elh_state_state_id" class="state_state_id"><div class="ew-table-header-caption"><?php echo $state_list->state_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="state_id" class="<?php echo $state_list->state_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $state_list->SortUrl($state_list->state_id) ?>', 1);"><div id="elh_state_state_id" class="state_state_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $state_list->state_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($state_list->state_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($state_list->state_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($state_list->state_country_id->Visible) { // state_country_id ?>
+	<?php if ($state_list->SortUrl($state_list->state_country_id) == "") { ?>
+		<th data-name="state_country_id" class="<?php echo $state_list->state_country_id->headerCellClass() ?>"><div id="elh_state_state_country_id" class="state_state_country_id"><div class="ew-table-header-caption"><?php echo $state_list->state_country_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="state_country_id" class="<?php echo $state_list->state_country_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $state_list->SortUrl($state_list->state_country_id) ?>', 1);"><div id="elh_state_state_country_id" class="state_state_country_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $state_list->state_country_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($state_list->state_country_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($state_list->state_country_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($state_list->state_name->Visible) { // state_name ?>
+	<?php if ($state_list->SortUrl($state_list->state_name) == "") { ?>
+		<th data-name="state_name" class="<?php echo $state_list->state_name->headerCellClass() ?>"><div id="elh_state_state_name" class="state_state_name"><div class="ew-table-header-caption"><?php echo $state_list->state_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="state_name" class="<?php echo $state_list->state_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $state_list->SortUrl($state_list->state_name) ?>', 1);"><div id="elh_state_state_name" class="state_state_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $state_list->state_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($state_list->state_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($state_list->state_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$state_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($state_list->ExportAll && $state_list->isExport()) {
 	$state_list->StopRecord = $state_list->TotalRecords;
@@ -160,6 +193,11 @@ if ($state_list->Recordset && !$state_list->Recordset->EOF) {
 } elseif (!$state->AllowAddDeleteRow && $state_list->StopRecord == 0) {
 	$state_list->StopRecord = $state->GridAddRowCount;
 }
+
+// Initialize aggregate
+$state->RowType = ROWTYPE_AGGREGATEINIT;
+$state->resetAttributes();
+$state_list->renderRow();
 while ($state_list->RecordCount < $state_list->StopRecord) {
 	$state_list->RecordCount++;
 	if ($state_list->RecordCount >= $state_list->StartRecord) {
@@ -186,125 +224,49 @@ while ($state_list->RecordCount < $state_list->StopRecord) {
 		// Render list options
 		$state_list->renderListOptions();
 ?>
-<div class="<?php echo $state_list->getMultiColumnClass() ?>" <?php echo $state->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($state->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($state_list->state_id->Visible) { // state_id ?>
-		<?php if ($state->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $state_list->TableLeftColumnClass ?>"><span class="state_state_id">
-<?php if ($state_list->isExport() || $state_list->SortUrl($state_list->state_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $state_list->state_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $state_list->SortUrl($state_list->state_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $state_list->state_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($state_list->state_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($state_list->state_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $state_list->state_id->cellAttributes() ?>>
-<span id="el<?php echo $state_list->RowCount ?>_state_state_id">
-<span<?php echo $state_list->state_id->viewAttributes() ?>><?php echo $state_list->state_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row state_state_id">
-			<label class="<?php echo $state_list->LeftColumnClass ?>"><?php echo $state_list->state_id->caption() ?></label>
-			<div class="<?php echo $state_list->RightColumnClass ?>"><div <?php echo $state_list->state_id->cellAttributes() ?>>
-<span id="el<?php echo $state_list->RowCount ?>_state_state_id">
-<span<?php echo $state_list->state_id->viewAttributes() ?>><?php echo $state_list->state_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($state_list->state_country_id->Visible) { // state_country_id ?>
-		<?php if ($state->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $state_list->TableLeftColumnClass ?>"><span class="state_state_country_id">
-<?php if ($state_list->isExport() || $state_list->SortUrl($state_list->state_country_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $state_list->state_country_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $state_list->SortUrl($state_list->state_country_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $state_list->state_country_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($state_list->state_country_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($state_list->state_country_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $state_list->state_country_id->cellAttributes() ?>>
-<span id="el<?php echo $state_list->RowCount ?>_state_state_country_id">
-<span<?php echo $state_list->state_country_id->viewAttributes() ?>><?php echo $state_list->state_country_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row state_state_country_id">
-			<label class="<?php echo $state_list->LeftColumnClass ?>"><?php echo $state_list->state_country_id->caption() ?></label>
-			<div class="<?php echo $state_list->RightColumnClass ?>"><div <?php echo $state_list->state_country_id->cellAttributes() ?>>
-<span id="el<?php echo $state_list->RowCount ?>_state_state_country_id">
-<span<?php echo $state_list->state_country_id->viewAttributes() ?>><?php echo $state_list->state_country_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($state_list->state_name->Visible) { // state_name ?>
-		<?php if ($state->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $state_list->TableLeftColumnClass ?>"><span class="state_state_name">
-<?php if ($state_list->isExport() || $state_list->SortUrl($state_list->state_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $state_list->state_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $state_list->SortUrl($state_list->state_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $state_list->state_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($state_list->state_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($state_list->state_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $state_list->state_name->cellAttributes() ?>>
-<span id="el<?php echo $state_list->RowCount ?>_state_state_name">
-<span<?php echo $state_list->state_name->viewAttributes() ?>><?php echo $state_list->state_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row state_state_name">
-			<label class="<?php echo $state_list->LeftColumnClass ?>"><?php echo $state_list->state_name->caption() ?></label>
-			<div class="<?php echo $state_list->RightColumnClass ?>"><div <?php echo $state_list->state_name->cellAttributes() ?>>
-<span id="el<?php echo $state_list->RowCount ?>_state_state_name">
-<span<?php echo $state_list->state_name->viewAttributes() ?>><?php echo $state_list->state_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($state->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$state_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $state->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$state_list->ListOptions->render("body", "bottom", $state_list->RowCount);
+// Render list options (body, left)
+$state_list->ListOptions->render("body", "left", $state_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($state_list->state_id->Visible) { // state_id ?>
+		<td data-name="state_id" <?php echo $state_list->state_id->cellAttributes() ?>>
+<span id="el<?php echo $state_list->RowCount ?>_state_state_id">
+<span<?php echo $state_list->state_id->viewAttributes() ?>><?php echo $state_list->state_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($state_list->state_country_id->Visible) { // state_country_id ?>
+		<td data-name="state_country_id" <?php echo $state_list->state_country_id->cellAttributes() ?>>
+<span id="el<?php echo $state_list->RowCount ?>_state_state_country_id">
+<span<?php echo $state_list->state_country_id->viewAttributes() ?>><?php echo $state_list->state_country_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($state_list->state_name->Visible) { // state_name ?>
+		<td data-name="state_name" <?php echo $state_list->state_name->cellAttributes() ?>>
+<span id="el<?php echo $state_list->RowCount ?>_state_state_name">
+<span<?php echo $state_list->state_name->viewAttributes() ?>><?php echo $state_list->state_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$state_list->ListOptions->render("body", "right", $state_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$state_list->isGridAdd())
 		$state_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$state->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -316,7 +278,7 @@ if ($state_list->Recordset)
 	$state_list->Recordset->Close();
 ?>
 <?php if (!$state_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$state_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $state_list->Pager->render() ?>
@@ -328,7 +290,7 @@ if ($state_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($state_list->TotalRecords == 0 && !$state->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

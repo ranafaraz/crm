@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $followup_edit = new followup_edit();
 $followup_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -66,21 +65,33 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $followup_edit->followup_branch_id->caption(), $followup_edit->followup_branch_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_followup_branch_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($followup_edit->followup_branch_id->errorMessage()) ?>");
 			<?php if ($followup_edit->followup_business_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_followup_business_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $followup_edit->followup_business_id->caption(), $followup_edit->followup_business_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_followup_business_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($followup_edit->followup_business_id->errorMessage()) ?>");
 			<?php if ($followup_edit->followup_by_emp_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_followup_by_emp_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $followup_edit->followup_by_emp_id->caption(), $followup_edit->followup_by_emp_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_followup_by_emp_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($followup_edit->followup_by_emp_id->errorMessage()) ?>");
 			<?php if ($followup_edit->followup_no_id->Required) { ?>
 				elm = this.getElements("x" + infix + "_followup_no_id");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $followup_edit->followup_no_id->caption(), $followup_edit->followup_no_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_followup_no_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($followup_edit->followup_no_id->errorMessage()) ?>");
 			<?php if ($followup_edit->followup_date->Required) { ?>
 				elm = this.getElements("x" + infix + "_followup_date");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -145,14 +156,6 @@ loadjs.ready("head", function() {
 	ffollowupedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	ffollowupedit.lists["x_followup_branch_id"] = <?php echo $followup_edit->followup_branch_id->Lookup->toClientList($followup_edit) ?>;
-	ffollowupedit.lists["x_followup_branch_id"].options = <?php echo JsonEncode($followup_edit->followup_branch_id->lookupOptions()) ?>;
-	ffollowupedit.lists["x_followup_business_id"] = <?php echo $followup_edit->followup_business_id->Lookup->toClientList($followup_edit) ?>;
-	ffollowupedit.lists["x_followup_business_id"].options = <?php echo JsonEncode($followup_edit->followup_business_id->lookupOptions()) ?>;
-	ffollowupedit.lists["x_followup_by_emp_id"] = <?php echo $followup_edit->followup_by_emp_id->Lookup->toClientList($followup_edit) ?>;
-	ffollowupedit.lists["x_followup_by_emp_id"].options = <?php echo JsonEncode($followup_edit->followup_by_emp_id->lookupOptions()) ?>;
-	ffollowupedit.lists["x_followup_no_id"] = <?php echo $followup_edit->followup_no_id->Lookup->toClientList($followup_edit) ?>;
-	ffollowupedit.lists["x_followup_no_id"].options = <?php echo JsonEncode($followup_edit->followup_no_id->lookupOptions()) ?>;
 	ffollowupedit.lists["x_followup_response"] = <?php echo $followup_edit->followup_response->Lookup->toClientList($followup_edit) ?>;
 	ffollowupedit.lists["x_followup_response"].options = <?php echo JsonEncode($followup_edit->followup_response->options(FALSE, TRUE)) ?>;
 	ffollowupedit.lists["x_current_FU_status"] = <?php echo $followup_edit->current_FU_status->Lookup->toClientList($followup_edit) ?>;
@@ -196,23 +199,7 @@ $followup_edit->showMessage();
 		<label id="elh_followup_followup_branch_id" for="x_followup_branch_id" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->followup_branch_id->caption() ?><?php echo $followup_edit->followup_branch_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->followup_branch_id->cellAttributes() ?>>
 <span id="el_followup_followup_branch_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($followup_edit->followup_branch_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $followup_edit->followup_branch_id->ViewValue ?></button>
-		<div id="dsl_x_followup_branch_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $followup_edit->followup_branch_id->radioButtonListHtml(TRUE, "x_followup_branch_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_followup_branch_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="followup" data-field="x_followup_branch_id" data-value-separator="<?php echo $followup_edit->followup_branch_id->displayValueSeparatorAttribute() ?>" name="x_followup_branch_id" id="x_followup_branch_id" value="{value}"<?php echo $followup_edit->followup_branch_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$followup_edit->followup_branch_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $followup_edit->followup_branch_id->Lookup->getParamTag($followup_edit, "p_x_followup_branch_id") ?>
+<input type="text" data-table="followup" data-field="x_followup_branch_id" name="x_followup_branch_id" id="x_followup_branch_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($followup_edit->followup_branch_id->getPlaceHolder()) ?>" value="<?php echo $followup_edit->followup_branch_id->EditValue ?>"<?php echo $followup_edit->followup_branch_id->editAttributes() ?>>
 </span>
 <?php echo $followup_edit->followup_branch_id->CustomMsg ?></div></div>
 	</div>
@@ -222,23 +209,7 @@ $followup_edit->showMessage();
 		<label id="elh_followup_followup_business_id" for="x_followup_business_id" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->followup_business_id->caption() ?><?php echo $followup_edit->followup_business_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->followup_business_id->cellAttributes() ?>>
 <span id="el_followup_followup_business_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($followup_edit->followup_business_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $followup_edit->followup_business_id->ViewValue ?></button>
-		<div id="dsl_x_followup_business_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $followup_edit->followup_business_id->radioButtonListHtml(TRUE, "x_followup_business_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_followup_business_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="followup" data-field="x_followup_business_id" data-value-separator="<?php echo $followup_edit->followup_business_id->displayValueSeparatorAttribute() ?>" name="x_followup_business_id" id="x_followup_business_id" value="{value}"<?php echo $followup_edit->followup_business_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$followup_edit->followup_business_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $followup_edit->followup_business_id->Lookup->getParamTag($followup_edit, "p_x_followup_business_id") ?>
+<input type="text" data-table="followup" data-field="x_followup_business_id" name="x_followup_business_id" id="x_followup_business_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($followup_edit->followup_business_id->getPlaceHolder()) ?>" value="<?php echo $followup_edit->followup_business_id->EditValue ?>"<?php echo $followup_edit->followup_business_id->editAttributes() ?>>
 </span>
 <?php echo $followup_edit->followup_business_id->CustomMsg ?></div></div>
 	</div>
@@ -248,23 +219,7 @@ $followup_edit->showMessage();
 		<label id="elh_followup_followup_by_emp_id" for="x_followup_by_emp_id" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->followup_by_emp_id->caption() ?><?php echo $followup_edit->followup_by_emp_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->followup_by_emp_id->cellAttributes() ?>>
 <span id="el_followup_followup_by_emp_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($followup_edit->followup_by_emp_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $followup_edit->followup_by_emp_id->ViewValue ?></button>
-		<div id="dsl_x_followup_by_emp_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $followup_edit->followup_by_emp_id->radioButtonListHtml(TRUE, "x_followup_by_emp_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_followup_by_emp_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="followup" data-field="x_followup_by_emp_id" data-value-separator="<?php echo $followup_edit->followup_by_emp_id->displayValueSeparatorAttribute() ?>" name="x_followup_by_emp_id" id="x_followup_by_emp_id" value="{value}"<?php echo $followup_edit->followup_by_emp_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$followup_edit->followup_by_emp_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $followup_edit->followup_by_emp_id->Lookup->getParamTag($followup_edit, "p_x_followup_by_emp_id") ?>
+<input type="text" data-table="followup" data-field="x_followup_by_emp_id" name="x_followup_by_emp_id" id="x_followup_by_emp_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($followup_edit->followup_by_emp_id->getPlaceHolder()) ?>" value="<?php echo $followup_edit->followup_by_emp_id->EditValue ?>"<?php echo $followup_edit->followup_by_emp_id->editAttributes() ?>>
 </span>
 <?php echo $followup_edit->followup_by_emp_id->CustomMsg ?></div></div>
 	</div>
@@ -274,23 +229,7 @@ $followup_edit->showMessage();
 		<label id="elh_followup_followup_no_id" for="x_followup_no_id" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->followup_no_id->caption() ?><?php echo $followup_edit->followup_no_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->followup_no_id->cellAttributes() ?>>
 <span id="el_followup_followup_no_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($followup_edit->followup_no_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $followup_edit->followup_no_id->ViewValue ?></button>
-		<div id="dsl_x_followup_no_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $followup_edit->followup_no_id->radioButtonListHtml(TRUE, "x_followup_no_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_followup_no_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="followup" data-field="x_followup_no_id" data-value-separator="<?php echo $followup_edit->followup_no_id->displayValueSeparatorAttribute() ?>" name="x_followup_no_id" id="x_followup_no_id" value="{value}"<?php echo $followup_edit->followup_no_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$followup_edit->followup_no_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $followup_edit->followup_no_id->Lookup->getParamTag($followup_edit, "p_x_followup_no_id") ?>
+<input type="text" data-table="followup" data-field="x_followup_no_id" name="x_followup_no_id" id="x_followup_no_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($followup_edit->followup_no_id->getPlaceHolder()) ?>" value="<?php echo $followup_edit->followup_no_id->EditValue ?>"<?php echo $followup_edit->followup_no_id->editAttributes() ?>>
 </span>
 <?php echo $followup_edit->followup_no_id->CustomMsg ?></div></div>
 	</div>
@@ -314,16 +253,10 @@ loadjs.ready(["ffollowupedit", "datetimepicker"], function() {
 <?php } ?>
 <?php if ($followup_edit->followup_comments->Visible) { // followup_comments ?>
 	<div id="r_followup_comments" class="form-group row">
-		<label id="elh_followup_followup_comments" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->followup_comments->caption() ?><?php echo $followup_edit->followup_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_followup_followup_comments" for="x_followup_comments" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->followup_comments->caption() ?><?php echo $followup_edit->followup_comments->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->followup_comments->cellAttributes() ?>>
 <span id="el_followup_followup_comments">
-<?php $followup_edit->followup_comments->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="followup" data-field="x_followup_comments" name="x_followup_comments" id="x_followup_comments" cols="35" rows="4" placeholder="<?php echo HtmlEncode($followup_edit->followup_comments->getPlaceHolder()) ?>"<?php echo $followup_edit->followup_comments->editAttributes() ?>><?php echo $followup_edit->followup_comments->EditValue ?></textarea>
-<script>
-loadjs.ready(["ffollowupedit", "editor"], function() {
-	ew.createEditor("ffollowupedit", "x_followup_comments", 0, 0, <?php echo $followup_edit->followup_comments->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $followup_edit->followup_comments->CustomMsg ?></div></div>
 	</div>
@@ -346,11 +279,11 @@ loadjs.ready(["ffollowupedit", "editor"], function() {
 		<label id="elh_followup_nxt_FU_date" for="x_nxt_FU_date" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->nxt_FU_date->caption() ?><?php echo $followup_edit->nxt_FU_date->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->nxt_FU_date->cellAttributes() ?>>
 <span id="el_followup_nxt_FU_date">
-<input type="text" data-table="followup" data-field="x_nxt_FU_date" data-format="1" name="x_nxt_FU_date" id="x_nxt_FU_date" maxlength="19" placeholder="<?php echo HtmlEncode($followup_edit->nxt_FU_date->getPlaceHolder()) ?>" value="<?php echo $followup_edit->nxt_FU_date->EditValue ?>"<?php echo $followup_edit->nxt_FU_date->editAttributes() ?>>
+<input type="text" data-table="followup" data-field="x_nxt_FU_date" name="x_nxt_FU_date" id="x_nxt_FU_date" maxlength="19" placeholder="<?php echo HtmlEncode($followup_edit->nxt_FU_date->getPlaceHolder()) ?>" value="<?php echo $followup_edit->nxt_FU_date->EditValue ?>"<?php echo $followup_edit->nxt_FU_date->editAttributes() ?>>
 <?php if (!$followup_edit->nxt_FU_date->ReadOnly && !$followup_edit->nxt_FU_date->Disabled && !isset($followup_edit->nxt_FU_date->EditAttrs["readonly"]) && !isset($followup_edit->nxt_FU_date->EditAttrs["disabled"])) { ?>
 <script>
 loadjs.ready(["ffollowupedit", "datetimepicker"], function() {
-	ew.createDateTimePicker("ffollowupedit", "x_nxt_FU_date", {"ignoreReadonly":true,"useCurrent":false,"format":1});
+	ew.createDateTimePicker("ffollowupedit", "x_nxt_FU_date", {"ignoreReadonly":true,"useCurrent":false,"format":0});
 });
 </script>
 <?php } ?>
@@ -360,16 +293,10 @@ loadjs.ready(["ffollowupedit", "datetimepicker"], function() {
 <?php } ?>
 <?php if ($followup_edit->nxt_FU_plans->Visible) { // nxt_FU_plans ?>
 	<div id="r_nxt_FU_plans" class="form-group row">
-		<label id="elh_followup_nxt_FU_plans" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->nxt_FU_plans->caption() ?><?php echo $followup_edit->nxt_FU_plans->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<label id="elh_followup_nxt_FU_plans" for="x_nxt_FU_plans" class="<?php echo $followup_edit->LeftColumnClass ?>"><?php echo $followup_edit->nxt_FU_plans->caption() ?><?php echo $followup_edit->nxt_FU_plans->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $followup_edit->RightColumnClass ?>"><div <?php echo $followup_edit->nxt_FU_plans->cellAttributes() ?>>
 <span id="el_followup_nxt_FU_plans">
-<?php $followup_edit->nxt_FU_plans->EditAttrs->appendClass("editor"); ?>
 <textarea data-table="followup" data-field="x_nxt_FU_plans" name="x_nxt_FU_plans" id="x_nxt_FU_plans" cols="35" rows="4" placeholder="<?php echo HtmlEncode($followup_edit->nxt_FU_plans->getPlaceHolder()) ?>"<?php echo $followup_edit->nxt_FU_plans->editAttributes() ?>><?php echo $followup_edit->nxt_FU_plans->EditValue ?></textarea>
-<script>
-loadjs.ready(["ffollowupedit", "editor"], function() {
-	ew.createEditor("ffollowupedit", "x_nxt_FU_plans", 0, 0, <?php echo $followup_edit->nxt_FU_plans->ReadOnly || FALSE ? "true" : "false" ?>);
-});
-</script>
 </span>
 <?php echo $followup_edit->nxt_FU_plans->CustomMsg ?></div></div>
 	</div>

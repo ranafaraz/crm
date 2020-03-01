@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 	public $PageID = "list";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'services_availed_by_customer';
@@ -365,7 +365,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -402,10 +401,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		$this->MultiDeleteUrl = "services_availed_by_customerdelete.php";
 		$this->MultiUpdateUrl = "services_availed_by_customerupdate.php";
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'list');
@@ -424,9 +419,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 
 		// List options
 		$this->ListOptions = new ListOptions();
@@ -616,9 +608,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -677,9 +666,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -716,7 +702,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 	public $KeyCount = 0; // Key count
 	public $RowAction = ""; // Row action
 	public $RowOldKey = ""; // Row old key (for copy)
-	public $MultiColumnClass = "col-sm-6";
+	public $MultiColumnClass = "col-sm";
 	public $MultiColumnEditClass = "w-100";
 	public $DbMasterFilter = ""; // Master filter
 	public $DbDetailFilter = ""; // Detail filter
@@ -742,56 +728,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canList()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				$this->terminate(GetUrl("index.php"));
-				return;
-			}
 		}
-
-		// Get export parameters
-		$custom = "";
-		if (Param("export") !== NULL) {
-			$this->Export = Param("export");
-			$custom = Param("custom", "");
-		} elseif (IsPost()) {
-			if (Post("exporttype") !== NULL)
-				$this->Export = Post("exporttype");
-			$custom = Post("custom", "");
-		} elseif (Get("cmd") == "json") {
-			$this->Export = Get("cmd");
-		} else {
-			$this->setExportReturnUrl(CurrentUrl());
-		}
-		$ExportFileName = $this->TableVar; // Get export file, used in header
-
-		// Get custom export parameters
-		if ($this->isExport() && $custom != "") {
-			$this->CustomExport = $this->Export;
-			$this->Export = "print";
-		}
-		$CustomExportType = $this->CustomExport;
-		$ExportType = $this->Export; // Get export parameter, used in header
-
-		// Update Export URLs
-		if (Config("USE_PHPEXCEL"))
-			$this->ExportExcelCustom = FALSE;
-		if ($this->ExportExcelCustom)
-			$this->ExportExcelUrl .= "&amp;custom=1";
-		if (Config("USE_PHPWORD"))
-			$this->ExportWordCustom = FALSE;
-		if ($this->ExportWordCustom)
-			$this->ExportWordUrl .= "&amp;custom=1";
-		if ($this->ExportPdfCustom)
-			$this->ExportPdfUrl .= "&amp;custom=1";
 		$this->CurrentAction = Param("action"); // Set up current action
 
 		// Get grid add count
@@ -801,16 +738,13 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 		// Set up list options
 		$this->setupListOptions();
-
-		// Setup export options
-		$this->setupExportOptions();
 		$this->sabc_id->setVisibility();
 		$this->sabc_branch_id->setVisibility();
 		$this->sabc_business_id->setVisibility();
 		$this->sabc_service_id->setVisibility();
 		$this->sabc_pkg->setVisibility();
 		$this->sabc_amount->setVisibility();
-		$this->sabc_desc->setVisibility();
+		$this->sabc_desc->Visible = FALSE;
 		$this->sabc_signed_on->setVisibility();
 		$this->hideFieldsForAddEdit();
 
@@ -845,11 +779,8 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		}
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->sabc_branch_id);
-		$this->setupLookupOptions($this->sabc_business_id);
-		$this->setupLookupOptions($this->sabc_service_id);
-
 		// Search filters
+
 		$srchAdvanced = ""; // Advanced search filter
 		$srchBasic = ""; // Basic search filter
 		$filter = "";
@@ -894,29 +825,8 @@ class services_availed_by_customer_list extends services_availed_by_customer
 			if ($this->isExport())
 				$this->OtherOptions->hideAllOptions();
 
-			// Get default search criteria
-			AddFilter($this->DefaultSearchWhere, $this->basicSearchWhere(TRUE));
-
-			// Get basic search values
-			$this->loadBasicSearchValues();
-
-			// Process filter list
-			if ($this->processFilterList())
-				$this->terminate();
-
-			// Restore search parms from Session if not searching / reset / export
-			if (($this->isExport() || $this->Command != "search" && $this->Command != "reset" && $this->Command != "resetall") && $this->Command != "json" && $this->checkSearchParms())
-				$this->restoreSearchParms();
-
-			// Call Recordset SearchValidated event
-			$this->Recordset_SearchValidated();
-
 			// Set up sorting order
 			$this->setupSortOrder();
-
-			// Get basic search criteria
-			if ($SearchError == "")
-				$srchBasic = $this->basicSearchWhere();
 		}
 
 		// Restore display records
@@ -931,35 +841,8 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		if ($this->Command != "json")
 			$this->loadSortOrder();
 
-		// Load search default if no existing search criteria
-		if (!$this->checkSearchParms()) {
-
-			// Load basic search from default
-			$this->BasicSearch->loadDefault();
-			if ($this->BasicSearch->Keyword != "")
-				$srchBasic = $this->basicSearchWhere();
-		}
-
-		// Build search criteria
-		AddFilter($this->SearchWhere, $srchAdvanced);
-		AddFilter($this->SearchWhere, $srchBasic);
-
-		// Call Recordset_Searching event
-		$this->Recordset_Searching($this->SearchWhere);
-
-		// Save search criteria
-		if ($this->Command == "search" && !$this->RestoreSearch) {
-			$this->setSearchWhere($this->SearchWhere); // Save to Session
-			$this->StartRecord = 1; // Reset start record counter
-			$this->setStartRecordNumber($this->StartRecord);
-		} elseif ($this->Command != "json") {
-			$this->SearchWhere = $this->getSearchWhere();
-		}
-
 		// Build filter
 		$filter = "";
-		if (!$Security->canList())
-			$filter = "(0=1)"; // Filter all records
 		AddFilter($filter, $this->DbDetailFilter);
 		AddFilter($filter, $this->SearchWhere);
 
@@ -970,12 +853,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		} else {
 			$this->setSessionWhere($filter);
 			$this->CurrentFilter = "";
-		}
-
-		// Export data only
-		if (!$this->CustomExport && in_array($this->Export, array_keys(Config("EXPORT_CLASSES")))) {
-			$this->exportData();
-			$this->terminate();
 		}
 		if ($this->isGridAdd()) {
 			$this->CurrentFilter = "0=1";
@@ -1001,8 +878,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 			// Set no record found message
 			if (!$this->CurrentAction && $this->TotalRecords == 0) {
-				if (!$Security->canList())
-					$this->setWarningMessage(DeniedMessage());
 				if ($this->SearchWhere == "0=101")
 					$this->setWarningMessage($Language->phrase("EnterSearchCriteria"));
 				else
@@ -1026,7 +901,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		}
 
 		// Set up pager
-		$this->Pager = new NumericPager($this->StartRecord, $this->getRecordsPerPage(), $this->TotalRecords, $this->PageSizes, $this->RecordRange, $this->AutoHidePager, $this->AutoHidePageSizeSelector);
+		$this->Pager = new PrevNextPager($this->StartRecord, $this->getRecordsPerPage(), $this->TotalRecords, $this->PageSizes, $this->RecordRange, $this->AutoHidePager, $this->AutoHidePageSizeSelector);
 	}
 
 	// Set up number of records displayed per page
@@ -1092,282 +967,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		return TRUE;
 	}
 
-	// Get list of filters
-	public function getFilterList()
-	{
-		global $UserProfile;
-
-		// Initialize
-		$filterList = "";
-		$savedFilterList = "";
-		$filterList = Concat($filterList, $this->sabc_id->AdvancedSearch->toJson(), ","); // Field sabc_id
-		$filterList = Concat($filterList, $this->sabc_branch_id->AdvancedSearch->toJson(), ","); // Field sabc_branch_id
-		$filterList = Concat($filterList, $this->sabc_business_id->AdvancedSearch->toJson(), ","); // Field sabc_business_id
-		$filterList = Concat($filterList, $this->sabc_service_id->AdvancedSearch->toJson(), ","); // Field sabc_service_id
-		$filterList = Concat($filterList, $this->sabc_pkg->AdvancedSearch->toJson(), ","); // Field sabc_pkg
-		$filterList = Concat($filterList, $this->sabc_amount->AdvancedSearch->toJson(), ","); // Field sabc_amount
-		$filterList = Concat($filterList, $this->sabc_desc->AdvancedSearch->toJson(), ","); // Field sabc_desc
-		$filterList = Concat($filterList, $this->sabc_signed_on->AdvancedSearch->toJson(), ","); // Field sabc_signed_on
-		if ($this->BasicSearch->Keyword != "") {
-			$wrk = "\"" . Config("TABLE_BASIC_SEARCH") . "\":\"" . JsEncode($this->BasicSearch->Keyword) . "\",\"" . Config("TABLE_BASIC_SEARCH_TYPE") . "\":\"" . JsEncode($this->BasicSearch->Type) . "\"";
-			$filterList = Concat($filterList, $wrk, ",");
-		}
-
-		// Return filter list in JSON
-		if ($filterList != "")
-			$filterList = "\"data\":{" . $filterList . "}";
-		if ($savedFilterList != "")
-			$filterList = Concat($filterList, "\"filters\":" . $savedFilterList, ",");
-		return ($filterList != "") ? "{" . $filterList . "}" : "null";
-	}
-
-	// Process filter list
-	protected function processFilterList()
-	{
-		global $UserProfile;
-		if (Post("ajax") == "savefilters") { // Save filter request (Ajax)
-			$filters = Post("filters");
-			$UserProfile->setSearchFilters(CurrentUserName(), "fservices_availed_by_customerlistsrch", $filters);
-			WriteJson([["success" => TRUE]]); // Success
-			return TRUE;
-		} elseif (Post("cmd") == "resetfilter") {
-			$this->restoreFilterList();
-		}
-		return FALSE;
-	}
-
-	// Restore list of filters
-	protected function restoreFilterList()
-	{
-
-		// Return if not reset filter
-		if (Post("cmd") !== "resetfilter")
-			return FALSE;
-		$filter = json_decode(Post("filter"), TRUE);
-		$this->Command = "search";
-
-		// Field sabc_id
-		$this->sabc_id->AdvancedSearch->SearchValue = @$filter["x_sabc_id"];
-		$this->sabc_id->AdvancedSearch->SearchOperator = @$filter["z_sabc_id"];
-		$this->sabc_id->AdvancedSearch->SearchCondition = @$filter["v_sabc_id"];
-		$this->sabc_id->AdvancedSearch->SearchValue2 = @$filter["y_sabc_id"];
-		$this->sabc_id->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_id"];
-		$this->sabc_id->AdvancedSearch->save();
-
-		// Field sabc_branch_id
-		$this->sabc_branch_id->AdvancedSearch->SearchValue = @$filter["x_sabc_branch_id"];
-		$this->sabc_branch_id->AdvancedSearch->SearchOperator = @$filter["z_sabc_branch_id"];
-		$this->sabc_branch_id->AdvancedSearch->SearchCondition = @$filter["v_sabc_branch_id"];
-		$this->sabc_branch_id->AdvancedSearch->SearchValue2 = @$filter["y_sabc_branch_id"];
-		$this->sabc_branch_id->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_branch_id"];
-		$this->sabc_branch_id->AdvancedSearch->save();
-
-		// Field sabc_business_id
-		$this->sabc_business_id->AdvancedSearch->SearchValue = @$filter["x_sabc_business_id"];
-		$this->sabc_business_id->AdvancedSearch->SearchOperator = @$filter["z_sabc_business_id"];
-		$this->sabc_business_id->AdvancedSearch->SearchCondition = @$filter["v_sabc_business_id"];
-		$this->sabc_business_id->AdvancedSearch->SearchValue2 = @$filter["y_sabc_business_id"];
-		$this->sabc_business_id->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_business_id"];
-		$this->sabc_business_id->AdvancedSearch->save();
-
-		// Field sabc_service_id
-		$this->sabc_service_id->AdvancedSearch->SearchValue = @$filter["x_sabc_service_id"];
-		$this->sabc_service_id->AdvancedSearch->SearchOperator = @$filter["z_sabc_service_id"];
-		$this->sabc_service_id->AdvancedSearch->SearchCondition = @$filter["v_sabc_service_id"];
-		$this->sabc_service_id->AdvancedSearch->SearchValue2 = @$filter["y_sabc_service_id"];
-		$this->sabc_service_id->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_service_id"];
-		$this->sabc_service_id->AdvancedSearch->save();
-
-		// Field sabc_pkg
-		$this->sabc_pkg->AdvancedSearch->SearchValue = @$filter["x_sabc_pkg"];
-		$this->sabc_pkg->AdvancedSearch->SearchOperator = @$filter["z_sabc_pkg"];
-		$this->sabc_pkg->AdvancedSearch->SearchCondition = @$filter["v_sabc_pkg"];
-		$this->sabc_pkg->AdvancedSearch->SearchValue2 = @$filter["y_sabc_pkg"];
-		$this->sabc_pkg->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_pkg"];
-		$this->sabc_pkg->AdvancedSearch->save();
-
-		// Field sabc_amount
-		$this->sabc_amount->AdvancedSearch->SearchValue = @$filter["x_sabc_amount"];
-		$this->sabc_amount->AdvancedSearch->SearchOperator = @$filter["z_sabc_amount"];
-		$this->sabc_amount->AdvancedSearch->SearchCondition = @$filter["v_sabc_amount"];
-		$this->sabc_amount->AdvancedSearch->SearchValue2 = @$filter["y_sabc_amount"];
-		$this->sabc_amount->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_amount"];
-		$this->sabc_amount->AdvancedSearch->save();
-
-		// Field sabc_desc
-		$this->sabc_desc->AdvancedSearch->SearchValue = @$filter["x_sabc_desc"];
-		$this->sabc_desc->AdvancedSearch->SearchOperator = @$filter["z_sabc_desc"];
-		$this->sabc_desc->AdvancedSearch->SearchCondition = @$filter["v_sabc_desc"];
-		$this->sabc_desc->AdvancedSearch->SearchValue2 = @$filter["y_sabc_desc"];
-		$this->sabc_desc->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_desc"];
-		$this->sabc_desc->AdvancedSearch->save();
-
-		// Field sabc_signed_on
-		$this->sabc_signed_on->AdvancedSearch->SearchValue = @$filter["x_sabc_signed_on"];
-		$this->sabc_signed_on->AdvancedSearch->SearchOperator = @$filter["z_sabc_signed_on"];
-		$this->sabc_signed_on->AdvancedSearch->SearchCondition = @$filter["v_sabc_signed_on"];
-		$this->sabc_signed_on->AdvancedSearch->SearchValue2 = @$filter["y_sabc_signed_on"];
-		$this->sabc_signed_on->AdvancedSearch->SearchOperator2 = @$filter["w_sabc_signed_on"];
-		$this->sabc_signed_on->AdvancedSearch->save();
-		$this->BasicSearch->setKeyword(@$filter[Config("TABLE_BASIC_SEARCH")]);
-		$this->BasicSearch->setType(@$filter[Config("TABLE_BASIC_SEARCH_TYPE")]);
-	}
-
-	// Return basic search SQL
-	protected function basicSearchSql($arKeywords, $type)
-	{
-		$where = "";
-		$this->buildBasicSearchSql($where, $this->sabc_desc, $arKeywords, $type);
-		return $where;
-	}
-
-	// Build basic search SQL
-	protected function buildBasicSearchSql(&$where, &$fld, $arKeywords, $type)
-	{
-		$defCond = ($type == "OR") ? "OR" : "AND";
-		$arSql = []; // Array for SQL parts
-		$arCond = []; // Array for search conditions
-		$cnt = count($arKeywords);
-		$j = 0; // Number of SQL parts
-		for ($i = 0; $i < $cnt; $i++) {
-			$keyword = $arKeywords[$i];
-			$keyword = trim($keyword);
-			if (Config("BASIC_SEARCH_IGNORE_PATTERN") != "") {
-				$keyword = preg_replace(Config("BASIC_SEARCH_IGNORE_PATTERN"), "\\", $keyword);
-				$ar = explode("\\", $keyword);
-			} else {
-				$ar = [$keyword];
-			}
-			foreach ($ar as $keyword) {
-				if ($keyword != "") {
-					$wrk = "";
-					if ($keyword == "OR" && $type == "") {
-						if ($j > 0)
-							$arCond[$j - 1] = "OR";
-					} elseif ($keyword == Config("NULL_VALUE")) {
-						$wrk = $fld->Expression . " IS NULL";
-					} elseif ($keyword == Config("NOT_NULL_VALUE")) {
-						$wrk = $fld->Expression . " IS NOT NULL";
-					} elseif ($fld->IsVirtual) {
-						$wrk = $fld->VirtualExpression . Like(QuotedValue("%" . $keyword . "%", DATATYPE_STRING, $this->Dbid), $this->Dbid);
-					} elseif ($fld->DataType != DATATYPE_NUMBER || is_numeric($keyword)) {
-						$wrk = $fld->BasicSearchExpression . Like(QuotedValue("%" . $keyword . "%", DATATYPE_STRING, $this->Dbid), $this->Dbid);
-					}
-					if ($wrk != "") {
-						$arSql[$j] = $wrk;
-						$arCond[$j] = $defCond;
-						$j += 1;
-					}
-				}
-			}
-		}
-		$cnt = count($arSql);
-		$quoted = FALSE;
-		$sql = "";
-		if ($cnt > 0) {
-			for ($i = 0; $i < $cnt - 1; $i++) {
-				if ($arCond[$i] == "OR") {
-					if (!$quoted)
-						$sql .= "(";
-					$quoted = TRUE;
-				}
-				$sql .= $arSql[$i];
-				if ($quoted && $arCond[$i] != "OR") {
-					$sql .= ")";
-					$quoted = FALSE;
-				}
-				$sql .= " " . $arCond[$i] . " ";
-			}
-			$sql .= $arSql[$cnt - 1];
-			if ($quoted)
-				$sql .= ")";
-		}
-		if ($sql != "") {
-			if ($where != "")
-				$where .= " OR ";
-			$where .= "(" . $sql . ")";
-		}
-	}
-
-	// Return basic search WHERE clause based on search keyword and type
-	protected function basicSearchWhere($default = FALSE)
-	{
-		global $Security;
-		$searchStr = "";
-		if (!$Security->canSearch())
-			return "";
-		$searchKeyword = ($default) ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
-		$searchType = ($default) ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
-
-		// Get search SQL
-		if ($searchKeyword != "") {
-			$ar = $this->BasicSearch->keywordList($default);
-
-			// Search keyword in any fields
-			if (($searchType == "OR" || $searchType == "AND") && $this->BasicSearch->BasicSearchAnyFields) {
-				foreach ($ar as $keyword) {
-					if ($keyword != "") {
-						if ($searchStr != "")
-							$searchStr .= " " . $searchType . " ";
-						$searchStr .= "(" . $this->basicSearchSql([$keyword], $searchType) . ")";
-					}
-				}
-			} else {
-				$searchStr = $this->basicSearchSql($ar, $searchType);
-			}
-			if (!$default && in_array($this->Command, ["", "reset", "resetall"]))
-				$this->Command = "search";
-		}
-		if (!$default && $this->Command == "search") {
-			$this->BasicSearch->setKeyword($searchKeyword);
-			$this->BasicSearch->setType($searchType);
-		}
-		return $searchStr;
-	}
-
-	// Check if search parm exists
-	protected function checkSearchParms()
-	{
-
-		// Check basic search
-		if ($this->BasicSearch->issetSession())
-			return TRUE;
-		return FALSE;
-	}
-
-	// Clear all search parameters
-	protected function resetSearchParms()
-	{
-
-		// Clear search WHERE clause
-		$this->SearchWhere = "";
-		$this->setSearchWhere($this->SearchWhere);
-
-		// Clear basic search parameters
-		$this->resetBasicSearchParms();
-	}
-
-	// Load advanced search default values
-	protected function loadAdvancedSearchDefault()
-	{
-		return FALSE;
-	}
-
-	// Clear all basic search parameters
-	protected function resetBasicSearchParms()
-	{
-		$this->BasicSearch->unsetSession();
-	}
-
-	// Restore all search parameters
-	protected function restoreSearchParms()
-	{
-		$this->RestoreSearch = TRUE;
-
-		// Restore basic search values
-		$this->BasicSearch->load();
-	}
-
 	// Set up sort parameters
 	protected function setupSortOrder()
 	{
@@ -1382,7 +981,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 			$this->updateSort($this->sabc_service_id); // sabc_service_id
 			$this->updateSort($this->sabc_pkg); // sabc_pkg
 			$this->updateSort($this->sabc_amount); // sabc_amount
-			$this->updateSort($this->sabc_desc); // sabc_desc
 			$this->updateSort($this->sabc_signed_on); // sabc_signed_on
 			$this->setStartRecordNumber(1); // Reset start position
 		}
@@ -1411,22 +1009,16 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// Check if reset command
 		if (StartsString("reset", $this->Command)) {
 
-			// Reset search criteria
-			if ($this->Command == "reset" || $this->Command == "resetall")
-				$this->resetSearchParms();
-
 			// Reset sorting order
 			if ($this->Command == "resetsort") {
 				$orderBy = "";
 				$this->setSessionOrderBy($orderBy);
-				$this->setSessionOrderByList($orderBy);
 				$this->sabc_id->setSort("");
 				$this->sabc_branch_id->setSort("");
 				$this->sabc_business_id->setSort("");
 				$this->sabc_service_id->setSort("");
 				$this->sabc_pkg->setSort("");
 				$this->sabc_amount->setSort("");
-				$this->sabc_desc->setSort("");
 				$this->sabc_signed_on->setSort("");
 			}
 
@@ -1450,25 +1042,25 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// "view"
 		$item = &$this->ListOptions->add("view");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canView();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// "edit"
 		$item = &$this->ListOptions->add("edit");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canEdit();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// "copy"
 		$item = &$this->ListOptions->add("copy");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canAdd();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// "delete"
 		$item = &$this->ListOptions->add("delete");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = $Security->canDelete();
+		$item->Visible = TRUE;
 		$item->OnLeft = FALSE;
 
 		// List actions
@@ -1515,7 +1107,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// "view"
 		$opt = $this->ListOptions["view"];
 		$viewcaption = HtmlTitle($Language->phrase("ViewLink"));
-		if ($Security->canView()) {
+		if (TRUE) {
 			$opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode($this->ViewUrl) . "\">" . $Language->phrase("ViewLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1524,7 +1116,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// "edit"
 		$opt = $this->ListOptions["edit"];
 		$editcaption = HtmlTitle($Language->phrase("EditLink"));
-		if ($Security->canEdit()) {
+		if (TRUE) {
 			$opt->Body = "<a class=\"ew-row-link ew-edit\" title=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("EditLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1533,7 +1125,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// "copy"
 		$opt = $this->ListOptions["copy"];
 		$copycaption = HtmlTitle($Language->phrase("CopyLink"));
-		if ($Security->canAdd()) {
+		if (TRUE) {
 			$opt->Body = "<a class=\"ew-row-link ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode($this->CopyUrl) . "\">" . $Language->phrase("CopyLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1541,7 +1133,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 		// "delete"
 		$opt = $this->ListOptions["delete"];
-		if ($Security->canDelete())
+		if (TRUE)
 			$opt->Body = "<a class=\"ew-row-link ew-delete\"" . "" . " title=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" href=\"" . HtmlEncode($this->DeleteUrl) . "\">" . $Language->phrase("DeleteLink") . "</a>";
 		else
 			$opt->Body = "";
@@ -1577,7 +1169,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 		// "checkbox"
 		$opt = $this->ListOptions["checkbox"];
-		$opt->Body = "<div class=\"custom-control custom-checkbox d-inline-block\"><input type=\"checkbox\" id=\"key_m_" . $this->RowCount . "\" name=\"key_m[]\" class=\"custom-control-input ew-multi-select\" value=\"" . HtmlEncode($this->sabc_id->CurrentValue) . "\"><label class=\"custom-control-label\" for=\"key_m_" . $this->RowCount . "\"></label></div>";
+		$opt->Body = "<div class=\"custom-control custom-checkbox d-inline-block\"><input type=\"checkbox\" id=\"key_m_" . $this->RowCount . "\" name=\"key_m[]\" class=\"custom-control-input ew-multi-select\" value=\"" . HtmlEncode($this->sabc_id->CurrentValue) . "\" onclick=\"ew.clickMultiCheckbox(event);\"><label class=\"custom-control-label\" for=\"key_m_" . $this->RowCount . "\"></label></div>";
 		$this->renderListOptionsExt();
 
 		// Call ListOptions_Rendered event
@@ -1595,7 +1187,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		$item = &$option->add("add");
 		$addcaption = HtmlTitle($Language->phrase("AddLink"));
 		$item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("AddLink") . "</a>";
-		$item->Visible = $this->AddUrl != "" && $Security->canAdd();
+		$item->Visible = $this->AddUrl != "";
 		$option = $options["action"];
 
 		// Set up options default
@@ -1615,10 +1207,10 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// Filter button
 		$item = &$this->FilterOptions->add("savecurrentfilter");
 		$item->Body = "<a class=\"ew-save-filter\" data-form=\"fservices_availed_by_customerlistsrch\" href=\"#\" onclick=\"return false;\">" . $Language->phrase("SaveCurrentFilter") . "</a>";
-		$item->Visible = TRUE;
+		$item->Visible = FALSE;
 		$item = &$this->FilterOptions->add("deletefilter");
 		$item->Body = "<a class=\"ew-delete-filter\" data-form=\"fservices_availed_by_customerlistsrch\" href=\"#\" onclick=\"return false;\">" . $Language->phrase("DeleteFilter") . "</a>";
-		$item->Visible = TRUE;
+		$item->Visible = FALSE;
 		$this->FilterOptions->UseDropDownButton = TRUE;
 		$this->FilterOptions->UseButtonGroup = !$this->FilterOptions->UseDropDownButton;
 		$this->FilterOptions->DropDownButtonPhrase = $Language->phrase("Filters");
@@ -1739,14 +1331,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		return FALSE; // Not ajax request
 	}
 
-	// Get multi column CSS class for record DIV
-	public function getMultiColumnClass()
-	{
-		if ($this->isGridAdd() || $this->isGridEdit() || $this->isInlineActionRow())
-			return "p-3 " . $this->MultiColumnEditClass; // Occupy a whole row
-		return $this->MultiColumnClass; // Occupy a column only
-	}
-
 	// Set up list options (extended codes)
 	protected function setupListOptionsExt()
 	{
@@ -1755,15 +1339,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 	// Render list options (extended codes)
 	protected function renderListOptionsExt()
 	{
-	}
-
-	// Load basic search values
-	protected function loadBasicSearchValues()
-	{
-		$this->BasicSearch->setKeyword(Get(Config("TABLE_BASIC_SEARCH"), ""), FALSE);
-		if ($this->BasicSearch->Keyword != "" && $this->Command == "")
-			$this->Command = "search";
-		$this->BasicSearch->setType(Get(Config("TABLE_BASIC_SEARCH_TYPE"), ""), FALSE);
 	}
 
 	// Load recordset
@@ -1779,7 +1354,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -1831,17 +1406,7 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		$this->sabc_id->setDbValue($row['sabc_id']);
 		$this->sabc_branch_id->setDbValue($row['sabc_branch_id']);
 		$this->sabc_business_id->setDbValue($row['sabc_business_id']);
-		if (array_key_exists('EV__sabc_business_id', $rs->fields)) {
-			$this->sabc_business_id->VirtualValue = $rs->fields('EV__sabc_business_id'); // Set up virtual field value
-		} else {
-			$this->sabc_business_id->VirtualValue = ""; // Clear value
-		}
 		$this->sabc_service_id->setDbValue($row['sabc_service_id']);
-		if (array_key_exists('EV__sabc_service_id', $rs->fields)) {
-			$this->sabc_service_id->VirtualValue = $rs->fields('EV__sabc_service_id'); // Set up virtual field value
-		} else {
-			$this->sabc_service_id->VirtualValue = ""; // Clear value
-		}
 		$this->sabc_pkg->setDbValue($row['sabc_pkg']);
 		$this->sabc_amount->setDbValue($row['sabc_amount']);
 		$this->sabc_desc->setDbValue($row['sabc_desc']);
@@ -1919,77 +1484,18 @@ class services_availed_by_customer_list extends services_availed_by_customer
 			$this->sabc_id->ViewCustomAttributes = "";
 
 			// sabc_branch_id
-			$curVal = strval($this->sabc_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->lookupCacheOption($curVal);
-				if ($this->sabc_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->sabc_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->sabc_branch_id->ViewValue = NULL;
-			}
+			$this->sabc_branch_id->ViewValue = $this->sabc_branch_id->CurrentValue;
+			$this->sabc_branch_id->ViewValue = FormatNumber($this->sabc_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->sabc_branch_id->ViewCustomAttributes = "";
 
 			// sabc_business_id
-			if ($this->sabc_business_id->VirtualValue != "") {
-				$this->sabc_business_id->ViewValue = $this->sabc_business_id->VirtualValue;
-			} else {
-				$curVal = strval($this->sabc_business_id->CurrentValue);
-				if ($curVal != "") {
-					$this->sabc_business_id->ViewValue = $this->sabc_business_id->lookupCacheOption($curVal);
-					if ($this->sabc_business_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`b_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->sabc_business_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->sabc_business_id->ViewValue = $this->sabc_business_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->sabc_business_id->ViewValue = NULL;
-				}
-			}
+			$this->sabc_business_id->ViewValue = $this->sabc_business_id->CurrentValue;
+			$this->sabc_business_id->ViewValue = FormatNumber($this->sabc_business_id->ViewValue, 0, -2, -2, -2);
 			$this->sabc_business_id->ViewCustomAttributes = "";
 
 			// sabc_service_id
-			if ($this->sabc_service_id->VirtualValue != "") {
-				$this->sabc_service_id->ViewValue = $this->sabc_service_id->VirtualValue;
-			} else {
-				$curVal = strval($this->sabc_service_id->CurrentValue);
-				if ($curVal != "") {
-					$this->sabc_service_id->ViewValue = $this->sabc_service_id->lookupCacheOption($curVal);
-					if ($this->sabc_service_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`service_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->sabc_service_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->sabc_service_id->ViewValue = $this->sabc_service_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->sabc_service_id->ViewValue = NULL;
-				}
-			}
+			$this->sabc_service_id->ViewValue = $this->sabc_service_id->CurrentValue;
+			$this->sabc_service_id->ViewValue = FormatNumber($this->sabc_service_id->ViewValue, 0, -2, -2, -2);
 			$this->sabc_service_id->ViewCustomAttributes = "";
 
 			// sabc_pkg
@@ -2004,10 +1510,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 			$this->sabc_amount->ViewValue = $this->sabc_amount->CurrentValue;
 			$this->sabc_amount->ViewValue = FormatNumber($this->sabc_amount->ViewValue, 0, -2, -2, -2);
 			$this->sabc_amount->ViewCustomAttributes = "";
-
-			// sabc_desc
-			$this->sabc_desc->ViewValue = $this->sabc_desc->CurrentValue;
-			$this->sabc_desc->ViewCustomAttributes = "";
 
 			// sabc_signed_on
 			$this->sabc_signed_on->ViewValue = $this->sabc_signed_on->CurrentValue;
@@ -2044,11 +1546,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 			$this->sabc_amount->HrefValue = "";
 			$this->sabc_amount->TooltipValue = "";
 
-			// sabc_desc
-			$this->sabc_desc->LinkCustomAttributes = "";
-			$this->sabc_desc->HrefValue = "";
-			$this->sabc_desc->TooltipValue = "";
-
 			// sabc_signed_on
 			$this->sabc_signed_on->LinkCustomAttributes = "";
 			$this->sabc_signed_on->HrefValue = "";
@@ -2060,114 +1557,12 @@ class services_availed_by_customer_list extends services_availed_by_customer
 			$this->Row_Rendered();
 	}
 
-	// Get export HTML tag
-	protected function getExportTag($type, $custom = FALSE)
-	{
-		global $Language;
-		if (SameText($type, "excel")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" onclick=\"return ew.export(document.fservices_availed_by_customerlist, '" . $this->ExportExcelUrl . "', 'excel', true);\">" . $Language->phrase("ExportToExcel") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportExcelUrl . "\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\">" . $Language->phrase("ExportToExcel") . "</a>";
-		} elseif (SameText($type, "word")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" onclick=\"return ew.export(document.fservices_availed_by_customerlist, '" . $this->ExportWordUrl . "', 'word', true);\">" . $Language->phrase("ExportToWord") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportWordUrl . "\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\">" . $Language->phrase("ExportToWord") . "</a>";
-		} elseif (SameText($type, "pdf")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" onclick=\"return ew.export(document.fservices_availed_by_customerlist, '" . $this->ExportPdfUrl . "', 'pdf', true);\">" . $Language->phrase("ExportToPDF") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportPdfUrl . "\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\">" . $Language->phrase("ExportToPDF") . "</a>";
-		} elseif (SameText($type, "html")) {
-			return "<a href=\"" . $this->ExportHtmlUrl . "\" class=\"ew-export-link ew-html\" title=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\">" . $Language->phrase("ExportToHtml") . "</a>";
-		} elseif (SameText($type, "xml")) {
-			return "<a href=\"" . $this->ExportXmlUrl . "\" class=\"ew-export-link ew-xml\" title=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\">" . $Language->phrase("ExportToXml") . "</a>";
-		} elseif (SameText($type, "csv")) {
-			return "<a href=\"" . $this->ExportCsvUrl . "\" class=\"ew-export-link ew-csv\" title=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\">" . $Language->phrase("ExportToCsv") . "</a>";
-		} elseif (SameText($type, "email")) {
-			$url = $custom ? ",url:'" . $this->pageUrl() . "export=email&amp;custom=1'" : "";
-			return '<button id="emf_services_availed_by_customer" class="ew-export-link ew-email" title="' . $Language->phrase("ExportToEmailText") . '" data-caption="' . $Language->phrase("ExportToEmailText") . '" onclick="ew.emailDialogShow({lnk:\'emf_services_availed_by_customer\', hdr:ew.language.phrase(\'ExportToEmailText\'), f:document.fservices_availed_by_customerlist, sel:false' . $url . '});">' . $Language->phrase("ExportToEmail") . '</button>';
-		} elseif (SameText($type, "print")) {
-			return "<a href=\"" . $this->ExportPrintUrl . "\" class=\"ew-export-link ew-print\" title=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\">" . $Language->phrase("PrinterFriendly") . "</a>";
-		}
-	}
-
-	// Set up export options
-	protected function setupExportOptions()
-	{
-		global $Language;
-
-		// Printer friendly
-		$item = &$this->ExportOptions->add("print");
-		$item->Body = $this->getExportTag("print");
-		$item->Visible = TRUE;
-
-		// Export to Excel
-		$item = &$this->ExportOptions->add("excel");
-		$item->Body = $this->getExportTag("excel");
-		$item->Visible = TRUE;
-
-		// Export to Word
-		$item = &$this->ExportOptions->add("word");
-		$item->Body = $this->getExportTag("word");
-		$item->Visible = FALSE;
-
-		// Export to Html
-		$item = &$this->ExportOptions->add("html");
-		$item->Body = $this->getExportTag("html");
-		$item->Visible = FALSE;
-
-		// Export to Xml
-		$item = &$this->ExportOptions->add("xml");
-		$item->Body = $this->getExportTag("xml");
-		$item->Visible = FALSE;
-
-		// Export to Csv
-		$item = &$this->ExportOptions->add("csv");
-		$item->Body = $this->getExportTag("csv");
-		$item->Visible = FALSE;
-
-		// Export to Pdf
-		$item = &$this->ExportOptions->add("pdf");
-		$item->Body = $this->getExportTag("pdf");
-		$item->Visible = FALSE;
-
-		// Export to Email
-		$item = &$this->ExportOptions->add("email");
-		$item->Body = $this->getExportTag("email");
-		$item->Visible = FALSE;
-
-		// Drop down button for export
-		$this->ExportOptions->UseButtonGroup = TRUE;
-		$this->ExportOptions->UseDropDownButton = FALSE;
-		if ($this->ExportOptions->UseButtonGroup && IsMobile())
-			$this->ExportOptions->UseDropDownButton = TRUE;
-		$this->ExportOptions->DropDownButtonPhrase = $Language->phrase("ButtonExport");
-
-		// Add group option item
-		$item = &$this->ExportOptions->add($this->ExportOptions->GroupOptionName);
-		$item->Body = "";
-		$item->Visible = FALSE;
-	}
-
 	// Set up search options
 	protected function setupSearchOptions()
 	{
 		global $Language;
 		$this->SearchOptions = new ListOptions("div");
 		$this->SearchOptions->TagClassName = "ew-search-option";
-
-		// Search button
-		$item = &$this->SearchOptions->add("searchtoggle");
-		$searchToggleClass = ($this->SearchWhere != "") ? " active" : " active";
-		$item->Body = "<a class=\"btn btn-default ew-search-toggle" . $searchToggleClass . "\" href=\"#\" role=\"button\" title=\"" . $Language->phrase("SearchPanel") . "\" data-caption=\"" . $Language->phrase("SearchPanel") . "\" data-toggle=\"button\" data-form=\"fservices_availed_by_customerlistsrch\" aria-pressed=\"" . ($searchToggleClass == " active" ? "true" : "false") . "\">" . $Language->phrase("SearchLink") . "</a>";
-		$item->Visible = TRUE;
-
-		// Show all button
-		$item = &$this->SearchOptions->add("showall");
-		$item->Body = "<a class=\"btn btn-default ew-show-all\" title=\"" . $Language->phrase("ShowAll") . "\" data-caption=\"" . $Language->phrase("ShowAll") . "\" href=\"" . $this->pageUrl() . "cmd=reset\">" . $Language->phrase("ShowAllBtn") . "</a>";
-		$item->Visible = ($this->SearchWhere != $this->DefaultSearchWhere && $this->SearchWhere != "0=101");
 
 		// Button group for search
 		$this->SearchOptions->UseDropDownButton = FALSE;
@@ -2182,114 +1577,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 		// Hide search options
 		if ($this->isExport() || $this->CurrentAction)
 			$this->SearchOptions->hideAllOptions();
-		global $Security;
-		if (!$Security->canSearch()) {
-			$this->SearchOptions->hideAllOptions();
-			$this->FilterOptions->hideAllOptions();
-		}
-	}
-
-	/**
-	 * Export data in HTML/CSV/Word/Excel/XML/Email/PDF format
-	 *
-	 * @param boolean $return Return the data rather than output it
-	 * @return mixed
-	 */
-	public function exportData($return = FALSE)
-	{
-		global $Language;
-		$utf8 = SameText(Config("PROJECT_CHARSET"), "utf-8");
-		$selectLimit = $this->UseSelectLimit;
-
-		// Load recordset
-		if ($selectLimit) {
-			$this->TotalRecords = $this->listRecordCount();
-		} else {
-			if (!$this->Recordset)
-				$this->Recordset = $this->loadRecordset();
-			$rs = &$this->Recordset;
-			if ($rs)
-				$this->TotalRecords = $rs->RecordCount();
-		}
-		$this->StartRecord = 1;
-
-		// Export all
-		if ($this->ExportAll) {
-			set_time_limit(Config("EXPORT_ALL_TIME_LIMIT"));
-			$this->DisplayRecords = $this->TotalRecords;
-			$this->StopRecord = $this->TotalRecords;
-		} else { // Export one page only
-			$this->setupStartRecord(); // Set up start record position
-
-			// Set the last record to display
-			if ($this->DisplayRecords <= 0) {
-				$this->StopRecord = $this->TotalRecords;
-			} else {
-				$this->StopRecord = $this->StartRecord + $this->DisplayRecords - 1;
-			}
-		}
-		if ($selectLimit)
-			$rs = $this->loadRecordset($this->StartRecord - 1, $this->DisplayRecords <= 0 ? $this->TotalRecords : $this->DisplayRecords);
-		$this->ExportDoc = GetExportDocument($this, "h");
-		$doc = &$this->ExportDoc;
-		if (!$doc)
-			$this->setFailureMessage($Language->phrase("ExportClassNotFound")); // Export class not found
-		if (!$rs || !$doc) {
-			RemoveHeader("Content-Type"); // Remove header
-			RemoveHeader("Content-Disposition");
-			$this->showMessage();
-			return;
-		}
-		if ($selectLimit) {
-			$this->StartRecord = 1;
-			$this->StopRecord = $this->DisplayRecords <= 0 ? $this->TotalRecords : $this->DisplayRecords;
-		}
-
-		// Call Page Exporting server event
-		$this->ExportDoc->ExportCustom = !$this->Page_Exporting();
-		$header = $this->PageHeader;
-		$this->Page_DataRendering($header);
-		$doc->Text .= $header;
-		$this->exportDocument($doc, $rs, $this->StartRecord, $this->StopRecord, "");
-		$footer = $this->PageFooter;
-		$this->Page_DataRendered($footer);
-		$doc->Text .= $footer;
-
-		// Close recordset
-		$rs->close();
-
-		// Call Page Exported server event
-		$this->Page_Exported();
-
-		// Export header and footer
-		$doc->exportHeaderAndFooter();
-
-		// Clean output buffer (without destroying output buffer)
-		$buffer = ob_get_contents(); // Save the output buffer
-		if (!Config("DEBUG") && $buffer)
-			ob_clean();
-
-		// Write debug message if enabled
-		if (Config("DEBUG") && !$this->isExport("pdf"))
-			echo GetDebugMessage();
-
-		// Output data
-		if ($this->isExport("email")) {
-
-			// Export-to-email disabled
-		} else {
-			$doc->export();
-			if ($return) {
-				RemoveHeader("Content-Type"); // Remove header
-				RemoveHeader("Content-Disposition");
-				$content = ob_get_contents();
-				if ($content)
-					ob_clean();
-				if ($buffer)
-					echo $buffer; // Resume the output buffer
-				return $content;
-			}
-		}
 	}
 
 	// Set up Breadcrumb
@@ -2316,12 +1603,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_sabc_branch_id":
-					break;
-				case "x_sabc_business_id":
-					break;
-				case "x_sabc_service_id":
-					break;
 				case "x_sabc_pkg":
 					break;
 				default:
@@ -2344,12 +1625,6 @@ class services_availed_by_customer_list extends services_availed_by_customer
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_sabc_branch_id":
-							break;
-						case "x_sabc_business_id":
-							break;
-						case "x_sabc_service_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $userlevelpermissions_edit = new userlevelpermissions_edit();
 $userlevelpermissions_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -141,7 +140,7 @@ $userlevelpermissions_edit->showMessage();
 	<div id="r__tablename" class="form-group row">
 		<label id="elh_userlevelpermissions__tablename" for="x__tablename" class="<?php echo $userlevelpermissions_edit->LeftColumnClass ?>"><?php echo $userlevelpermissions_edit->_tablename->caption() ?><?php echo $userlevelpermissions_edit->_tablename->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $userlevelpermissions_edit->RightColumnClass ?>"><div <?php echo $userlevelpermissions_edit->_tablename->cellAttributes() ?>>
-<input type="text" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" size="30" maxlength="80" placeholder="<?php echo HtmlEncode($userlevelpermissions_edit->_tablename->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions_edit->_tablename->EditValue ?>"<?php echo $userlevelpermissions_edit->_tablename->editAttributes() ?>>
+<input type="text" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" size="30" maxlength="191" placeholder="<?php echo HtmlEncode($userlevelpermissions_edit->_tablename->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions_edit->_tablename->EditValue ?>"<?php echo $userlevelpermissions_edit->_tablename->editAttributes() ?>>
 <input type="hidden" data-table="userlevelpermissions" data-field="x__tablename" name="o__tablename" id="o__tablename" value="<?php echo HtmlEncode($userlevelpermissions_edit->_tablename->OldValue != null ? $userlevelpermissions_edit->_tablename->OldValue : $userlevelpermissions_edit->_tablename->CurrentValue) ?>">
 <?php echo $userlevelpermissions_edit->_tablename->CustomMsg ?></div></div>
 	</div>

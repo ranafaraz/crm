@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $state_edit = new state_edit();
 $state_edit->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -66,6 +65,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $state_edit->state_country_id->caption(), $state_edit->state_country_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_state_country_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($state_edit->state_country_id->errorMessage()) ?>");
 			<?php if ($state_edit->state_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_state_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -99,8 +101,6 @@ loadjs.ready("head", function() {
 	fstateedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fstateedit.lists["x_state_country_id"] = <?php echo $state_edit->state_country_id->Lookup->toClientList($state_edit) ?>;
-	fstateedit.lists["x_state_country_id"].options = <?php echo JsonEncode($state_edit->state_country_id->lookupOptions()) ?>;
 	loadjs.done("fstateedit");
 });
 </script>
@@ -140,23 +140,7 @@ $state_edit->showMessage();
 		<label id="elh_state_state_country_id" for="x_state_country_id" class="<?php echo $state_edit->LeftColumnClass ?>"><?php echo $state_edit->state_country_id->caption() ?><?php echo $state_edit->state_country_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $state_edit->RightColumnClass ?>"><div <?php echo $state_edit->state_country_id->cellAttributes() ?>>
 <span id="el_state_state_country_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($state_edit->state_country_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $state_edit->state_country_id->ViewValue ?></button>
-		<div id="dsl_x_state_country_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $state_edit->state_country_id->radioButtonListHtml(TRUE, "x_state_country_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_state_country_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="state" data-field="x_state_country_id" data-value-separator="<?php echo $state_edit->state_country_id->displayValueSeparatorAttribute() ?>" name="x_state_country_id" id="x_state_country_id" value="{value}"<?php echo $state_edit->state_country_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$state_edit->state_country_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $state_edit->state_country_id->Lookup->getParamTag($state_edit, "p_x_state_country_id") ?>
+<input type="text" data-table="state" data-field="x_state_country_id" name="x_state_country_id" id="x_state_country_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($state_edit->state_country_id->getPlaceHolder()) ?>" value="<?php echo $state_edit->state_country_id->EditValue ?>"<?php echo $state_edit->state_country_id->editAttributes() ?>>
 </span>
 <?php echo $state_edit->state_country_id->CustomMsg ?></div></div>
 	</div>

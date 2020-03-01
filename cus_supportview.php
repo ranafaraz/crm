@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $cus_support_view = new cus_support_view();
 $cus_support_view->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -64,14 +63,6 @@ loadjs.ready("head", function() {
 <?php
 $cus_support_view->showMessage();
 ?>
-<?php if (!$cus_support_view->IsModal) { ?>
-<?php if (!$cus_support_view->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $cus_support_view->Pager->render() ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fcus_supportview" id="fcus_supportview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
@@ -124,7 +115,7 @@ $cus_support_view->showMessage();
 		<td class="<?php echo $cus_support_view->TableLeftColumnClass ?>"><span id="elh_cus_support_cus_sup_screen_shots"><?php echo $cus_support_view->cus_sup_screen_shots->caption() ?></span></td>
 		<td data-name="cus_sup_screen_shots" <?php echo $cus_support_view->cus_sup_screen_shots->cellAttributes() ?>>
 <span id="el_cus_support_cus_sup_screen_shots">
-<span><?php echo GetFileViewTag($cus_support_view->cus_sup_screen_shots, $cus_support_view->cus_sup_screen_shots->getViewValue(), FALSE) ?></span>
+<span<?php echo $cus_support_view->cus_sup_screen_shots->viewAttributes() ?>><?php echo $cus_support_view->cus_sup_screen_shots->getViewValue() ?></span>
 </span>
 </td>
 	</tr>
@@ -170,12 +161,6 @@ $cus_support_view->showMessage();
 	</tr>
 <?php } ?>
 </table>
-<?php if (!$cus_support_view->IsModal) { ?>
-<?php if (!$cus_support_view->isExport()) { ?>
-<?php echo $cus_support_view->Pager->render() ?>
-<div class="clearfix"></div>
-<?php } ?>
-<?php } ?>
 </form>
 <?php
 $cus_support_view->showPageFooter();

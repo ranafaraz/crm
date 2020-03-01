@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $userlevelpermissions_list = new userlevelpermissions_list();
 $userlevelpermissions_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $userlevelpermissions_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$userlevelpermissions_list->isExport() && !$userlevelpermissions->CurrentAction) { ?>
 <form name="fuserlevelpermissionslistsrch" id="fuserlevelpermissionslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fuserlevelpermissionslistsrch-search-panel" class="<?php echo $userlevelpermissions_list->SearchPanelClass ?>">
@@ -113,33 +111,68 @@ $userlevelpermissions_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $userlevelpermissions_list->showPageHeader(); ?>
 <?php
 $userlevelpermissions_list->showMessage();
 ?>
 <?php if ($userlevelpermissions_list->TotalRecords > 0 || $userlevelpermissions->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$userlevelpermissions_list->isExport()) { ?>
-<div>
-<?php if (!$userlevelpermissions_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $userlevelpermissions_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $userlevelpermissions_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fuserlevelpermissionslist" id="fuserlevelpermissionslist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($userlevelpermissions_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> userlevelpermissions">
+<form name="fuserlevelpermissionslist" id="fuserlevelpermissionslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="userlevelpermissions">
-<div class="row ew-multi-column-row">
+<div id="gmp_userlevelpermissions" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($userlevelpermissions_list->TotalRecords > 0 || $userlevelpermissions_list->isGridEdit()) { ?>
+<table id="tbl_userlevelpermissionslist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$userlevelpermissions->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$userlevelpermissions_list->renderListOptions();
+
+// Render list options (header, left)
+$userlevelpermissions_list->ListOptions->render("header", "left");
+?>
+<?php if ($userlevelpermissions_list->userlevelid->Visible) { // userlevelid ?>
+	<?php if ($userlevelpermissions_list->SortUrl($userlevelpermissions_list->userlevelid) == "") { ?>
+		<th data-name="userlevelid" class="<?php echo $userlevelpermissions_list->userlevelid->headerCellClass() ?>"><div id="elh_userlevelpermissions_userlevelid" class="userlevelpermissions_userlevelid"><div class="ew-table-header-caption"><?php echo $userlevelpermissions_list->userlevelid->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="userlevelid" class="<?php echo $userlevelpermissions_list->userlevelid->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevelpermissions_list->SortUrl($userlevelpermissions_list->userlevelid) ?>', 1);"><div id="elh_userlevelpermissions_userlevelid" class="userlevelpermissions_userlevelid">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevelpermissions_list->userlevelid->caption() ?></span><span class="ew-table-header-sort"><?php if ($userlevelpermissions_list->userlevelid->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevelpermissions_list->userlevelid->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($userlevelpermissions_list->_tablename->Visible) { // tablename ?>
+	<?php if ($userlevelpermissions_list->SortUrl($userlevelpermissions_list->_tablename) == "") { ?>
+		<th data-name="_tablename" class="<?php echo $userlevelpermissions_list->_tablename->headerCellClass() ?>"><div id="elh_userlevelpermissions__tablename" class="userlevelpermissions__tablename"><div class="ew-table-header-caption"><?php echo $userlevelpermissions_list->_tablename->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="_tablename" class="<?php echo $userlevelpermissions_list->_tablename->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevelpermissions_list->SortUrl($userlevelpermissions_list->_tablename) ?>', 1);"><div id="elh_userlevelpermissions__tablename" class="userlevelpermissions__tablename">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevelpermissions_list->_tablename->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($userlevelpermissions_list->_tablename->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevelpermissions_list->_tablename->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($userlevelpermissions_list->permission->Visible) { // permission ?>
+	<?php if ($userlevelpermissions_list->SortUrl($userlevelpermissions_list->permission) == "") { ?>
+		<th data-name="permission" class="<?php echo $userlevelpermissions_list->permission->headerCellClass() ?>"><div id="elh_userlevelpermissions_permission" class="userlevelpermissions_permission"><div class="ew-table-header-caption"><?php echo $userlevelpermissions_list->permission->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="permission" class="<?php echo $userlevelpermissions_list->permission->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevelpermissions_list->SortUrl($userlevelpermissions_list->permission) ?>', 1);"><div id="elh_userlevelpermissions_permission" class="userlevelpermissions_permission">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevelpermissions_list->permission->caption() ?></span><span class="ew-table-header-sort"><?php if ($userlevelpermissions_list->permission->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevelpermissions_list->permission->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$userlevelpermissions_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($userlevelpermissions_list->ExportAll && $userlevelpermissions_list->isExport()) {
 	$userlevelpermissions_list->StopRecord = $userlevelpermissions_list->TotalRecords;
@@ -160,6 +193,11 @@ if ($userlevelpermissions_list->Recordset && !$userlevelpermissions_list->Record
 } elseif (!$userlevelpermissions->AllowAddDeleteRow && $userlevelpermissions_list->StopRecord == 0) {
 	$userlevelpermissions_list->StopRecord = $userlevelpermissions->GridAddRowCount;
 }
+
+// Initialize aggregate
+$userlevelpermissions->RowType = ROWTYPE_AGGREGATEINIT;
+$userlevelpermissions->resetAttributes();
+$userlevelpermissions_list->renderRow();
 while ($userlevelpermissions_list->RecordCount < $userlevelpermissions_list->StopRecord) {
 	$userlevelpermissions_list->RecordCount++;
 	if ($userlevelpermissions_list->RecordCount >= $userlevelpermissions_list->StartRecord) {
@@ -186,125 +224,49 @@ while ($userlevelpermissions_list->RecordCount < $userlevelpermissions_list->Sto
 		// Render list options
 		$userlevelpermissions_list->renderListOptions();
 ?>
-<div class="<?php echo $userlevelpermissions_list->getMultiColumnClass() ?>" <?php echo $userlevelpermissions->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($userlevelpermissions->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($userlevelpermissions_list->userlevelid->Visible) { // userlevelid ?>
-		<?php if ($userlevelpermissions->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $userlevelpermissions_list->TableLeftColumnClass ?>"><span class="userlevelpermissions_userlevelid">
-<?php if ($userlevelpermissions_list->isExport() || $userlevelpermissions_list->SortUrl($userlevelpermissions_list->userlevelid) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $userlevelpermissions_list->userlevelid->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevelpermissions_list->SortUrl($userlevelpermissions_list->userlevelid) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevelpermissions_list->userlevelid->caption() ?></span><span class="ew-table-header-sort"><?php if ($userlevelpermissions_list->userlevelid->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevelpermissions_list->userlevelid->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $userlevelpermissions_list->userlevelid->cellAttributes() ?>>
-<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions_userlevelid">
-<span<?php echo $userlevelpermissions_list->userlevelid->viewAttributes() ?>><?php echo $userlevelpermissions_list->userlevelid->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row userlevelpermissions_userlevelid">
-			<label class="<?php echo $userlevelpermissions_list->LeftColumnClass ?>"><?php echo $userlevelpermissions_list->userlevelid->caption() ?></label>
-			<div class="<?php echo $userlevelpermissions_list->RightColumnClass ?>"><div <?php echo $userlevelpermissions_list->userlevelid->cellAttributes() ?>>
-<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions_userlevelid">
-<span<?php echo $userlevelpermissions_list->userlevelid->viewAttributes() ?>><?php echo $userlevelpermissions_list->userlevelid->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($userlevelpermissions_list->_tablename->Visible) { // tablename ?>
-		<?php if ($userlevelpermissions->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $userlevelpermissions_list->TableLeftColumnClass ?>"><span class="userlevelpermissions__tablename">
-<?php if ($userlevelpermissions_list->isExport() || $userlevelpermissions_list->SortUrl($userlevelpermissions_list->_tablename) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $userlevelpermissions_list->_tablename->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevelpermissions_list->SortUrl($userlevelpermissions_list->_tablename) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevelpermissions_list->_tablename->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($userlevelpermissions_list->_tablename->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevelpermissions_list->_tablename->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $userlevelpermissions_list->_tablename->cellAttributes() ?>>
-<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions__tablename">
-<span<?php echo $userlevelpermissions_list->_tablename->viewAttributes() ?>><?php echo $userlevelpermissions_list->_tablename->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row userlevelpermissions__tablename">
-			<label class="<?php echo $userlevelpermissions_list->LeftColumnClass ?>"><?php echo $userlevelpermissions_list->_tablename->caption() ?></label>
-			<div class="<?php echo $userlevelpermissions_list->RightColumnClass ?>"><div <?php echo $userlevelpermissions_list->_tablename->cellAttributes() ?>>
-<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions__tablename">
-<span<?php echo $userlevelpermissions_list->_tablename->viewAttributes() ?>><?php echo $userlevelpermissions_list->_tablename->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($userlevelpermissions_list->permission->Visible) { // permission ?>
-		<?php if ($userlevelpermissions->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $userlevelpermissions_list->TableLeftColumnClass ?>"><span class="userlevelpermissions_permission">
-<?php if ($userlevelpermissions_list->isExport() || $userlevelpermissions_list->SortUrl($userlevelpermissions_list->permission) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $userlevelpermissions_list->permission->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevelpermissions_list->SortUrl($userlevelpermissions_list->permission) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevelpermissions_list->permission->caption() ?></span><span class="ew-table-header-sort"><?php if ($userlevelpermissions_list->permission->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevelpermissions_list->permission->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $userlevelpermissions_list->permission->cellAttributes() ?>>
-<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions_permission">
-<span<?php echo $userlevelpermissions_list->permission->viewAttributes() ?>><?php echo $userlevelpermissions_list->permission->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row userlevelpermissions_permission">
-			<label class="<?php echo $userlevelpermissions_list->LeftColumnClass ?>"><?php echo $userlevelpermissions_list->permission->caption() ?></label>
-			<div class="<?php echo $userlevelpermissions_list->RightColumnClass ?>"><div <?php echo $userlevelpermissions_list->permission->cellAttributes() ?>>
-<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions_permission">
-<span<?php echo $userlevelpermissions_list->permission->viewAttributes() ?>><?php echo $userlevelpermissions_list->permission->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($userlevelpermissions->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$userlevelpermissions_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $userlevelpermissions->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$userlevelpermissions_list->ListOptions->render("body", "bottom", $userlevelpermissions_list->RowCount);
+// Render list options (body, left)
+$userlevelpermissions_list->ListOptions->render("body", "left", $userlevelpermissions_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($userlevelpermissions_list->userlevelid->Visible) { // userlevelid ?>
+		<td data-name="userlevelid" <?php echo $userlevelpermissions_list->userlevelid->cellAttributes() ?>>
+<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions_userlevelid">
+<span<?php echo $userlevelpermissions_list->userlevelid->viewAttributes() ?>><?php echo $userlevelpermissions_list->userlevelid->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($userlevelpermissions_list->_tablename->Visible) { // tablename ?>
+		<td data-name="_tablename" <?php echo $userlevelpermissions_list->_tablename->cellAttributes() ?>>
+<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions__tablename">
+<span<?php echo $userlevelpermissions_list->_tablename->viewAttributes() ?>><?php echo $userlevelpermissions_list->_tablename->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($userlevelpermissions_list->permission->Visible) { // permission ?>
+		<td data-name="permission" <?php echo $userlevelpermissions_list->permission->cellAttributes() ?>>
+<span id="el<?php echo $userlevelpermissions_list->RowCount ?>_userlevelpermissions_permission">
+<span<?php echo $userlevelpermissions_list->permission->viewAttributes() ?>><?php echo $userlevelpermissions_list->permission->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$userlevelpermissions_list->ListOptions->render("body", "right", $userlevelpermissions_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$userlevelpermissions_list->isGridAdd())
 		$userlevelpermissions_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$userlevelpermissions->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -316,7 +278,7 @@ if ($userlevelpermissions_list->Recordset)
 	$userlevelpermissions_list->Recordset->Close();
 ?>
 <?php if (!$userlevelpermissions_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$userlevelpermissions_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $userlevelpermissions_list->Pager->render() ?>
@@ -328,7 +290,7 @@ if ($userlevelpermissions_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($userlevelpermissions_list->TotalRecords == 0 && !$userlevelpermissions->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

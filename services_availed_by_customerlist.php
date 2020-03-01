@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_availed_by_customer_list = new services_availed_by_customer_list();
 $services_availed_by_customer_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -44,18 +43,6 @@ loadjs.ready("head", function() {
 	fservices_availed_by_customerlist.formKeyCountName = '<?php echo $services_availed_by_customer_list->FormKeyCountName ?>';
 	loadjs.done("fservices_availed_by_customerlist");
 });
-var fservices_availed_by_customerlistsrch;
-loadjs.ready("head", function() {
-
-	// Form object for search
-	fservices_availed_by_customerlistsrch = currentSearchForm = new ew.Form("fservices_availed_by_customerlistsrch");
-
-	// Dynamic selection lists
-	// Filters
-
-	fservices_availed_by_customerlistsrch.filterList = <?php echo $services_availed_by_customer_list->getFilterList() ?>;
-	loadjs.done("fservices_availed_by_customerlistsrch");
-});
 </script>
 <script>
 loadjs.ready("head", function() {
@@ -74,72 +61,110 @@ loadjs.ready("head", function() {
 <?php if ($services_availed_by_customer_list->ImportOptions->visible()) { ?>
 <?php $services_availed_by_customer_list->ImportOptions->render("body") ?>
 <?php } ?>
-<?php if ($services_availed_by_customer_list->SearchOptions->visible()) { ?>
-<?php $services_availed_by_customer_list->SearchOptions->render("body") ?>
-<?php } ?>
-<?php if ($services_availed_by_customer_list->FilterOptions->visible()) { ?>
-<?php $services_availed_by_customer_list->FilterOptions->render("body") ?>
-<?php } ?>
 <div class="clearfix"></div>
 </div>
 <?php } ?>
 <?php
 $services_availed_by_customer_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
-<?php if (!$services_availed_by_customer_list->isExport() && !$services_availed_by_customer->CurrentAction) { ?>
-<form name="fservices_availed_by_customerlistsrch" id="fservices_availed_by_customerlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
-<div id="fservices_availed_by_customerlistsrch-search-panel" class="<?php echo $services_availed_by_customer_list->SearchPanelClass ?>">
-<input type="hidden" name="cmd" value="search">
-<input type="hidden" name="t" value="services_availed_by_customer">
-	<div class="ew-extended-search">
-<div id="xsr_<?php echo $services_availed_by_customer_list->SearchRowCount + 1 ?>" class="ew-row d-sm-flex">
-	<div class="ew-quick-search input-group">
-		<input type="text" name="<?php echo Config("TABLE_BASIC_SEARCH") ?>" id="<?php echo Config("TABLE_BASIC_SEARCH") ?>" class="form-control" value="<?php echo HtmlEncode($services_availed_by_customer_list->BasicSearch->getKeyword()) ?>" placeholder="<?php echo HtmlEncode($Language->phrase("Search")) ?>">
-		<input type="hidden" name="<?php echo Config("TABLE_BASIC_SEARCH_TYPE") ?>" id="<?php echo Config("TABLE_BASIC_SEARCH_TYPE") ?>" value="<?php echo HtmlEncode($services_availed_by_customer_list->BasicSearch->getType()) ?>">
-		<div class="input-group-append">
-			<button class="btn btn-primary" name="btn-submit" id="btn-submit" type="submit"><?php echo $Language->phrase("SearchBtn") ?></button>
-			<button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle dropdown-toggle-split" aria-haspopup="true" aria-expanded="false"><span id="searchtype"><?php echo $services_availed_by_customer_list->BasicSearch->getTypeNameShort() ?></span></button>
-			<div class="dropdown-menu dropdown-menu-right">
-				<a class="dropdown-item<?php if ($services_availed_by_customer_list->BasicSearch->getType() == "") { ?> active<?php } ?>" href="#" onclick="return ew.setSearchType(this);"><?php echo $Language->phrase("QuickSearchAuto") ?></a>
-				<a class="dropdown-item<?php if ($services_availed_by_customer_list->BasicSearch->getType() == "=") { ?> active<?php } ?>" href="#" onclick="return ew.setSearchType(this, '=');"><?php echo $Language->phrase("QuickSearchExact") ?></a>
-				<a class="dropdown-item<?php if ($services_availed_by_customer_list->BasicSearch->getType() == "AND") { ?> active<?php } ?>" href="#" onclick="return ew.setSearchType(this, 'AND');"><?php echo $Language->phrase("QuickSearchAll") ?></a>
-				<a class="dropdown-item<?php if ($services_availed_by_customer_list->BasicSearch->getType() == "OR") { ?> active<?php } ?>" href="#" onclick="return ew.setSearchType(this, 'OR');"><?php echo $Language->phrase("QuickSearchAny") ?></a>
-			</div>
-		</div>
-	</div>
-</div>
-	</div><!-- /.ew-extended-search -->
-</div><!-- /.ew-search-panel -->
-</form>
-<?php } ?>
-<?php } ?>
 <?php $services_availed_by_customer_list->showPageHeader(); ?>
 <?php
 $services_availed_by_customer_list->showMessage();
 ?>
 <?php if ($services_availed_by_customer_list->TotalRecords > 0 || $services_availed_by_customer->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$services_availed_by_customer_list->isExport()) { ?>
-<div>
-<?php if (!$services_availed_by_customer_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $services_availed_by_customer_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $services_availed_by_customer_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fservices_availed_by_customerlist" id="fservices_availed_by_customerlist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($services_availed_by_customer_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> services_availed_by_customer">
+<form name="fservices_availed_by_customerlist" id="fservices_availed_by_customerlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="services_availed_by_customer">
-<div class="row ew-multi-column-row">
+<div id="gmp_services_availed_by_customer" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($services_availed_by_customer_list->TotalRecords > 0 || $services_availed_by_customer_list->isGridEdit()) { ?>
+<table id="tbl_services_availed_by_customerlist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$services_availed_by_customer->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$services_availed_by_customer_list->renderListOptions();
+
+// Render list options (header, left)
+$services_availed_by_customer_list->ListOptions->render("header", "left");
+?>
+<?php if ($services_availed_by_customer_list->sabc_id->Visible) { // sabc_id ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_id) == "") { ?>
+		<th data-name="sabc_id" class="<?php echo $services_availed_by_customer_list->sabc_id->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_id" class="services_availed_by_customer_sabc_id"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_id" class="<?php echo $services_availed_by_customer_list->sabc_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_id) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_id" class="services_availed_by_customer_sabc_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_availed_by_customer_list->sabc_branch_id->Visible) { // sabc_branch_id ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_branch_id) == "") { ?>
+		<th data-name="sabc_branch_id" class="<?php echo $services_availed_by_customer_list->sabc_branch_id->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_branch_id" class="services_availed_by_customer_sabc_branch_id"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_branch_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_branch_id" class="<?php echo $services_availed_by_customer_list->sabc_branch_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_branch_id) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_branch_id" class="services_availed_by_customer_sabc_branch_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_availed_by_customer_list->sabc_business_id->Visible) { // sabc_business_id ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_business_id) == "") { ?>
+		<th data-name="sabc_business_id" class="<?php echo $services_availed_by_customer_list->sabc_business_id->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_business_id" class="services_availed_by_customer_sabc_business_id"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_business_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_business_id" class="<?php echo $services_availed_by_customer_list->sabc_business_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_business_id) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_business_id" class="services_availed_by_customer_sabc_business_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_business_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_business_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_business_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_availed_by_customer_list->sabc_service_id->Visible) { // sabc_service_id ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_service_id) == "") { ?>
+		<th data-name="sabc_service_id" class="<?php echo $services_availed_by_customer_list->sabc_service_id->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_service_id" class="services_availed_by_customer_sabc_service_id"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_service_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_service_id" class="<?php echo $services_availed_by_customer_list->sabc_service_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_service_id) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_service_id" class="services_availed_by_customer_sabc_service_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_service_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_service_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_service_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_availed_by_customer_list->sabc_pkg->Visible) { // sabc_pkg ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_pkg) == "") { ?>
+		<th data-name="sabc_pkg" class="<?php echo $services_availed_by_customer_list->sabc_pkg->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_pkg" class="services_availed_by_customer_sabc_pkg"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_pkg->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_pkg" class="<?php echo $services_availed_by_customer_list->sabc_pkg->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_pkg) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_pkg" class="services_availed_by_customer_sabc_pkg">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_pkg->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_pkg->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_pkg->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_availed_by_customer_list->sabc_amount->Visible) { // sabc_amount ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_amount) == "") { ?>
+		<th data-name="sabc_amount" class="<?php echo $services_availed_by_customer_list->sabc_amount->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_amount" class="services_availed_by_customer_sabc_amount"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_amount->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_amount" class="<?php echo $services_availed_by_customer_list->sabc_amount->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_amount) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_amount" class="services_availed_by_customer_sabc_amount">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_amount->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_amount->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_amount->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($services_availed_by_customer_list->sabc_signed_on->Visible) { // sabc_signed_on ?>
+	<?php if ($services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_signed_on) == "") { ?>
+		<th data-name="sabc_signed_on" class="<?php echo $services_availed_by_customer_list->sabc_signed_on->headerCellClass() ?>"><div id="elh_services_availed_by_customer_sabc_signed_on" class="services_availed_by_customer_sabc_signed_on"><div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_signed_on->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="sabc_signed_on" class="<?php echo $services_availed_by_customer_list->sabc_signed_on->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_signed_on) ?>', 1);"><div id="elh_services_availed_by_customer_sabc_signed_on" class="services_availed_by_customer_sabc_signed_on">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_signed_on->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_signed_on->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_signed_on->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$services_availed_by_customer_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($services_availed_by_customer_list->ExportAll && $services_availed_by_customer_list->isExport()) {
 	$services_availed_by_customer_list->StopRecord = $services_availed_by_customer_list->TotalRecords;
@@ -160,6 +185,11 @@ if ($services_availed_by_customer_list->Recordset && !$services_availed_by_custo
 } elseif (!$services_availed_by_customer->AllowAddDeleteRow && $services_availed_by_customer_list->StopRecord == 0) {
 	$services_availed_by_customer_list->StopRecord = $services_availed_by_customer->GridAddRowCount;
 }
+
+// Initialize aggregate
+$services_availed_by_customer->RowType = ROWTYPE_AGGREGATEINIT;
+$services_availed_by_customer->resetAttributes();
+$services_availed_by_customer_list->renderRow();
 while ($services_availed_by_customer_list->RecordCount < $services_availed_by_customer_list->StopRecord) {
 	$services_availed_by_customer_list->RecordCount++;
 	if ($services_availed_by_customer_list->RecordCount >= $services_availed_by_customer_list->StartRecord) {
@@ -186,270 +216,77 @@ while ($services_availed_by_customer_list->RecordCount < $services_availed_by_cu
 		// Render list options
 		$services_availed_by_customer_list->renderListOptions();
 ?>
-<div class="<?php echo $services_availed_by_customer_list->getMultiColumnClass() ?>" <?php echo $services_availed_by_customer->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_id->Visible) { // sabc_id ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_id">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_id">
-<span<?php echo $services_availed_by_customer_list->sabc_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_id">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_id->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_id">
-<span<?php echo $services_availed_by_customer_list->sabc_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_branch_id->Visible) { // sabc_branch_id ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_branch_id">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_branch_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_branch_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_branch_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_branch_id">
-<span<?php echo $services_availed_by_customer_list->sabc_branch_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_branch_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_branch_id">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_branch_id->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_branch_id">
-<span<?php echo $services_availed_by_customer_list->sabc_branch_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_branch_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_business_id->Visible) { // sabc_business_id ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_business_id">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_business_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_business_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_business_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_business_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_business_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_business_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_business_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_business_id">
-<span<?php echo $services_availed_by_customer_list->sabc_business_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_business_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_business_id">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_business_id->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_business_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_business_id">
-<span<?php echo $services_availed_by_customer_list->sabc_business_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_business_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_service_id->Visible) { // sabc_service_id ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_service_id">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_service_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_service_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_service_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_service_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_service_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_service_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_service_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_service_id">
-<span<?php echo $services_availed_by_customer_list->sabc_service_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_service_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_service_id">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_service_id->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_service_id->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_service_id">
-<span<?php echo $services_availed_by_customer_list->sabc_service_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_service_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_pkg->Visible) { // sabc_pkg ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_pkg">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_pkg) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_pkg->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_pkg) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_pkg->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_pkg->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_pkg->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_pkg->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_pkg">
-<span<?php echo $services_availed_by_customer_list->sabc_pkg->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_pkg->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_pkg">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_pkg->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_pkg->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_pkg">
-<span<?php echo $services_availed_by_customer_list->sabc_pkg->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_pkg->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_amount->Visible) { // sabc_amount ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_amount">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_amount) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_amount->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_amount) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_amount->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_amount->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_amount->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_amount->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_amount">
-<span<?php echo $services_availed_by_customer_list->sabc_amount->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_amount->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_amount">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_amount->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_amount->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_amount">
-<span<?php echo $services_availed_by_customer_list->sabc_amount->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_amount->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_desc->Visible) { // sabc_desc ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_desc">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_desc) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_desc->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_desc) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_desc->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_desc->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_desc->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_desc->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_desc">
-<span<?php echo $services_availed_by_customer_list->sabc_desc->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_desc->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_desc">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_desc->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_desc->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_desc">
-<span<?php echo $services_availed_by_customer_list->sabc_desc->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_desc->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer_list->sabc_signed_on->Visible) { // sabc_signed_on ?>
-		<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $services_availed_by_customer_list->TableLeftColumnClass ?>"><span class="services_availed_by_customer_sabc_signed_on">
-<?php if ($services_availed_by_customer_list->isExport() || $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_signed_on) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_signed_on->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $services_availed_by_customer_list->SortUrl($services_availed_by_customer_list->sabc_signed_on) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $services_availed_by_customer_list->sabc_signed_on->caption() ?></span><span class="ew-table-header-sort"><?php if ($services_availed_by_customer_list->sabc_signed_on->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($services_availed_by_customer_list->sabc_signed_on->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $services_availed_by_customer_list->sabc_signed_on->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_signed_on">
-<span<?php echo $services_availed_by_customer_list->sabc_signed_on->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_signed_on->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row services_availed_by_customer_sabc_signed_on">
-			<label class="<?php echo $services_availed_by_customer_list->LeftColumnClass ?>"><?php echo $services_availed_by_customer_list->sabc_signed_on->caption() ?></label>
-			<div class="<?php echo $services_availed_by_customer_list->RightColumnClass ?>"><div <?php echo $services_availed_by_customer_list->sabc_signed_on->cellAttributes() ?>>
-<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_signed_on">
-<span<?php echo $services_availed_by_customer_list->sabc_signed_on->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_signed_on->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($services_availed_by_customer->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$services_availed_by_customer_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $services_availed_by_customer->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$services_availed_by_customer_list->ListOptions->render("body", "bottom", $services_availed_by_customer_list->RowCount);
+// Render list options (body, left)
+$services_availed_by_customer_list->ListOptions->render("body", "left", $services_availed_by_customer_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($services_availed_by_customer_list->sabc_id->Visible) { // sabc_id ?>
+		<td data-name="sabc_id" <?php echo $services_availed_by_customer_list->sabc_id->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_id">
+<span<?php echo $services_availed_by_customer_list->sabc_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_availed_by_customer_list->sabc_branch_id->Visible) { // sabc_branch_id ?>
+		<td data-name="sabc_branch_id" <?php echo $services_availed_by_customer_list->sabc_branch_id->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_branch_id">
+<span<?php echo $services_availed_by_customer_list->sabc_branch_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_branch_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_availed_by_customer_list->sabc_business_id->Visible) { // sabc_business_id ?>
+		<td data-name="sabc_business_id" <?php echo $services_availed_by_customer_list->sabc_business_id->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_business_id">
+<span<?php echo $services_availed_by_customer_list->sabc_business_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_business_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_availed_by_customer_list->sabc_service_id->Visible) { // sabc_service_id ?>
+		<td data-name="sabc_service_id" <?php echo $services_availed_by_customer_list->sabc_service_id->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_service_id">
+<span<?php echo $services_availed_by_customer_list->sabc_service_id->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_service_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_availed_by_customer_list->sabc_pkg->Visible) { // sabc_pkg ?>
+		<td data-name="sabc_pkg" <?php echo $services_availed_by_customer_list->sabc_pkg->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_pkg">
+<span<?php echo $services_availed_by_customer_list->sabc_pkg->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_pkg->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_availed_by_customer_list->sabc_amount->Visible) { // sabc_amount ?>
+		<td data-name="sabc_amount" <?php echo $services_availed_by_customer_list->sabc_amount->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_amount">
+<span<?php echo $services_availed_by_customer_list->sabc_amount->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_amount->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($services_availed_by_customer_list->sabc_signed_on->Visible) { // sabc_signed_on ?>
+		<td data-name="sabc_signed_on" <?php echo $services_availed_by_customer_list->sabc_signed_on->cellAttributes() ?>>
+<span id="el<?php echo $services_availed_by_customer_list->RowCount ?>_services_availed_by_customer_sabc_signed_on">
+<span<?php echo $services_availed_by_customer_list->sabc_signed_on->viewAttributes() ?>><?php echo $services_availed_by_customer_list->sabc_signed_on->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$services_availed_by_customer_list->ListOptions->render("body", "right", $services_availed_by_customer_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$services_availed_by_customer_list->isGridAdd())
 		$services_availed_by_customer_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$services_availed_by_customer->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -461,7 +298,7 @@ if ($services_availed_by_customer_list->Recordset)
 	$services_availed_by_customer_list->Recordset->Close();
 ?>
 <?php if (!$services_availed_by_customer_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$services_availed_by_customer_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $services_availed_by_customer_list->Pager->render() ?>
@@ -473,7 +310,7 @@ if ($services_availed_by_customer_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($services_availed_by_customer_list->TotalRecords == 0 && !$services_availed_by_customer->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

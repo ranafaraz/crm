@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -356,7 +356,7 @@ class business_type extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -689,7 +689,6 @@ class business_type extends DbTable
 		// business_type_id
 
 		$this->business_type_id->ViewValue = $this->business_type_id->CurrentValue;
-		$this->business_type_id->CssClass = "font-weight-bold";
 		$this->business_type_id->ViewCustomAttributes = "";
 
 		// business_type_name
@@ -734,7 +733,6 @@ class business_type extends DbTable
 		$this->business_type_id->EditAttrs["class"] = "form-control";
 		$this->business_type_id->EditCustomAttributes = "";
 		$this->business_type_id->EditValue = $this->business_type_id->CurrentValue;
-		$this->business_type_id->CssClass = "font-weight-bold";
 		$this->business_type_id->ViewCustomAttributes = "";
 
 		// business_type_name

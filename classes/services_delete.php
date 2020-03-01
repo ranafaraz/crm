@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class services_delete extends services
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'services';
@@ -325,7 +325,6 @@ class services_delete extends services
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class services_delete extends services
 			$GLOBALS["Table"] = &$GLOBALS["services"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class services_delete extends services
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class services_delete extends services
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,28 +539,12 @@ class services_delete extends services
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("serviceslist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->service_id->setVisibility();
 		$this->service_branch_id->setVisibility();
 		$this->service_caption->setVisibility();
-		$this->service_desc->setVisibility();
+		$this->service_desc->Visible = FALSE;
 		$this->service_logo->setVisibility();
 		$this->hideFieldsForAddEdit();
 
@@ -594,9 +567,8 @@ class services_delete extends services
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->service_branch_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -716,8 +688,7 @@ class services_delete extends services
 		$this->service_branch_id->setDbValue($row['service_branch_id']);
 		$this->service_caption->setDbValue($row['service_caption']);
 		$this->service_desc->setDbValue($row['service_desc']);
-		$this->service_logo->Upload->DbValue = $row['service_logo'];
-		$this->service_logo->setDbValue($this->service_logo->Upload->DbValue);
+		$this->service_logo->setDbValue($row['service_logo']);
 	}
 
 	// Return a row with default values
@@ -753,48 +724,19 @@ class services_delete extends services
 
 			// service_id
 			$this->service_id->ViewValue = $this->service_id->CurrentValue;
-			$this->service_id->CssClass = "font-weight-bold";
 			$this->service_id->ViewCustomAttributes = "";
 
 			// service_branch_id
-			$curVal = strval($this->service_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->service_branch_id->ViewValue = $this->service_branch_id->lookupCacheOption($curVal);
-				if ($this->service_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->service_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->service_branch_id->ViewValue = $this->service_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->service_branch_id->ViewValue = NULL;
-			}
+			$this->service_branch_id->ViewValue = $this->service_branch_id->CurrentValue;
+			$this->service_branch_id->ViewValue = FormatNumber($this->service_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->service_branch_id->ViewCustomAttributes = "";
 
 			// service_caption
 			$this->service_caption->ViewValue = $this->service_caption->CurrentValue;
 			$this->service_caption->ViewCustomAttributes = "";
 
-			// service_desc
-			$this->service_desc->ViewValue = $this->service_desc->CurrentValue;
-			$this->service_desc->ViewCustomAttributes = "";
-
 			// service_logo
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->ImageWidth = 200;
-				$this->service_logo->ImageHeight = 0;
-				$this->service_logo->ImageAlt = $this->service_logo->alt();
-				$this->service_logo->ViewValue = $this->service_logo->Upload->DbValue;
-			} else {
-				$this->service_logo->ViewValue = "";
-			}
+			$this->service_logo->ViewValue = $this->service_logo->CurrentValue;
 			$this->service_logo->ViewCustomAttributes = "";
 
 			// service_id
@@ -812,29 +754,10 @@ class services_delete extends services
 			$this->service_caption->HrefValue = "";
 			$this->service_caption->TooltipValue = "";
 
-			// service_desc
-			$this->service_desc->LinkCustomAttributes = "";
-			$this->service_desc->HrefValue = "";
-			$this->service_desc->TooltipValue = "";
-
 			// service_logo
 			$this->service_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->service_logo->Upload->DbValue)) {
-				$this->service_logo->HrefValue = GetFileUploadUrl($this->service_logo, $this->service_logo->htmlDecode($this->service_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->service_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->service_logo->HrefValue = FullUrl($this->service_logo->HrefValue, "href");
-			} else {
-				$this->service_logo->HrefValue = "";
-			}
-			$this->service_logo->ExportHrefValue = $this->service_logo->UploadPath . $this->service_logo->Upload->DbValue;
+			$this->service_logo->HrefValue = "";
 			$this->service_logo->TooltipValue = "";
-			if ($this->service_logo->UseColorbox) {
-				if (EmptyValue($this->service_logo->TooltipValue))
-					$this->service_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->service_logo->LinkAttrs["data-rel"] = "services_x_service_logo";
-				$this->service_logo->LinkAttrs->appendClass("ew-lightbox");
-			}
 		}
 
 		// Call Row Rendered event
@@ -846,10 +769,6 @@ class services_delete extends services
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -957,8 +876,6 @@ class services_delete extends services
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_service_branch_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -979,8 +896,6 @@ class services_delete extends services
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_service_branch_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

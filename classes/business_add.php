@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class business_add extends business
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'business';
@@ -325,7 +325,6 @@ class business_add extends business
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class business_add extends business
 			$GLOBALS["Table"] = &$GLOBALS["business"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'add');
@@ -369,9 +364,6 @@ class business_add extends business
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class business_add extends business
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class business_add extends business
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -644,22 +630,6 @@ class business_add extends business
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canAdd()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("businesslist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -668,8 +638,8 @@ class business_add extends business
 		$this->b_id->Visible = FALSE;
 		$this->b_branch_id->setVisibility();
 		$this->b_b_type_id->setVisibility();
-		$this->b_b_nature_id->setVisibility();
 		$this->b_b_status_id->setVisibility();
+		$this->b_b_nature_id->setVisibility();
 		$this->b_city_id->setVisibility();
 		$this->b_referral_id->setVisibility();
 		$this->b_name->setVisibility();
@@ -705,14 +675,8 @@ class business_add extends business
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->b_branch_id);
-		$this->setupLookupOptions($this->b_b_type_id);
-		$this->setupLookupOptions($this->b_b_nature_id);
-		$this->setupLookupOptions($this->b_b_status_id);
-		$this->setupLookupOptions($this->b_city_id);
-		$this->setupLookupOptions($this->b_referral_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -816,9 +780,6 @@ class business_add extends business
 	protected function getUploadFiles()
 	{
 		global $CurrentForm, $Language;
-		$this->b_logo->Upload->Index = $CurrentForm->Index;
-		$this->b_logo->Upload->uploadFile();
-		$this->b_logo->CurrentValue = $this->b_logo->Upload->FileName;
 	}
 
 	// Load default values
@@ -830,10 +791,10 @@ class business_add extends business
 		$this->b_branch_id->OldValue = $this->b_branch_id->CurrentValue;
 		$this->b_b_type_id->CurrentValue = NULL;
 		$this->b_b_type_id->OldValue = $this->b_b_type_id->CurrentValue;
-		$this->b_b_nature_id->CurrentValue = NULL;
-		$this->b_b_nature_id->OldValue = $this->b_b_nature_id->CurrentValue;
 		$this->b_b_status_id->CurrentValue = NULL;
 		$this->b_b_status_id->OldValue = $this->b_b_status_id->CurrentValue;
+		$this->b_b_nature_id->CurrentValue = NULL;
+		$this->b_b_nature_id->OldValue = $this->b_b_nature_id->CurrentValue;
 		$this->b_city_id->CurrentValue = NULL;
 		$this->b_city_id->OldValue = $this->b_city_id->CurrentValue;
 		$this->b_referral_id->CurrentValue = NULL;
@@ -850,9 +811,8 @@ class business_add extends business
 		$this->b_email->OldValue = $this->b_email->CurrentValue;
 		$this->b_ntn->CurrentValue = NULL;
 		$this->b_ntn->OldValue = $this->b_ntn->CurrentValue;
-		$this->b_logo->Upload->DbValue = NULL;
-		$this->b_logo->OldValue = $this->b_logo->Upload->DbValue;
-		$this->b_logo->CurrentValue = NULL; // Clear file related field
+		$this->b_logo->CurrentValue = NULL;
+		$this->b_logo->OldValue = $this->b_logo->CurrentValue;
 		$this->b_no_of_emp->CurrentValue = NULL;
 		$this->b_no_of_emp->OldValue = $this->b_no_of_emp->CurrentValue;
 		$this->b_since->CurrentValue = NULL;
@@ -871,7 +831,6 @@ class business_add extends business
 
 		// Load from form
 		global $CurrentForm;
-		$this->getUploadFiles(); // Get upload files
 
 		// Check field name 'b_branch_id' first before field var 'x_b_branch_id'
 		$val = $CurrentForm->hasValue("b_branch_id") ? $CurrentForm->getValue("b_branch_id") : $CurrentForm->getValue("x_b_branch_id");
@@ -891,15 +850,6 @@ class business_add extends business
 				$this->b_b_type_id->setFormValue($val);
 		}
 
-		// Check field name 'b_b_nature_id' first before field var 'x_b_b_nature_id'
-		$val = $CurrentForm->hasValue("b_b_nature_id") ? $CurrentForm->getValue("b_b_nature_id") : $CurrentForm->getValue("x_b_b_nature_id");
-		if (!$this->b_b_nature_id->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->b_b_nature_id->Visible = FALSE; // Disable update for API request
-			else
-				$this->b_b_nature_id->setFormValue($val);
-		}
-
 		// Check field name 'b_b_status_id' first before field var 'x_b_b_status_id'
 		$val = $CurrentForm->hasValue("b_b_status_id") ? $CurrentForm->getValue("b_b_status_id") : $CurrentForm->getValue("x_b_b_status_id");
 		if (!$this->b_b_status_id->IsDetailKey) {
@@ -907,6 +857,15 @@ class business_add extends business
 				$this->b_b_status_id->Visible = FALSE; // Disable update for API request
 			else
 				$this->b_b_status_id->setFormValue($val);
+		}
+
+		// Check field name 'b_b_nature_id' first before field var 'x_b_b_nature_id'
+		$val = $CurrentForm->hasValue("b_b_nature_id") ? $CurrentForm->getValue("b_b_nature_id") : $CurrentForm->getValue("x_b_b_nature_id");
+		if (!$this->b_b_nature_id->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->b_b_nature_id->Visible = FALSE; // Disable update for API request
+			else
+				$this->b_b_nature_id->setFormValue($val);
 		}
 
 		// Check field name 'b_city_id' first before field var 'x_b_city_id'
@@ -981,6 +940,15 @@ class business_add extends business
 				$this->b_ntn->setFormValue($val);
 		}
 
+		// Check field name 'b_logo' first before field var 'x_b_logo'
+		$val = $CurrentForm->hasValue("b_logo") ? $CurrentForm->getValue("b_logo") : $CurrentForm->getValue("x_b_logo");
+		if (!$this->b_logo->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->b_logo->Visible = FALSE; // Disable update for API request
+			else
+				$this->b_logo->setFormValue($val);
+		}
+
 		// Check field name 'b_no_of_emp' first before field var 'x_b_no_of_emp'
 		$val = $CurrentForm->hasValue("b_no_of_emp") ? $CurrentForm->getValue("b_no_of_emp") : $CurrentForm->getValue("x_b_no_of_emp");
 		if (!$this->b_no_of_emp->IsDetailKey) {
@@ -1036,8 +1004,8 @@ class business_add extends business
 		global $CurrentForm;
 		$this->b_branch_id->CurrentValue = $this->b_branch_id->FormValue;
 		$this->b_b_type_id->CurrentValue = $this->b_b_type_id->FormValue;
-		$this->b_b_nature_id->CurrentValue = $this->b_b_nature_id->FormValue;
 		$this->b_b_status_id->CurrentValue = $this->b_b_status_id->FormValue;
+		$this->b_b_nature_id->CurrentValue = $this->b_b_nature_id->FormValue;
 		$this->b_city_id->CurrentValue = $this->b_city_id->FormValue;
 		$this->b_referral_id->CurrentValue = $this->b_referral_id->FormValue;
 		$this->b_name->CurrentValue = $this->b_name->FormValue;
@@ -1046,6 +1014,7 @@ class business_add extends business
 		$this->b_address->CurrentValue = $this->b_address->FormValue;
 		$this->b_email->CurrentValue = $this->b_email->FormValue;
 		$this->b_ntn->CurrentValue = $this->b_ntn->FormValue;
+		$this->b_logo->CurrentValue = $this->b_logo->FormValue;
 		$this->b_no_of_emp->CurrentValue = $this->b_no_of_emp->FormValue;
 		$this->b_since->CurrentValue = $this->b_since->FormValue;
 		$this->b_no_of_branches->CurrentValue = $this->b_no_of_branches->FormValue;
@@ -1091,28 +1060,17 @@ class business_add extends business
 		$this->b_id->setDbValue($row['b_id']);
 		$this->b_branch_id->setDbValue($row['b_branch_id']);
 		$this->b_b_type_id->setDbValue($row['b_b_type_id']);
-		$this->b_b_nature_id->setDbValue($row['b_b_nature_id']);
 		$this->b_b_status_id->setDbValue($row['b_b_status_id']);
+		$this->b_b_nature_id->setDbValue($row['b_b_nature_id']);
 		$this->b_city_id->setDbValue($row['b_city_id']);
-		if (array_key_exists('EV__b_city_id', $rs->fields)) {
-			$this->b_city_id->VirtualValue = $rs->fields('EV__b_city_id'); // Set up virtual field value
-		} else {
-			$this->b_city_id->VirtualValue = ""; // Clear value
-		}
 		$this->b_referral_id->setDbValue($row['b_referral_id']);
-		if (array_key_exists('EV__b_referral_id', $rs->fields)) {
-			$this->b_referral_id->VirtualValue = $rs->fields('EV__b_referral_id'); // Set up virtual field value
-		} else {
-			$this->b_referral_id->VirtualValue = ""; // Clear value
-		}
 		$this->b_name->setDbValue($row['b_name']);
 		$this->b_owner->setDbValue($row['b_owner']);
 		$this->b_contact->setDbValue($row['b_contact']);
 		$this->b_address->setDbValue($row['b_address']);
 		$this->b_email->setDbValue($row['b_email']);
 		$this->b_ntn->setDbValue($row['b_ntn']);
-		$this->b_logo->Upload->DbValue = $row['b_logo'];
-		$this->b_logo->setDbValue($this->b_logo->Upload->DbValue);
+		$this->b_logo->setDbValue($row['b_logo']);
 		$this->b_no_of_emp->setDbValue($row['b_no_of_emp']);
 		$this->b_since->setDbValue($row['b_since']);
 		$this->b_no_of_branches->setDbValue($row['b_no_of_branches']);
@@ -1128,8 +1086,8 @@ class business_add extends business
 		$row['b_id'] = $this->b_id->CurrentValue;
 		$row['b_branch_id'] = $this->b_branch_id->CurrentValue;
 		$row['b_b_type_id'] = $this->b_b_type_id->CurrentValue;
-		$row['b_b_nature_id'] = $this->b_b_nature_id->CurrentValue;
 		$row['b_b_status_id'] = $this->b_b_status_id->CurrentValue;
+		$row['b_b_nature_id'] = $this->b_b_nature_id->CurrentValue;
 		$row['b_city_id'] = $this->b_city_id->CurrentValue;
 		$row['b_referral_id'] = $this->b_referral_id->CurrentValue;
 		$row['b_name'] = $this->b_name->CurrentValue;
@@ -1138,7 +1096,7 @@ class business_add extends business
 		$row['b_address'] = $this->b_address->CurrentValue;
 		$row['b_email'] = $this->b_email->CurrentValue;
 		$row['b_ntn'] = $this->b_ntn->CurrentValue;
-		$row['b_logo'] = $this->b_logo->Upload->DbValue;
+		$row['b_logo'] = $this->b_logo->CurrentValue;
 		$row['b_no_of_emp'] = $this->b_no_of_emp->CurrentValue;
 		$row['b_since'] = $this->b_since->CurrentValue;
 		$row['b_no_of_branches'] = $this->b_no_of_branches->CurrentValue;
@@ -1184,8 +1142,8 @@ class business_add extends business
 		// b_id
 		// b_branch_id
 		// b_b_type_id
-		// b_b_nature_id
 		// b_b_status_id
+		// b_b_nature_id
 		// b_city_id
 		// b_referral_id
 		// b_name
@@ -1205,147 +1163,36 @@ class business_add extends business
 
 			// b_id
 			$this->b_id->ViewValue = $this->b_id->CurrentValue;
-			$this->b_id->CssClass = "font-weight-bold";
 			$this->b_id->ViewCustomAttributes = "";
 
 			// b_branch_id
-			$curVal = strval($this->b_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->b_branch_id->ViewValue = $this->b_branch_id->lookupCacheOption($curVal);
-				if ($this->b_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->b_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->b_branch_id->ViewValue = $this->b_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->b_branch_id->ViewValue = $this->b_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->b_branch_id->ViewValue = NULL;
-			}
+			$this->b_branch_id->ViewValue = $this->b_branch_id->CurrentValue;
+			$this->b_branch_id->ViewValue = FormatNumber($this->b_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->b_branch_id->ViewCustomAttributes = "";
 
 			// b_b_type_id
-			$curVal = strval($this->b_b_type_id->CurrentValue);
-			if ($curVal != "") {
-				$this->b_b_type_id->ViewValue = $this->b_b_type_id->lookupCacheOption($curVal);
-				if ($this->b_b_type_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`business_type_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->b_b_type_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->b_b_type_id->ViewValue = $this->b_b_type_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->b_b_type_id->ViewValue = $this->b_b_type_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->b_b_type_id->ViewValue = NULL;
-			}
+			$this->b_b_type_id->ViewValue = $this->b_b_type_id->CurrentValue;
+			$this->b_b_type_id->ViewValue = FormatNumber($this->b_b_type_id->ViewValue, 0, -2, -2, -2);
 			$this->b_b_type_id->ViewCustomAttributes = "";
 
-			// b_b_nature_id
-			$curVal = strval($this->b_b_nature_id->CurrentValue);
-			if ($curVal != "") {
-				$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->lookupCacheOption($curVal);
-				if ($this->b_b_nature_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`b_nature_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->b_b_nature_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->b_b_nature_id->ViewValue = NULL;
-			}
-			$this->b_b_nature_id->ViewCustomAttributes = "";
-
 			// b_b_status_id
-			$curVal = strval($this->b_b_status_id->CurrentValue);
-			if ($curVal != "") {
-				$this->b_b_status_id->ViewValue = $this->b_b_status_id->lookupCacheOption($curVal);
-				if ($this->b_b_status_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`business_status_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->b_b_status_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->b_b_status_id->ViewValue = $this->b_b_status_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->b_b_status_id->ViewValue = $this->b_b_status_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->b_b_status_id->ViewValue = NULL;
-			}
+			$this->b_b_status_id->ViewValue = $this->b_b_status_id->CurrentValue;
+			$this->b_b_status_id->ViewValue = FormatNumber($this->b_b_status_id->ViewValue, 0, -2, -2, -2);
 			$this->b_b_status_id->ViewCustomAttributes = "";
 
+			// b_b_nature_id
+			$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->CurrentValue;
+			$this->b_b_nature_id->ViewValue = FormatNumber($this->b_b_nature_id->ViewValue, 0, -2, -2, -2);
+			$this->b_b_nature_id->ViewCustomAttributes = "";
+
 			// b_city_id
-			if ($this->b_city_id->VirtualValue != "") {
-				$this->b_city_id->ViewValue = $this->b_city_id->VirtualValue;
-			} else {
-				$curVal = strval($this->b_city_id->CurrentValue);
-				if ($curVal != "") {
-					$this->b_city_id->ViewValue = $this->b_city_id->lookupCacheOption($curVal);
-					if ($this->b_city_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->b_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->b_city_id->ViewValue = $this->b_city_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->b_city_id->ViewValue = $this->b_city_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->b_city_id->ViewValue = NULL;
-				}
-			}
+			$this->b_city_id->ViewValue = $this->b_city_id->CurrentValue;
+			$this->b_city_id->ViewValue = FormatNumber($this->b_city_id->ViewValue, 0, -2, -2, -2);
 			$this->b_city_id->ViewCustomAttributes = "";
 
 			// b_referral_id
-			if ($this->b_referral_id->VirtualValue != "") {
-				$this->b_referral_id->ViewValue = $this->b_referral_id->VirtualValue;
-			} else {
-				$curVal = strval($this->b_referral_id->CurrentValue);
-				if ($curVal != "") {
-					$this->b_referral_id->ViewValue = $this->b_referral_id->lookupCacheOption($curVal);
-					if ($this->b_referral_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`referral_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->b_referral_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->b_referral_id->ViewValue = $this->b_referral_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->b_referral_id->ViewValue = $this->b_referral_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->b_referral_id->ViewValue = NULL;
-				}
-			}
+			$this->b_referral_id->ViewValue = $this->b_referral_id->CurrentValue;
+			$this->b_referral_id->ViewValue = FormatNumber($this->b_referral_id->ViewValue, 0, -2, -2, -2);
 			$this->b_referral_id->ViewCustomAttributes = "";
 
 			// b_name
@@ -1373,14 +1220,7 @@ class business_add extends business
 			$this->b_ntn->ViewCustomAttributes = "";
 
 			// b_logo
-			if (!EmptyValue($this->b_logo->Upload->DbValue)) {
-				$this->b_logo->ImageWidth = 200;
-				$this->b_logo->ImageHeight = 0;
-				$this->b_logo->ImageAlt = $this->b_logo->alt();
-				$this->b_logo->ViewValue = $this->b_logo->Upload->DbValue;
-			} else {
-				$this->b_logo->ViewValue = "";
-			}
+			$this->b_logo->ViewValue = $this->b_logo->CurrentValue;
 			$this->b_logo->ViewCustomAttributes = "";
 
 			// b_no_of_emp
@@ -1415,15 +1255,15 @@ class business_add extends business
 			$this->b_b_type_id->HrefValue = "";
 			$this->b_b_type_id->TooltipValue = "";
 
-			// b_b_nature_id
-			$this->b_b_nature_id->LinkCustomAttributes = "";
-			$this->b_b_nature_id->HrefValue = "";
-			$this->b_b_nature_id->TooltipValue = "";
-
 			// b_b_status_id
 			$this->b_b_status_id->LinkCustomAttributes = "";
 			$this->b_b_status_id->HrefValue = "";
 			$this->b_b_status_id->TooltipValue = "";
+
+			// b_b_nature_id
+			$this->b_b_nature_id->LinkCustomAttributes = "";
+			$this->b_b_nature_id->HrefValue = "";
+			$this->b_b_nature_id->TooltipValue = "";
 
 			// b_city_id
 			$this->b_city_id->LinkCustomAttributes = "";
@@ -1467,22 +1307,8 @@ class business_add extends business
 
 			// b_logo
 			$this->b_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->b_logo->Upload->DbValue)) {
-				$this->b_logo->HrefValue = GetFileUploadUrl($this->b_logo, $this->b_logo->htmlDecode($this->b_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->b_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->b_logo->HrefValue = FullUrl($this->b_logo->HrefValue, "href");
-			} else {
-				$this->b_logo->HrefValue = "";
-			}
-			$this->b_logo->ExportHrefValue = $this->b_logo->UploadPath . $this->b_logo->Upload->DbValue;
+			$this->b_logo->HrefValue = "";
 			$this->b_logo->TooltipValue = "";
-			if ($this->b_logo->UseColorbox) {
-				if (EmptyValue($this->b_logo->TooltipValue))
-					$this->b_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->b_logo->LinkAttrs["data-rel"] = "business_x_b_logo";
-				$this->b_logo->LinkAttrs->appendClass("ew-lightbox");
-			}
 
 			// b_no_of_emp
 			$this->b_no_of_emp->LinkCustomAttributes = "";
@@ -1511,196 +1337,40 @@ class business_add extends business
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// b_branch_id
+			$this->b_branch_id->EditAttrs["class"] = "form-control";
 			$this->b_branch_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->b_branch_id->CurrentValue));
-			if ($curVal != "")
-				$this->b_branch_id->ViewValue = $this->b_branch_id->lookupCacheOption($curVal);
-			else
-				$this->b_branch_id->ViewValue = $this->b_branch_id->Lookup !== NULL && is_array($this->b_branch_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->b_branch_id->ViewValue !== NULL) { // Load from cache
-				$this->b_branch_id->EditValue = array_values($this->b_branch_id->Lookup->Options);
-				if ($this->b_branch_id->ViewValue == "")
-					$this->b_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`branch_id`" . SearchString("=", $this->b_branch_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->b_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->b_branch_id->ViewValue = $this->b_branch_id->displayValue($arwrk);
-				} else {
-					$this->b_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->b_branch_id->EditValue = $arwrk;
-			}
+			$this->b_branch_id->EditValue = HtmlEncode($this->b_branch_id->CurrentValue);
+			$this->b_branch_id->PlaceHolder = RemoveHtml($this->b_branch_id->caption());
 
 			// b_b_type_id
+			$this->b_b_type_id->EditAttrs["class"] = "form-control";
 			$this->b_b_type_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->b_b_type_id->CurrentValue));
-			if ($curVal != "")
-				$this->b_b_type_id->ViewValue = $this->b_b_type_id->lookupCacheOption($curVal);
-			else
-				$this->b_b_type_id->ViewValue = $this->b_b_type_id->Lookup !== NULL && is_array($this->b_b_type_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->b_b_type_id->ViewValue !== NULL) { // Load from cache
-				$this->b_b_type_id->EditValue = array_values($this->b_b_type_id->Lookup->Options);
-				if ($this->b_b_type_id->ViewValue == "")
-					$this->b_b_type_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`business_type_id`" . SearchString("=", $this->b_b_type_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->b_b_type_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->b_b_type_id->ViewValue = $this->b_b_type_id->displayValue($arwrk);
-				} else {
-					$this->b_b_type_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->b_b_type_id->EditValue = $arwrk;
-			}
-
-			// b_b_nature_id
-			$this->b_b_nature_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->b_b_nature_id->CurrentValue));
-			if ($curVal != "")
-				$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->lookupCacheOption($curVal);
-			else
-				$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->Lookup !== NULL && is_array($this->b_b_nature_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->b_b_nature_id->ViewValue !== NULL) { // Load from cache
-				$this->b_b_nature_id->EditValue = array_values($this->b_b_nature_id->Lookup->Options);
-				if ($this->b_b_nature_id->ViewValue == "")
-					$this->b_b_nature_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`b_nature_id`" . SearchString("=", $this->b_b_nature_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->b_b_nature_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->b_b_nature_id->ViewValue = $this->b_b_nature_id->displayValue($arwrk);
-				} else {
-					$this->b_b_nature_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->b_b_nature_id->EditValue = $arwrk;
-			}
+			$this->b_b_type_id->EditValue = HtmlEncode($this->b_b_type_id->CurrentValue);
+			$this->b_b_type_id->PlaceHolder = RemoveHtml($this->b_b_type_id->caption());
 
 			// b_b_status_id
+			$this->b_b_status_id->EditAttrs["class"] = "form-control";
 			$this->b_b_status_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->b_b_status_id->CurrentValue));
-			if ($curVal != "")
-				$this->b_b_status_id->ViewValue = $this->b_b_status_id->lookupCacheOption($curVal);
-			else
-				$this->b_b_status_id->ViewValue = $this->b_b_status_id->Lookup !== NULL && is_array($this->b_b_status_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->b_b_status_id->ViewValue !== NULL) { // Load from cache
-				$this->b_b_status_id->EditValue = array_values($this->b_b_status_id->Lookup->Options);
-				if ($this->b_b_status_id->ViewValue == "")
-					$this->b_b_status_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`business_status_id`" . SearchString("=", $this->b_b_status_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->b_b_status_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->b_b_status_id->ViewValue = $this->b_b_status_id->displayValue($arwrk);
-				} else {
-					$this->b_b_status_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->b_b_status_id->EditValue = $arwrk;
-			}
+			$this->b_b_status_id->EditValue = HtmlEncode($this->b_b_status_id->CurrentValue);
+			$this->b_b_status_id->PlaceHolder = RemoveHtml($this->b_b_status_id->caption());
+
+			// b_b_nature_id
+			$this->b_b_nature_id->EditAttrs["class"] = "form-control";
+			$this->b_b_nature_id->EditCustomAttributes = "";
+			$this->b_b_nature_id->EditValue = HtmlEncode($this->b_b_nature_id->CurrentValue);
+			$this->b_b_nature_id->PlaceHolder = RemoveHtml($this->b_b_nature_id->caption());
 
 			// b_city_id
+			$this->b_city_id->EditAttrs["class"] = "form-control";
 			$this->b_city_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->b_city_id->CurrentValue));
-			if ($curVal != "")
-				$this->b_city_id->ViewValue = $this->b_city_id->lookupCacheOption($curVal);
-			else
-				$this->b_city_id->ViewValue = $this->b_city_id->Lookup !== NULL && is_array($this->b_city_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->b_city_id->ViewValue !== NULL) { // Load from cache
-				$this->b_city_id->EditValue = array_values($this->b_city_id->Lookup->Options);
-				if ($this->b_city_id->ViewValue == "")
-					$this->b_city_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`city_id`" . SearchString("=", $this->b_city_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->b_city_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->b_city_id->ViewValue = $this->b_city_id->displayValue($arwrk);
-				} else {
-					$this->b_city_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->b_city_id->EditValue = $arwrk;
-			}
+			$this->b_city_id->EditValue = HtmlEncode($this->b_city_id->CurrentValue);
+			$this->b_city_id->PlaceHolder = RemoveHtml($this->b_city_id->caption());
 
 			// b_referral_id
+			$this->b_referral_id->EditAttrs["class"] = "form-control";
 			$this->b_referral_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->b_referral_id->CurrentValue));
-			if ($curVal != "")
-				$this->b_referral_id->ViewValue = $this->b_referral_id->lookupCacheOption($curVal);
-			else
-				$this->b_referral_id->ViewValue = $this->b_referral_id->Lookup !== NULL && is_array($this->b_referral_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->b_referral_id->ViewValue !== NULL) { // Load from cache
-				$this->b_referral_id->EditValue = array_values($this->b_referral_id->Lookup->Options);
-				if ($this->b_referral_id->ViewValue == "")
-					$this->b_referral_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`referral_id`" . SearchString("=", $this->b_referral_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->b_referral_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->b_referral_id->ViewValue = $this->b_referral_id->displayValue($arwrk);
-				} else {
-					$this->b_referral_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->b_referral_id->EditValue = $arwrk;
-			}
+			$this->b_referral_id->EditValue = HtmlEncode($this->b_referral_id->CurrentValue);
+			$this->b_referral_id->PlaceHolder = RemoveHtml($this->b_referral_id->caption());
 
 			// b_name
 			$this->b_name->EditAttrs["class"] = "form-control";
@@ -1729,6 +1399,8 @@ class business_add extends business
 			// b_address
 			$this->b_address->EditAttrs["class"] = "form-control";
 			$this->b_address->EditCustomAttributes = "";
+			if (!$this->b_address->Raw)
+				$this->b_address->CurrentValue = HtmlDecode($this->b_address->CurrentValue);
 			$this->b_address->EditValue = HtmlEncode($this->b_address->CurrentValue);
 			$this->b_address->PlaceHolder = RemoveHtml($this->b_address->caption());
 
@@ -1751,18 +1423,10 @@ class business_add extends business
 			// b_logo
 			$this->b_logo->EditAttrs["class"] = "form-control";
 			$this->b_logo->EditCustomAttributes = "";
-			if (!EmptyValue($this->b_logo->Upload->DbValue)) {
-				$this->b_logo->ImageWidth = 200;
-				$this->b_logo->ImageHeight = 0;
-				$this->b_logo->ImageAlt = $this->b_logo->alt();
-				$this->b_logo->EditValue = $this->b_logo->Upload->DbValue;
-			} else {
-				$this->b_logo->EditValue = "";
-			}
-			if (!EmptyValue($this->b_logo->CurrentValue))
-					$this->b_logo->Upload->FileName = $this->b_logo->CurrentValue;
-			if ($this->isShow() || $this->isCopy())
-				RenderUploadField($this->b_logo);
+			if (!$this->b_logo->Raw)
+				$this->b_logo->CurrentValue = HtmlDecode($this->b_logo->CurrentValue);
+			$this->b_logo->EditValue = HtmlEncode($this->b_logo->CurrentValue);
+			$this->b_logo->PlaceHolder = RemoveHtml($this->b_logo->caption());
 
 			// b_no_of_emp
 			$this->b_no_of_emp->EditAttrs["class"] = "form-control";
@@ -1787,12 +1451,16 @@ class business_add extends business
 			// b_deal_with_referral
 			$this->b_deal_with_referral->EditAttrs["class"] = "form-control";
 			$this->b_deal_with_referral->EditCustomAttributes = "";
+			if (!$this->b_deal_with_referral->Raw)
+				$this->b_deal_with_referral->CurrentValue = HtmlDecode($this->b_deal_with_referral->CurrentValue);
 			$this->b_deal_with_referral->EditValue = HtmlEncode($this->b_deal_with_referral->CurrentValue);
 			$this->b_deal_with_referral->PlaceHolder = RemoveHtml($this->b_deal_with_referral->caption());
 
 			// b_comments
 			$this->b_comments->EditAttrs["class"] = "form-control";
 			$this->b_comments->EditCustomAttributes = "";
+			if (!$this->b_comments->Raw)
+				$this->b_comments->CurrentValue = HtmlDecode($this->b_comments->CurrentValue);
 			$this->b_comments->EditValue = HtmlEncode($this->b_comments->CurrentValue);
 			$this->b_comments->PlaceHolder = RemoveHtml($this->b_comments->caption());
 
@@ -1806,13 +1474,13 @@ class business_add extends business
 			$this->b_b_type_id->LinkCustomAttributes = "";
 			$this->b_b_type_id->HrefValue = "";
 
-			// b_b_nature_id
-			$this->b_b_nature_id->LinkCustomAttributes = "";
-			$this->b_b_nature_id->HrefValue = "";
-
 			// b_b_status_id
 			$this->b_b_status_id->LinkCustomAttributes = "";
 			$this->b_b_status_id->HrefValue = "";
+
+			// b_b_nature_id
+			$this->b_b_nature_id->LinkCustomAttributes = "";
+			$this->b_b_nature_id->HrefValue = "";
 
 			// b_city_id
 			$this->b_city_id->LinkCustomAttributes = "";
@@ -1848,15 +1516,7 @@ class business_add extends business
 
 			// b_logo
 			$this->b_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->b_logo->Upload->DbValue)) {
-				$this->b_logo->HrefValue = GetFileUploadUrl($this->b_logo, $this->b_logo->htmlDecode($this->b_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->b_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->b_logo->HrefValue = FullUrl($this->b_logo->HrefValue, "href");
-			} else {
-				$this->b_logo->HrefValue = "";
-			}
-			$this->b_logo->ExportHrefValue = $this->b_logo->UploadPath . $this->b_logo->Upload->DbValue;
+			$this->b_logo->HrefValue = "";
 
 			// b_no_of_emp
 			$this->b_no_of_emp->LinkCustomAttributes = "";
@@ -1902,30 +1562,48 @@ class business_add extends business
 				AddMessage($FormError, str_replace("%s", $this->b_branch_id->caption(), $this->b_branch_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->b_branch_id->FormValue)) {
+			AddMessage($FormError, $this->b_branch_id->errorMessage());
+		}
 		if ($this->b_b_type_id->Required) {
 			if (!$this->b_b_type_id->IsDetailKey && $this->b_b_type_id->FormValue != NULL && $this->b_b_type_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->b_b_type_id->caption(), $this->b_b_type_id->RequiredErrorMessage));
 			}
 		}
-		if ($this->b_b_nature_id->Required) {
-			if (!$this->b_b_nature_id->IsDetailKey && $this->b_b_nature_id->FormValue != NULL && $this->b_b_nature_id->FormValue == "") {
-				AddMessage($FormError, str_replace("%s", $this->b_b_nature_id->caption(), $this->b_b_nature_id->RequiredErrorMessage));
-			}
+		if (!CheckInteger($this->b_b_type_id->FormValue)) {
+			AddMessage($FormError, $this->b_b_type_id->errorMessage());
 		}
 		if ($this->b_b_status_id->Required) {
 			if (!$this->b_b_status_id->IsDetailKey && $this->b_b_status_id->FormValue != NULL && $this->b_b_status_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->b_b_status_id->caption(), $this->b_b_status_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->b_b_status_id->FormValue)) {
+			AddMessage($FormError, $this->b_b_status_id->errorMessage());
+		}
+		if ($this->b_b_nature_id->Required) {
+			if (!$this->b_b_nature_id->IsDetailKey && $this->b_b_nature_id->FormValue != NULL && $this->b_b_nature_id->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->b_b_nature_id->caption(), $this->b_b_nature_id->RequiredErrorMessage));
+			}
+		}
+		if (!CheckInteger($this->b_b_nature_id->FormValue)) {
+			AddMessage($FormError, $this->b_b_nature_id->errorMessage());
+		}
 		if ($this->b_city_id->Required) {
 			if (!$this->b_city_id->IsDetailKey && $this->b_city_id->FormValue != NULL && $this->b_city_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->b_city_id->caption(), $this->b_city_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->b_city_id->FormValue)) {
+			AddMessage($FormError, $this->b_city_id->errorMessage());
+		}
 		if ($this->b_referral_id->Required) {
 			if (!$this->b_referral_id->IsDetailKey && $this->b_referral_id->FormValue != NULL && $this->b_referral_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->b_referral_id->caption(), $this->b_referral_id->RequiredErrorMessage));
 			}
+		}
+		if (!CheckInteger($this->b_referral_id->FormValue)) {
+			AddMessage($FormError, $this->b_referral_id->errorMessage());
 		}
 		if ($this->b_name->Required) {
 			if (!$this->b_name->IsDetailKey && $this->b_name->FormValue != NULL && $this->b_name->FormValue == "") {
@@ -1958,7 +1636,7 @@ class business_add extends business
 			}
 		}
 		if ($this->b_logo->Required) {
-			if ($this->b_logo->Upload->FileName == "" && !$this->b_logo->Upload->KeepFile) {
+			if (!$this->b_logo->IsDetailKey && $this->b_logo->FormValue != NULL && $this->b_logo->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->b_logo->caption(), $this->b_logo->RequiredErrorMessage));
 			}
 		}
@@ -2024,11 +1702,11 @@ class business_add extends business
 		// b_b_type_id
 		$this->b_b_type_id->setDbValueDef($rsnew, $this->b_b_type_id->CurrentValue, 0, FALSE);
 
-		// b_b_nature_id
-		$this->b_b_nature_id->setDbValueDef($rsnew, $this->b_b_nature_id->CurrentValue, 0, FALSE);
-
 		// b_b_status_id
 		$this->b_b_status_id->setDbValueDef($rsnew, $this->b_b_status_id->CurrentValue, 0, FALSE);
+
+		// b_b_nature_id
+		$this->b_b_nature_id->setDbValueDef($rsnew, $this->b_b_nature_id->CurrentValue, 0, FALSE);
 
 		// b_city_id
 		$this->b_city_id->setDbValueDef($rsnew, $this->b_city_id->CurrentValue, 0, FALSE);
@@ -2055,16 +1733,7 @@ class business_add extends business
 		$this->b_ntn->setDbValueDef($rsnew, $this->b_ntn->CurrentValue, "", FALSE);
 
 		// b_logo
-		if ($this->b_logo->Visible && !$this->b_logo->Upload->KeepFile) {
-			$this->b_logo->Upload->DbValue = ""; // No need to delete old file
-			if ($this->b_logo->Upload->FileName == "") {
-				$rsnew['b_logo'] = NULL;
-			} else {
-				$rsnew['b_logo'] = $this->b_logo->Upload->FileName;
-			}
-			$this->b_logo->ImageWidth = 1000; // Resize width
-			$this->b_logo->ImageHeight = 0; // Resize height
-		}
+		$this->b_logo->setDbValueDef($rsnew, $this->b_logo->CurrentValue, "", FALSE);
 
 		// b_no_of_emp
 		$this->b_no_of_emp->setDbValueDef($rsnew, $this->b_no_of_emp->CurrentValue, 0, FALSE);
@@ -2080,45 +1749,6 @@ class business_add extends business
 
 		// b_comments
 		$this->b_comments->setDbValueDef($rsnew, $this->b_comments->CurrentValue, "", FALSE);
-		if ($this->b_logo->Visible && !$this->b_logo->Upload->KeepFile) {
-			$oldFiles = EmptyValue($this->b_logo->Upload->DbValue) ? [] : [$this->b_logo->htmlDecode($this->b_logo->Upload->DbValue)];
-			if (!EmptyValue($this->b_logo->Upload->FileName)) {
-				$newFiles = [$this->b_logo->Upload->FileName];
-				$NewFileCount = count($newFiles);
-				for ($i = 0; $i < $NewFileCount; $i++) {
-					if ($newFiles[$i] != "") {
-						$file = $newFiles[$i];
-						$tempPath = UploadTempPath($this->b_logo, $this->b_logo->Upload->Index);
-						if (file_exists($tempPath . $file)) {
-							if (Config("DELETE_UPLOADED_FILES")) {
-								$oldFileFound = FALSE;
-								$oldFileCount = count($oldFiles);
-								for ($j = 0; $j < $oldFileCount; $j++) {
-									$oldFile = $oldFiles[$j];
-									if ($oldFile == $file) { // Old file found, no need to delete anymore
-										unset($oldFiles[$j]);
-										$oldFileFound = TRUE;
-										break;
-									}
-								}
-								if ($oldFileFound) // No need to check if file exists further
-									continue;
-							}
-							$file1 = UniqueFilename($this->b_logo->physicalUploadPath(), $file); // Get new file name
-							if ($file1 != $file) { // Rename temp file
-								while (file_exists($tempPath . $file1) || file_exists($this->b_logo->physicalUploadPath() . $file1)) // Make sure no file name clash
-									$file1 = UniqueFilename($this->b_logo->physicalUploadPath(), $file1, TRUE); // Use indexed name
-								rename($tempPath . $file, $tempPath . $file1);
-								$newFiles[$i] = $file1;
-							}
-						}
-					}
-				}
-				$this->b_logo->Upload->DbValue = empty($oldFiles) ? "" : implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $oldFiles);
-				$this->b_logo->Upload->FileName = implode(Config("MULTIPLE_UPLOAD_SEPARATOR"), $newFiles);
-				$this->b_logo->setDbValueDef($rsnew, $this->b_logo->Upload->FileName, "", FALSE);
-			}
-		}
 
 		// Call Row Inserting event
 		$rs = ($rsold) ? $rsold->fields : NULL;
@@ -2128,35 +1758,6 @@ class business_add extends business
 			$addRow = $this->insert($rsnew);
 			$conn->raiseErrorFn = "";
 			if ($addRow) {
-				if ($this->b_logo->Visible && !$this->b_logo->Upload->KeepFile) {
-					$oldFiles = EmptyValue($this->b_logo->Upload->DbValue) ? [] : [$this->b_logo->htmlDecode($this->b_logo->Upload->DbValue)];
-					if (!EmptyValue($this->b_logo->Upload->FileName)) {
-						$newFiles = [$this->b_logo->Upload->FileName];
-						$newFiles2 = [$this->b_logo->htmlDecode($rsnew['b_logo'])];
-						$newFileCount = count($newFiles);
-						for ($i = 0; $i < $newFileCount; $i++) {
-							if ($newFiles[$i] != "") {
-								$file = UploadTempPath($this->b_logo, $this->b_logo->Upload->Index) . $newFiles[$i];
-								if (file_exists($file)) {
-									if (@$newFiles2[$i] != "") // Use correct file name
-										$newFiles[$i] = $newFiles2[$i];
-									if (!$this->b_logo->Upload->ResizeAndSaveToFile($this->b_logo->ImageWidth, $this->b_logo->ImageHeight, 100, $newFiles[$i], TRUE, $i)) {
-										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
-										return FALSE;
-									}
-								}
-							}
-						}
-					} else {
-						$newFiles = [];
-					}
-					if (Config("DELETE_UPLOADED_FILES")) {
-						foreach ($oldFiles as $oldFile) {
-							if ($oldFile != "" && !in_array($oldFile, $newFiles))
-								@unlink($this->b_logo->oldPhysicalUploadPath() . $oldFile);
-						}
-					}
-				}
 			}
 		} else {
 			if ($this->getSuccessMessage() != "" || $this->getFailureMessage() != "") {
@@ -2179,12 +1780,6 @@ class business_add extends business
 
 		// Clean upload path if any
 		if ($addRow) {
-
-			// b_logo
-			if ($this->b_logo->Upload->FileToken != "")
-				CleanUploadTempPath($this->b_logo->Upload->FileToken, $this->b_logo->Upload->Index);
-			else
-				CleanUploadTempPath($this->b_logo, $this->b_logo->Upload->Index);
 		}
 
 		// Write JSON for API request
@@ -2220,18 +1815,6 @@ class business_add extends business
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_b_branch_id":
-					break;
-				case "x_b_b_type_id":
-					break;
-				case "x_b_b_nature_id":
-					break;
-				case "x_b_b_status_id":
-					break;
-				case "x_b_city_id":
-					break;
-				case "x_b_referral_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -2252,18 +1835,6 @@ class business_add extends business
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_b_branch_id":
-							break;
-						case "x_b_b_type_id":
-							break;
-						case "x_b_b_nature_id":
-							break;
-						case "x_b_b_status_id":
-							break;
-						case "x_b_city_id":
-							break;
-						case "x_b_referral_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

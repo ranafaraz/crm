@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $services_delete = new services_delete();
 $services_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -79,9 +78,6 @@ $services_delete->showMessage();
 <?php if ($services_delete->service_caption->Visible) { // service_caption ?>
 		<th class="<?php echo $services_delete->service_caption->headerCellClass() ?>"><span id="elh_services_service_caption" class="services_service_caption"><?php echo $services_delete->service_caption->caption() ?></span></th>
 <?php } ?>
-<?php if ($services_delete->service_desc->Visible) { // service_desc ?>
-		<th class="<?php echo $services_delete->service_desc->headerCellClass() ?>"><span id="elh_services_service_desc" class="services_service_desc"><?php echo $services_delete->service_desc->caption() ?></span></th>
-<?php } ?>
 <?php if ($services_delete->service_logo->Visible) { // service_logo ?>
 		<th class="<?php echo $services_delete->service_logo->headerCellClass() ?>"><span id="elh_services_service_logo" class="services_service_logo"><?php echo $services_delete->service_logo->caption() ?></span></th>
 <?php } ?>
@@ -127,17 +123,10 @@ while (!$services_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($services_delete->service_desc->Visible) { // service_desc ?>
-		<td <?php echo $services_delete->service_desc->cellAttributes() ?>>
-<span id="el<?php echo $services_delete->RowCount ?>_services_service_desc" class="services_service_desc">
-<span<?php echo $services_delete->service_desc->viewAttributes() ?>><?php echo $services_delete->service_desc->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($services_delete->service_logo->Visible) { // service_logo ?>
 		<td <?php echo $services_delete->service_logo->cellAttributes() ?>>
 <span id="el<?php echo $services_delete->RowCount ?>_services_service_logo" class="services_service_logo">
-<span><?php echo GetFileViewTag($services_delete->service_logo, $services_delete->service_logo->getViewValue(), FALSE) ?></span>
+<span<?php echo $services_delete->service_logo->viewAttributes() ?>><?php echo $services_delete->service_logo->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

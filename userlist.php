@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $user_list = new user_list();
 $user_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $user_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$user_list->isExport() && !$user->CurrentAction) { ?>
 <form name="fuserlistsrch" id="fuserlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fuserlistsrch-search-panel" class="<?php echo $user_list->SearchPanelClass ?>">
@@ -113,33 +111,113 @@ $user_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $user_list->showPageHeader(); ?>
 <?php
 $user_list->showMessage();
 ?>
 <?php if ($user_list->TotalRecords > 0 || $user->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$user_list->isExport()) { ?>
-<div>
-<?php if (!$user_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $user_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $user_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fuserlist" id="fuserlist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($user_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> user">
+<form name="fuserlist" id="fuserlist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="user">
-<div class="row ew-multi-column-row">
+<div id="gmp_user" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($user_list->TotalRecords > 0 || $user_list->isGridEdit()) { ?>
+<table id="tbl_userlist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$user->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$user_list->renderListOptions();
+
+// Render list options (header, left)
+$user_list->ListOptions->render("header", "left");
+?>
+<?php if ($user_list->user_id->Visible) { // user_id ?>
+	<?php if ($user_list->SortUrl($user_list->user_id) == "") { ?>
+		<th data-name="user_id" class="<?php echo $user_list->user_id->headerCellClass() ?>"><div id="elh_user_user_id" class="user_user_id"><div class="ew-table-header-caption"><?php echo $user_list->user_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_id" class="<?php echo $user_list->user_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_id) ?>', 1);"><div id="elh_user_user_id" class="user_user_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_branch_id->Visible) { // user_branch_id ?>
+	<?php if ($user_list->SortUrl($user_list->user_branch_id) == "") { ?>
+		<th data-name="user_branch_id" class="<?php echo $user_list->user_branch_id->headerCellClass() ?>"><div id="elh_user_user_branch_id" class="user_user_branch_id"><div class="ew-table-header-caption"><?php echo $user_list->user_branch_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_branch_id" class="<?php echo $user_list->user_branch_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_branch_id) ?>', 1);"><div id="elh_user_user_branch_id" class="user_user_branch_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_type_id->Visible) { // user_type_id ?>
+	<?php if ($user_list->SortUrl($user_list->user_type_id) == "") { ?>
+		<th data-name="user_type_id" class="<?php echo $user_list->user_type_id->headerCellClass() ?>"><div id="elh_user_user_type_id" class="user_user_type_id"><div class="ew-table-header-caption"><?php echo $user_list->user_type_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_type_id" class="<?php echo $user_list->user_type_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_type_id) ?>', 1);"><div id="elh_user_user_type_id" class="user_user_type_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_type_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_type_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_type_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_name->Visible) { // user_name ?>
+	<?php if ($user_list->SortUrl($user_list->user_name) == "") { ?>
+		<th data-name="user_name" class="<?php echo $user_list->user_name->headerCellClass() ?>"><div id="elh_user_user_name" class="user_user_name"><div class="ew-table-header-caption"><?php echo $user_list->user_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_name" class="<?php echo $user_list->user_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_name) ?>', 1);"><div id="elh_user_user_name" class="user_user_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_password->Visible) { // user_password ?>
+	<?php if ($user_list->SortUrl($user_list->user_password) == "") { ?>
+		<th data-name="user_password" class="<?php echo $user_list->user_password->headerCellClass() ?>"><div id="elh_user_user_password" class="user_user_password"><div class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_password" class="<?php echo $user_list->user_password->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_password) ?>', 1);"><div id="elh_user_user_password" class="user_user_password">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_password->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_password->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_email->Visible) { // user_email ?>
+	<?php if ($user_list->SortUrl($user_list->user_email) == "") { ?>
+		<th data-name="user_email" class="<?php echo $user_list->user_email->headerCellClass() ?>"><div id="elh_user_user_email" class="user_user_email"><div class="ew-table-header-caption"><?php echo $user_list->user_email->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_email" class="<?php echo $user_list->user_email->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_email) ?>', 1);"><div id="elh_user_user_email" class="user_user_email">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_email->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_email->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_email->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_father->Visible) { // user_father ?>
+	<?php if ($user_list->SortUrl($user_list->user_father) == "") { ?>
+		<th data-name="user_father" class="<?php echo $user_list->user_father->headerCellClass() ?>"><div id="elh_user_user_father" class="user_user_father"><div class="ew-table-header-caption"><?php echo $user_list->user_father->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_father" class="<?php echo $user_list->user_father->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_father) ?>', 1);"><div id="elh_user_user_father" class="user_user_father">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_father->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_father->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_father->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($user_list->user_cnic->Visible) { // user_cnic ?>
+	<?php if ($user_list->SortUrl($user_list->user_cnic) == "") { ?>
+		<th data-name="user_cnic" class="<?php echo $user_list->user_cnic->headerCellClass() ?>"><div id="elh_user_user_cnic" class="user_user_cnic"><div class="ew-table-header-caption"><?php echo $user_list->user_cnic->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="user_cnic" class="<?php echo $user_list->user_cnic->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_cnic) ?>', 1);"><div id="elh_user_user_cnic" class="user_user_cnic">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_cnic->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_cnic->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_cnic->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$user_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($user_list->ExportAll && $user_list->isExport()) {
 	$user_list->StopRecord = $user_list->TotalRecords;
@@ -160,6 +238,11 @@ if ($user_list->Recordset && !$user_list->Recordset->EOF) {
 } elseif (!$user->AllowAddDeleteRow && $user_list->StopRecord == 0) {
 	$user_list->StopRecord = $user->GridAddRowCount;
 }
+
+// Initialize aggregate
+$user->RowType = ROWTYPE_AGGREGATEINIT;
+$user->resetAttributes();
+$user_list->renderRow();
 while ($user_list->RecordCount < $user_list->StopRecord) {
 	$user_list->RecordCount++;
 	if ($user_list->RecordCount >= $user_list->StartRecord) {
@@ -186,270 +269,84 @@ while ($user_list->RecordCount < $user_list->StopRecord) {
 		// Render list options
 		$user_list->renderListOptions();
 ?>
-<div class="<?php echo $user_list->getMultiColumnClass() ?>" <?php echo $user->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($user_list->user_id->Visible) { // user_id ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_id">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_id->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_id">
-<span<?php echo $user_list->user_id->viewAttributes() ?>><?php echo $user_list->user_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_id">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_id->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_id->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_id">
-<span<?php echo $user_list->user_id->viewAttributes() ?>><?php echo $user_list->user_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_branch_id->Visible) { // user_branch_id ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_branch_id">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_branch_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_branch_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_branch_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_branch_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_branch_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_branch_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_branch_id">
-<span<?php echo $user_list->user_branch_id->viewAttributes() ?>><?php echo $user_list->user_branch_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_branch_id">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_branch_id->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_branch_id->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_branch_id">
-<span<?php echo $user_list->user_branch_id->viewAttributes() ?>><?php echo $user_list->user_branch_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_type_id->Visible) { // user_type_id ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_type_id">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_type_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_type_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_type_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_type_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_type_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_type_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_type_id->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_type_id">
-<span<?php echo $user_list->user_type_id->viewAttributes() ?>><?php echo $user_list->user_type_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_type_id">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_type_id->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_type_id->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_type_id">
-<span<?php echo $user_list->user_type_id->viewAttributes() ?>><?php echo $user_list->user_type_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_name->Visible) { // user_name ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_name">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_name->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_name">
-<span<?php echo $user_list->user_name->viewAttributes() ?>><?php echo $user_list->user_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_name">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_name->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_name->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_name">
-<span<?php echo $user_list->user_name->viewAttributes() ?>><?php echo $user_list->user_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_password->Visible) { // user_password ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_password">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_password) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_password) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_password->caption() ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_password->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_password->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_password->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_password">
-<span<?php echo $user_list->user_password->viewAttributes() ?>><?php echo $user_list->user_password->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_password">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_password->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_password->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_password">
-<span<?php echo $user_list->user_password->viewAttributes() ?>><?php echo $user_list->user_password->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_email->Visible) { // user_email ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_email">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_email) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_email->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_email) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_email->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_email->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_email->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_email->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_email">
-<span<?php echo $user_list->user_email->viewAttributes() ?>><?php echo $user_list->user_email->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_email">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_email->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_email->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_email">
-<span<?php echo $user_list->user_email->viewAttributes() ?>><?php echo $user_list->user_email->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_cnic->Visible) { // user_cnic ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_cnic">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_cnic) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_cnic->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_cnic) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_cnic->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_cnic->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_cnic->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_cnic->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_cnic">
-<span<?php echo $user_list->user_cnic->viewAttributes() ?>><?php echo $user_list->user_cnic->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_cnic">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_cnic->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_cnic->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_cnic">
-<span<?php echo $user_list->user_cnic->viewAttributes() ?>><?php echo $user_list->user_cnic->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user_list->user_father->Visible) { // user_father ?>
-		<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $user_list->TableLeftColumnClass ?>"><span class="user_user_father">
-<?php if ($user_list->isExport() || $user_list->SortUrl($user_list->user_father) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $user_list->user_father->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $user_list->SortUrl($user_list->user_father) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $user_list->user_father->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($user_list->user_father->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($user_list->user_father->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $user_list->user_father->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_father">
-<span<?php echo $user_list->user_father->viewAttributes() ?>><?php echo $user_list->user_father->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row user_user_father">
-			<label class="<?php echo $user_list->LeftColumnClass ?>"><?php echo $user_list->user_father->caption() ?></label>
-			<div class="<?php echo $user_list->RightColumnClass ?>"><div <?php echo $user_list->user_father->cellAttributes() ?>>
-<span id="el<?php echo $user_list->RowCount ?>_user_user_father">
-<span<?php echo $user_list->user_father->viewAttributes() ?>><?php echo $user_list->user_father->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($user->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$user_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $user->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$user_list->ListOptions->render("body", "bottom", $user_list->RowCount);
+// Render list options (body, left)
+$user_list->ListOptions->render("body", "left", $user_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($user_list->user_id->Visible) { // user_id ?>
+		<td data-name="user_id" <?php echo $user_list->user_id->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_id">
+<span<?php echo $user_list->user_id->viewAttributes() ?>><?php echo $user_list->user_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_branch_id->Visible) { // user_branch_id ?>
+		<td data-name="user_branch_id" <?php echo $user_list->user_branch_id->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_branch_id">
+<span<?php echo $user_list->user_branch_id->viewAttributes() ?>><?php echo $user_list->user_branch_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_type_id->Visible) { // user_type_id ?>
+		<td data-name="user_type_id" <?php echo $user_list->user_type_id->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_type_id">
+<span<?php echo $user_list->user_type_id->viewAttributes() ?>><?php echo $user_list->user_type_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_name->Visible) { // user_name ?>
+		<td data-name="user_name" <?php echo $user_list->user_name->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_name">
+<span<?php echo $user_list->user_name->viewAttributes() ?>><?php echo $user_list->user_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_password->Visible) { // user_password ?>
+		<td data-name="user_password" <?php echo $user_list->user_password->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_password">
+<span<?php echo $user_list->user_password->viewAttributes() ?>><?php echo $user_list->user_password->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_email->Visible) { // user_email ?>
+		<td data-name="user_email" <?php echo $user_list->user_email->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_email">
+<span<?php echo $user_list->user_email->viewAttributes() ?>><?php echo $user_list->user_email->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_father->Visible) { // user_father ?>
+		<td data-name="user_father" <?php echo $user_list->user_father->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_father">
+<span<?php echo $user_list->user_father->viewAttributes() ?>><?php echo $user_list->user_father->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($user_list->user_cnic->Visible) { // user_cnic ?>
+		<td data-name="user_cnic" <?php echo $user_list->user_cnic->cellAttributes() ?>>
+<span id="el<?php echo $user_list->RowCount ?>_user_user_cnic">
+<span<?php echo $user_list->user_cnic->viewAttributes() ?>><?php echo $user_list->user_cnic->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$user_list->ListOptions->render("body", "right", $user_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$user_list->isGridAdd())
 		$user_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$user->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -461,7 +358,7 @@ if ($user_list->Recordset)
 	$user_list->Recordset->Close();
 ?>
 <?php if (!$user_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$user_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $user_list->Pager->render() ?>
@@ -473,7 +370,7 @@ if ($user_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($user_list->TotalRecords == 0 && !$user->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $userlevels_list = new userlevels_list();
 $userlevels_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $userlevels_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$userlevels_list->isExport() && !$userlevels->CurrentAction) { ?>
 <form name="fuserlevelslistsrch" id="fuserlevelslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fuserlevelslistsrch-search-panel" class="<?php echo $userlevels_list->SearchPanelClass ?>">
@@ -113,33 +111,59 @@ $userlevels_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $userlevels_list->showPageHeader(); ?>
 <?php
 $userlevels_list->showMessage();
 ?>
 <?php if ($userlevels_list->TotalRecords > 0 || $userlevels->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$userlevels_list->isExport()) { ?>
-<div>
-<?php if (!$userlevels_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $userlevels_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $userlevels_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fuserlevelslist" id="fuserlevelslist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($userlevels_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> userlevels">
+<form name="fuserlevelslist" id="fuserlevelslist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="userlevels">
-<div class="row ew-multi-column-row">
+<div id="gmp_userlevels" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($userlevels_list->TotalRecords > 0 || $userlevels_list->isGridEdit()) { ?>
+<table id="tbl_userlevelslist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$userlevels->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$userlevels_list->renderListOptions();
+
+// Render list options (header, left)
+$userlevels_list->ListOptions->render("header", "left");
+?>
+<?php if ($userlevels_list->userlevelid->Visible) { // userlevelid ?>
+	<?php if ($userlevels_list->SortUrl($userlevels_list->userlevelid) == "") { ?>
+		<th data-name="userlevelid" class="<?php echo $userlevels_list->userlevelid->headerCellClass() ?>"><div id="elh_userlevels_userlevelid" class="userlevels_userlevelid"><div class="ew-table-header-caption"><?php echo $userlevels_list->userlevelid->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="userlevelid" class="<?php echo $userlevels_list->userlevelid->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevels_list->SortUrl($userlevels_list->userlevelid) ?>', 1);"><div id="elh_userlevels_userlevelid" class="userlevels_userlevelid">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevels_list->userlevelid->caption() ?></span><span class="ew-table-header-sort"><?php if ($userlevels_list->userlevelid->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevels_list->userlevelid->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($userlevels_list->userlevelname->Visible) { // userlevelname ?>
+	<?php if ($userlevels_list->SortUrl($userlevels_list->userlevelname) == "") { ?>
+		<th data-name="userlevelname" class="<?php echo $userlevels_list->userlevelname->headerCellClass() ?>"><div id="elh_userlevels_userlevelname" class="userlevels_userlevelname"><div class="ew-table-header-caption"><?php echo $userlevels_list->userlevelname->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="userlevelname" class="<?php echo $userlevels_list->userlevelname->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevels_list->SortUrl($userlevels_list->userlevelname) ?>', 1);"><div id="elh_userlevels_userlevelname" class="userlevels_userlevelname">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevels_list->userlevelname->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($userlevels_list->userlevelname->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevels_list->userlevelname->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$userlevels_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($userlevels_list->ExportAll && $userlevels_list->isExport()) {
 	$userlevels_list->StopRecord = $userlevels_list->TotalRecords;
@@ -160,6 +184,11 @@ if ($userlevels_list->Recordset && !$userlevels_list->Recordset->EOF) {
 } elseif (!$userlevels->AllowAddDeleteRow && $userlevels_list->StopRecord == 0) {
 	$userlevels_list->StopRecord = $userlevels->GridAddRowCount;
 }
+
+// Initialize aggregate
+$userlevels->RowType = ROWTYPE_AGGREGATEINIT;
+$userlevels->resetAttributes();
+$userlevels_list->renderRow();
 while ($userlevels_list->RecordCount < $userlevels_list->StopRecord) {
 	$userlevels_list->RecordCount++;
 	if ($userlevels_list->RecordCount >= $userlevels_list->StartRecord) {
@@ -186,96 +215,42 @@ while ($userlevels_list->RecordCount < $userlevels_list->StopRecord) {
 		// Render list options
 		$userlevels_list->renderListOptions();
 ?>
-<div class="<?php echo $userlevels_list->getMultiColumnClass() ?>" <?php echo $userlevels->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($userlevels->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($userlevels_list->userlevelid->Visible) { // userlevelid ?>
-		<?php if ($userlevels->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $userlevels_list->TableLeftColumnClass ?>"><span class="userlevels_userlevelid">
-<?php if ($userlevels_list->isExport() || $userlevels_list->SortUrl($userlevels_list->userlevelid) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $userlevels_list->userlevelid->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevels_list->SortUrl($userlevels_list->userlevelid) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevels_list->userlevelid->caption() ?></span><span class="ew-table-header-sort"><?php if ($userlevels_list->userlevelid->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevels_list->userlevelid->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $userlevels_list->userlevelid->cellAttributes() ?>>
-<span id="el<?php echo $userlevels_list->RowCount ?>_userlevels_userlevelid">
-<span<?php echo $userlevels_list->userlevelid->viewAttributes() ?>><?php echo $userlevels_list->userlevelid->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row userlevels_userlevelid">
-			<label class="<?php echo $userlevels_list->LeftColumnClass ?>"><?php echo $userlevels_list->userlevelid->caption() ?></label>
-			<div class="<?php echo $userlevels_list->RightColumnClass ?>"><div <?php echo $userlevels_list->userlevelid->cellAttributes() ?>>
-<span id="el<?php echo $userlevels_list->RowCount ?>_userlevels_userlevelid">
-<span<?php echo $userlevels_list->userlevelid->viewAttributes() ?>><?php echo $userlevels_list->userlevelid->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($userlevels_list->userlevelname->Visible) { // userlevelname ?>
-		<?php if ($userlevels->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $userlevels_list->TableLeftColumnClass ?>"><span class="userlevels_userlevelname">
-<?php if ($userlevels_list->isExport() || $userlevels_list->SortUrl($userlevels_list->userlevelname) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $userlevels_list->userlevelname->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $userlevels_list->SortUrl($userlevels_list->userlevelname) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $userlevels_list->userlevelname->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($userlevels_list->userlevelname->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($userlevels_list->userlevelname->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $userlevels_list->userlevelname->cellAttributes() ?>>
-<span id="el<?php echo $userlevels_list->RowCount ?>_userlevels_userlevelname">
-<span<?php echo $userlevels_list->userlevelname->viewAttributes() ?>><?php echo $userlevels_list->userlevelname->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row userlevels_userlevelname">
-			<label class="<?php echo $userlevels_list->LeftColumnClass ?>"><?php echo $userlevels_list->userlevelname->caption() ?></label>
-			<div class="<?php echo $userlevels_list->RightColumnClass ?>"><div <?php echo $userlevels_list->userlevelname->cellAttributes() ?>>
-<span id="el<?php echo $userlevels_list->RowCount ?>_userlevels_userlevelname">
-<span<?php echo $userlevels_list->userlevelname->viewAttributes() ?>><?php echo $userlevels_list->userlevelname->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($userlevels->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$userlevels_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $userlevels->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$userlevels_list->ListOptions->render("body", "bottom", $userlevels_list->RowCount);
+// Render list options (body, left)
+$userlevels_list->ListOptions->render("body", "left", $userlevels_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($userlevels_list->userlevelid->Visible) { // userlevelid ?>
+		<td data-name="userlevelid" <?php echo $userlevels_list->userlevelid->cellAttributes() ?>>
+<span id="el<?php echo $userlevels_list->RowCount ?>_userlevels_userlevelid">
+<span<?php echo $userlevels_list->userlevelid->viewAttributes() ?>><?php echo $userlevels_list->userlevelid->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($userlevels_list->userlevelname->Visible) { // userlevelname ?>
+		<td data-name="userlevelname" <?php echo $userlevels_list->userlevelname->cellAttributes() ?>>
+<span id="el<?php echo $userlevels_list->RowCount ?>_userlevels_userlevelname">
+<span<?php echo $userlevels_list->userlevelname->viewAttributes() ?>><?php echo $userlevels_list->userlevelname->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$userlevels_list->ListOptions->render("body", "right", $userlevels_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$userlevels_list->isGridAdd())
 		$userlevels_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$userlevels->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -287,7 +262,7 @@ if ($userlevels_list->Recordset)
 	$userlevels_list->Recordset->Close();
 ?>
 <?php if (!$userlevels_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$userlevels_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $userlevels_list->Pager->render() ?>
@@ -299,7 +274,7 @@ if ($userlevels_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($userlevels_list->TotalRecords == 0 && !$userlevels->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

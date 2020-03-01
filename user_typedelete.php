@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $user_type_delete = new user_type_delete();
 $user_type_delete->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -76,6 +75,9 @@ $user_type_delete->showMessage();
 <?php if ($user_type_delete->user_type_name->Visible) { // user_type_name ?>
 		<th class="<?php echo $user_type_delete->user_type_name->headerCellClass() ?>"><span id="elh_user_type_user_type_name" class="user_type_user_type_name"><?php echo $user_type_delete->user_type_name->caption() ?></span></th>
 <?php } ?>
+<?php if ($user_type_delete->user_type_desc->Visible) { // user_type_desc ?>
+		<th class="<?php echo $user_type_delete->user_type_desc->headerCellClass() ?>"><span id="elh_user_type_user_type_desc" class="user_type_user_type_desc"><?php echo $user_type_delete->user_type_desc->caption() ?></span></th>
+<?php } ?>
 	</tr>
 	</thead>
 	<tbody>
@@ -108,6 +110,13 @@ while (!$user_type_delete->Recordset->EOF) {
 		<td <?php echo $user_type_delete->user_type_name->cellAttributes() ?>>
 <span id="el<?php echo $user_type_delete->RowCount ?>_user_type_user_type_name" class="user_type_user_type_name">
 <span<?php echo $user_type_delete->user_type_name->viewAttributes() ?>><?php echo $user_type_delete->user_type_name->getViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($user_type_delete->user_type_desc->Visible) { // user_type_desc ?>
+		<td <?php echo $user_type_delete->user_type_desc->cellAttributes() ?>>
+<span id="el<?php echo $user_type_delete->RowCount ?>_user_type_user_type_desc" class="user_type_user_type_desc">
+<span<?php echo $user_type_delete->user_type_desc->viewAttributes() ?>><?php echo $user_type_delete->user_type_desc->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

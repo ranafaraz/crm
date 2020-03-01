@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class sms_template_delete extends sms_template
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'sms_template';
@@ -325,7 +325,6 @@ class sms_template_delete extends sms_template
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class sms_template_delete extends sms_template
 			$GLOBALS["Table"] = &$GLOBALS["sms_template"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class sms_template_delete extends sms_template
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class sms_template_delete extends sms_template
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,28 +539,12 @@ class sms_template_delete extends sms_template
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("sms_templatelist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->sms_temp_id->setVisibility();
 		$this->sms_temp_branch_id->setVisibility();
 		$this->sms_temp_caption->setVisibility();
-		$this->sms_temp_msg->Visible = FALSE;
+		$this->sms_temp_msg->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -593,9 +566,8 @@ class sms_template_delete extends sms_template
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->sms_temp_branch_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -751,30 +723,17 @@ class sms_template_delete extends sms_template
 			$this->sms_temp_id->ViewCustomAttributes = "";
 
 			// sms_temp_branch_id
-			$curVal = strval($this->sms_temp_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->lookupCacheOption($curVal);
-				if ($this->sms_temp_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->sms_temp_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->sms_temp_branch_id->ViewValue = NULL;
-			}
+			$this->sms_temp_branch_id->ViewValue = $this->sms_temp_branch_id->CurrentValue;
+			$this->sms_temp_branch_id->ViewValue = FormatNumber($this->sms_temp_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->sms_temp_branch_id->ViewCustomAttributes = "";
 
 			// sms_temp_caption
 			$this->sms_temp_caption->ViewValue = $this->sms_temp_caption->CurrentValue;
 			$this->sms_temp_caption->ViewCustomAttributes = "";
+
+			// sms_temp_msg
+			$this->sms_temp_msg->ViewValue = $this->sms_temp_msg->CurrentValue;
+			$this->sms_temp_msg->ViewCustomAttributes = "";
 
 			// sms_temp_id
 			$this->sms_temp_id->LinkCustomAttributes = "";
@@ -790,6 +749,11 @@ class sms_template_delete extends sms_template
 			$this->sms_temp_caption->LinkCustomAttributes = "";
 			$this->sms_temp_caption->HrefValue = "";
 			$this->sms_temp_caption->TooltipValue = "";
+
+			// sms_temp_msg
+			$this->sms_temp_msg->LinkCustomAttributes = "";
+			$this->sms_temp_msg->HrefValue = "";
+			$this->sms_temp_msg->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
@@ -801,10 +765,6 @@ class sms_template_delete extends sms_template
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -912,8 +872,6 @@ class sms_template_delete extends sms_template
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_sms_temp_branch_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -934,8 +892,6 @@ class sms_template_delete extends sms_template
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_sms_temp_branch_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

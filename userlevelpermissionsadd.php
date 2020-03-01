@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $userlevelpermissions_add = new userlevelpermissions_add();
 $userlevelpermissions_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -143,7 +142,7 @@ $userlevelpermissions_add->showMessage();
 		<label id="elh_userlevelpermissions__tablename" for="x__tablename" class="<?php echo $userlevelpermissions_add->LeftColumnClass ?>"><?php echo $userlevelpermissions_add->_tablename->caption() ?><?php echo $userlevelpermissions_add->_tablename->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $userlevelpermissions_add->RightColumnClass ?>"><div <?php echo $userlevelpermissions_add->_tablename->cellAttributes() ?>>
 <span id="el_userlevelpermissions__tablename">
-<input type="text" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" size="30" maxlength="80" placeholder="<?php echo HtmlEncode($userlevelpermissions_add->_tablename->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions_add->_tablename->EditValue ?>"<?php echo $userlevelpermissions_add->_tablename->editAttributes() ?>>
+<input type="text" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" size="30" maxlength="191" placeholder="<?php echo HtmlEncode($userlevelpermissions_add->_tablename->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions_add->_tablename->EditValue ?>"<?php echo $userlevelpermissions_add->_tablename->editAttributes() ?>>
 </span>
 <?php echo $userlevelpermissions_add->_tablename->CustomMsg ?></div></div>
 	</div>

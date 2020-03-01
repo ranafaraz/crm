@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class city_view extends city
 	public $PageID = "view";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'city';
@@ -357,7 +357,6 @@ class city_view extends city
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -391,10 +390,6 @@ class city_view extends city
 		$this->ExportCsvUrl = $this->pageUrl() . "export=csv" . $keyUrl;
 		$this->ExportPdfUrl = $this->pageUrl() . "export=pdf" . $keyUrl;
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'view');
@@ -413,9 +408,6 @@ class city_view extends city
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 
 		// Export options
 		$this->ExportOptions = new ListOptions("div");
@@ -592,9 +584,6 @@ class city_view extends city
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -629,68 +618,8 @@ class city_view extends city
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canView()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("citylist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
-
-		// Get export parameters
-		$custom = "";
-		if (Param("export") !== NULL) {
-			$this->Export = Param("export");
-			$custom = Param("custom", "");
-		} elseif (IsPost()) {
-			if (Post("exporttype") !== NULL)
-				$this->Export = Post("exporttype");
-			$custom = Post("custom", "");
-		} elseif (Get("cmd") == "json") {
-			$this->Export = Get("cmd");
-		} else {
-			$this->setExportReturnUrl(CurrentUrl());
-		}
-		$ExportFileName = $this->TableVar; // Get export file, used in header
-		if (Get("city_id") !== NULL) {
-			if ($ExportFileName != "")
-				$ExportFileName .= "_";
-			$ExportFileName .= Get("city_id");
-		}
-
-		// Get custom export parameters
-		if ($this->isExport() && $custom != "") {
-			$this->CustomExport = $this->Export;
-			$this->Export = "print";
-		}
-		$CustomExportType = $this->CustomExport;
-		$ExportType = $this->Export; // Get export parameter, used in header
-
-		// Update Export URLs
-		if (Config("USE_PHPEXCEL"))
-			$this->ExportExcelCustom = FALSE;
-		if ($this->ExportExcelCustom)
-			$this->ExportExcelUrl .= "&amp;custom=1";
-		if (Config("USE_PHPWORD"))
-			$this->ExportWordCustom = FALSE;
-		if ($this->ExportWordCustom)
-			$this->ExportWordUrl .= "&amp;custom=1";
-		if ($this->ExportPdfCustom)
-			$this->ExportPdfUrl .= "&amp;custom=1";
 		$this->CurrentAction = Param("action"); // Set up current action
-
-		// Setup export options
-		$this->setupExportOptions();
 		$this->city_id->setVisibility();
 		$this->city_tehsil_id->setVisibility();
 		$this->city_name->setVisibility();
@@ -715,9 +644,8 @@ class city_view extends city
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->city_tehsil_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 
@@ -739,53 +667,30 @@ class city_view extends city
 				$this->city_id->setFormValue(Route(2));
 				$this->RecKey["city_id"] = $this->city_id->FormValue;
 			} else {
-				$loadCurrentRecord = TRUE;
+				$returnUrl = "citylist.php"; // Return to list
 			}
 
 			// Get action
 			$this->CurrentAction = "show"; // Display
 			switch ($this->CurrentAction) {
 				case "show": // Get a record to display
-					$this->StartRecord = 1; // Initialize start position
-					if ($this->Recordset = $this->loadRecordset()) // Load records
-						$this->TotalRecords = $this->Recordset->RecordCount(); // Get record count
-					if ($this->TotalRecords <= 0) { // No record found
-						if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "")
-							$this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
-						$this->terminate("citylist.php"); // Return to list page
-					} elseif ($loadCurrentRecord) { // Load current record position
-						$this->setupStartRecord(); // Set up start record position
 
-						// Point to current record
-						if ($this->StartRecord <= $this->TotalRecords) {
-							$matchRecord = TRUE;
-							$this->Recordset->move($this->StartRecord - 1);
-						}
-					} else { // Match key values
-						while (!$this->Recordset->EOF) {
-							if (SameString($this->city_id->CurrentValue, $this->Recordset->fields('city_id'))) {
-								$this->setStartRecordNumber($this->StartRecord); // Save record position
-								$matchRecord = TRUE;
-								break;
-							} else {
-								$this->StartRecord++;
-								$this->Recordset->moveNext();
-							}
-						}
+					// Load record based on key
+					if (IsApi()) {
+						$filter = $this->getRecordFilter();
+						$this->CurrentFilter = $filter;
+						$sql = $this->getCurrentSql();
+						$conn = $this->getConnection();
+						$this->Recordset = LoadRecordset($sql, $conn);
+						$res = $this->Recordset && !$this->Recordset->EOF;
+					} else {
+						$res = $this->loadRow();
 					}
-					if (!$matchRecord) {
+					if (!$res) { // Load record based on key
 						if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "")
 							$this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
 						$returnUrl = "citylist.php"; // No matching record, return to list
-					} else {
-						$this->loadRowValues($this->Recordset); // Load row values
 					}
-			}
-
-			// Export data only
-			if (!$this->CustomExport && in_array($this->Export, array_keys(Config("EXPORT_CLASSES")))) {
-				$this->exportData();
-				$this->terminate();
 			}
 		} else {
 			$returnUrl = "citylist.php"; // Not page request, return to list
@@ -811,9 +716,6 @@ class city_view extends city
 			WriteJson(["success" => TRUE, $this->TableVar => $rows]);
 			$this->terminate(TRUE);
 		}
-
-		// Set up pager
-		$this->Pager = new NumericPager($this->StartRecord, $this->DisplayRecords, $this->TotalRecords, "", $this->RecordRange, $this->AutoHidePager);
 	}
 
 	// Set up other options
@@ -830,7 +732,7 @@ class city_view extends city
 			$item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"#\" onclick=\"return ew.modalDialogShow({lnk:this,url:'" . HtmlEncode($this->AddUrl) . "'});\">" . $Language->phrase("ViewPageAddLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("ViewPageAddLink") . "</a>";
-		$item->Visible = ($this->AddUrl != "" && $Security->canAdd());
+		$item->Visible = ($this->AddUrl != "");
 
 		// Edit
 		$item = &$option->add("edit");
@@ -839,7 +741,7 @@ class city_view extends city
 			$item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"#\" onclick=\"return ew.modalDialogShow({lnk:this,url:'" . HtmlEncode($this->EditUrl) . "'});\">" . $Language->phrase("ViewPageEditLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("ViewPageEditLink") . "</a>";
-		$item->Visible = ($this->EditUrl != "" && $Security->canEdit());
+		$item->Visible = ($this->EditUrl != "");
 
 		// Copy
 		$item = &$option->add("copy");
@@ -848,7 +750,7 @@ class city_view extends city
 			$item->Body = "<a class=\"ew-action ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"#\" onclick=\"return ew.modalDialogShow({lnk:this,btn:'AddBtn',url:'" . HtmlEncode($this->CopyUrl) . "'});\">" . $Language->phrase("ViewPageCopyLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode($this->CopyUrl) . "\">" . $Language->phrase("ViewPageCopyLink") . "</a>";
-		$item->Visible = ($this->CopyUrl != "" && $Security->canAdd());
+		$item->Visible = ($this->CopyUrl != "");
 
 		// Delete
 		$item = &$option->add("delete");
@@ -856,7 +758,7 @@ class city_view extends city
 			$item->Body = "<a onclick=\"return ew.confirmDelete(this);\" class=\"ew-action ew-delete\" title=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" href=\"" . HtmlEncode(UrlAddQuery($this->DeleteUrl, "action=1")) . "\">" . $Language->phrase("ViewPageDeleteLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-delete\" title=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" href=\"" . HtmlEncode($this->DeleteUrl) . "\">" . $Language->phrase("ViewPageDeleteLink") . "</a>";
-		$item->Visible = ($this->DeleteUrl != "" && $Security->canDelete());
+		$item->Visible = ($this->DeleteUrl != "");
 
 		// Set up action default
 		$option = $options["action"];
@@ -866,33 +768,6 @@ class city_view extends city
 		$item = &$option->add($option->GroupOptionName);
 		$item->Body = "";
 		$item->Visible = FALSE;
-	}
-
-	// Load recordset
-	public function loadRecordset($offset = -1, $rowcnt = -1)
-	{
-
-		// Load List page SQL
-		$sql = $this->getListSql();
-		$conn = $this->getConnection();
-
-		// Load recordset
-		$dbtype = GetConnectionType($this->Dbid);
-		if ($this->UseSelectLimit) {
-			$conn->raiseErrorFn = Config("ERROR_FUNC");
-			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
-			} else {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
-			}
-			$conn->raiseErrorFn = "";
-		} else {
-			$rs = LoadRecordset($sql, $conn);
-		}
-
-		// Call Recordset Selected event
-		$this->Recordset_Selected($rs);
-		return $rs;
 	}
 
 	// Load row based on key values
@@ -932,11 +807,6 @@ class city_view extends city
 			return;
 		$this->city_id->setDbValue($row['city_id']);
 		$this->city_tehsil_id->setDbValue($row['city_tehsil_id']);
-		if (array_key_exists('EV__city_tehsil_id', $rs->fields)) {
-			$this->city_tehsil_id->VirtualValue = $rs->fields('EV__city_tehsil_id'); // Set up virtual field value
-		} else {
-			$this->city_tehsil_id->VirtualValue = ""; // Clear value
-		}
 		$this->city_name->setDbValue($row['city_name']);
 	}
 
@@ -975,33 +845,11 @@ class city_view extends city
 
 			// city_id
 			$this->city_id->ViewValue = $this->city_id->CurrentValue;
-			$this->city_id->CssClass = "font-weight-bold";
 			$this->city_id->ViewCustomAttributes = "";
 
 			// city_tehsil_id
-			if ($this->city_tehsil_id->VirtualValue != "") {
-				$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->VirtualValue;
-			} else {
-				$curVal = strval($this->city_tehsil_id->CurrentValue);
-				if ($curVal != "") {
-					$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->lookupCacheOption($curVal);
-					if ($this->city_tehsil_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`tehsil_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->city_tehsil_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->city_tehsil_id->ViewValue = NULL;
-				}
-			}
+			$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->CurrentValue;
+			$this->city_tehsil_id->ViewValue = FormatNumber($this->city_tehsil_id->ViewValue, 0, -2, -2, -2);
 			$this->city_tehsil_id->ViewCustomAttributes = "";
 
 			// city_name
@@ -1029,194 +877,6 @@ class city_view extends city
 			$this->Row_Rendered();
 	}
 
-	// Get export HTML tag
-	protected function getExportTag($type, $custom = FALSE)
-	{
-		global $Language;
-		if (SameText($type, "excel")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" onclick=\"return ew.export(document.fcityview, '" . $this->ExportExcelUrl . "', 'excel', true);\">" . $Language->phrase("ExportToExcel") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportExcelUrl . "\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\">" . $Language->phrase("ExportToExcel") . "</a>";
-		} elseif (SameText($type, "word")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" onclick=\"return ew.export(document.fcityview, '" . $this->ExportWordUrl . "', 'word', true);\">" . $Language->phrase("ExportToWord") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportWordUrl . "\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\">" . $Language->phrase("ExportToWord") . "</a>";
-		} elseif (SameText($type, "pdf")) {
-			if ($custom)
-				return "<a href=\"#\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" onclick=\"return ew.export(document.fcityview, '" . $this->ExportPdfUrl . "', 'pdf', true);\">" . $Language->phrase("ExportToPDF") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportPdfUrl . "\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\">" . $Language->phrase("ExportToPDF") . "</a>";
-		} elseif (SameText($type, "html")) {
-			return "<a href=\"" . $this->ExportHtmlUrl . "\" class=\"ew-export-link ew-html\" title=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\">" . $Language->phrase("ExportToHtml") . "</a>";
-		} elseif (SameText($type, "xml")) {
-			return "<a href=\"" . $this->ExportXmlUrl . "\" class=\"ew-export-link ew-xml\" title=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\">" . $Language->phrase("ExportToXml") . "</a>";
-		} elseif (SameText($type, "csv")) {
-			return "<a href=\"" . $this->ExportCsvUrl . "\" class=\"ew-export-link ew-csv\" title=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\">" . $Language->phrase("ExportToCsv") . "</a>";
-		} elseif (SameText($type, "email")) {
-			$url = $custom ? ",url:'" . $this->pageUrl() . "export=email&amp;custom=1'" : "";
-			return '<button id="emf_city" class="ew-export-link ew-email" title="' . $Language->phrase("ExportToEmailText") . '" data-caption="' . $Language->phrase("ExportToEmailText") . '" onclick="ew.emailDialogShow({lnk:\'emf_city\', hdr:ew.language.phrase(\'ExportToEmailText\'), f:document.fcityview, key:' . ArrayToJsonAttribute($this->RecKey) . ', sel:false' . $url . '});">' . $Language->phrase("ExportToEmail") . '</button>';
-		} elseif (SameText($type, "print")) {
-			return "<a href=\"" . $this->ExportPrintUrl . "\" class=\"ew-export-link ew-print\" title=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\">" . $Language->phrase("PrinterFriendly") . "</a>";
-		}
-	}
-
-	// Set up export options
-	protected function setupExportOptions()
-	{
-		global $Language;
-
-		// Printer friendly
-		$item = &$this->ExportOptions->add("print");
-		$item->Body = $this->getExportTag("print");
-		$item->Visible = TRUE;
-
-		// Export to Excel
-		$item = &$this->ExportOptions->add("excel");
-		$item->Body = $this->getExportTag("excel");
-		$item->Visible = TRUE;
-
-		// Export to Word
-		$item = &$this->ExportOptions->add("word");
-		$item->Body = $this->getExportTag("word");
-		$item->Visible = FALSE;
-
-		// Export to Html
-		$item = &$this->ExportOptions->add("html");
-		$item->Body = $this->getExportTag("html");
-		$item->Visible = FALSE;
-
-		// Export to Xml
-		$item = &$this->ExportOptions->add("xml");
-		$item->Body = $this->getExportTag("xml");
-		$item->Visible = FALSE;
-
-		// Export to Csv
-		$item = &$this->ExportOptions->add("csv");
-		$item->Body = $this->getExportTag("csv");
-		$item->Visible = FALSE;
-
-		// Export to Pdf
-		$item = &$this->ExportOptions->add("pdf");
-		$item->Body = $this->getExportTag("pdf");
-		$item->Visible = TRUE;
-
-		// Export to Email
-		$item = &$this->ExportOptions->add("email");
-		$item->Body = $this->getExportTag("email");
-		$item->Visible = FALSE;
-
-		// Drop down button for export
-		$this->ExportOptions->UseButtonGroup = TRUE;
-		$this->ExportOptions->UseDropDownButton = FALSE;
-		if ($this->ExportOptions->UseButtonGroup && IsMobile())
-			$this->ExportOptions->UseDropDownButton = TRUE;
-		$this->ExportOptions->DropDownButtonPhrase = $Language->phrase("ButtonExport");
-
-		// Add group option item
-		$item = &$this->ExportOptions->add($this->ExportOptions->GroupOptionName);
-		$item->Body = "";
-		$item->Visible = FALSE;
-
-		// Hide options for export
-		if ($this->isExport())
-			$this->ExportOptions->hideAllOptions();
-	}
-
-	/**
-	 * Export data in HTML/CSV/Word/Excel/XML/Email/PDF format
-	 *
-	 * @param boolean $return Return the data rather than output it
-	 * @return mixed
-	 */
-	public function exportData($return = FALSE)
-	{
-		global $Language;
-		$utf8 = SameText(Config("PROJECT_CHARSET"), "utf-8");
-		$selectLimit = FALSE;
-
-		// Load recordset
-		if ($selectLimit) {
-			$this->TotalRecords = $this->listRecordCount();
-		} else {
-			if (!$this->Recordset)
-				$this->Recordset = $this->loadRecordset();
-			$rs = &$this->Recordset;
-			if ($rs)
-				$this->TotalRecords = $rs->RecordCount();
-		}
-		$this->StartRecord = 1;
-		$this->setupStartRecord(); // Set up start record position
-
-		// Set the last record to display
-		if ($this->DisplayRecords <= 0) {
-			$this->StopRecord = $this->TotalRecords;
-		} else {
-			$this->StopRecord = $this->StartRecord + $this->DisplayRecords - 1;
-		}
-		$this->ExportDoc = GetExportDocument($this, "v");
-		$doc = &$this->ExportDoc;
-		if (!$doc)
-			$this->setFailureMessage($Language->phrase("ExportClassNotFound")); // Export class not found
-		if (!$rs || !$doc) {
-			RemoveHeader("Content-Type"); // Remove header
-			RemoveHeader("Content-Disposition");
-			$this->showMessage();
-			return;
-		}
-		if ($selectLimit) {
-			$this->StartRecord = 1;
-			$this->StopRecord = $this->DisplayRecords <= 0 ? $this->TotalRecords : $this->DisplayRecords;
-		}
-
-		// Call Page Exporting server event
-		$this->ExportDoc->ExportCustom = !$this->Page_Exporting();
-		$header = $this->PageHeader;
-		$this->Page_DataRendering($header);
-		$doc->Text .= $header;
-		$this->exportDocument($doc, $rs, $this->StartRecord, $this->StopRecord, "view");
-		$footer = $this->PageFooter;
-		$this->Page_DataRendered($footer);
-		$doc->Text .= $footer;
-
-		// Close recordset
-		$rs->close();
-
-		// Call Page Exported server event
-		$this->Page_Exported();
-
-		// Export header and footer
-		$doc->exportHeaderAndFooter();
-
-		// Clean output buffer (without destroying output buffer)
-		$buffer = ob_get_contents(); // Save the output buffer
-		if (!Config("DEBUG") && $buffer)
-			ob_clean();
-
-		// Write debug message if enabled
-		if (Config("DEBUG") && !$this->isExport("pdf"))
-			echo GetDebugMessage();
-
-		// Output data
-		if ($this->isExport("email")) {
-
-			// Export-to-email disabled
-		} else {
-			$doc->export();
-			if ($return) {
-				RemoveHeader("Content-Type"); // Remove header
-				RemoveHeader("Content-Disposition");
-				$content = ob_get_contents();
-				if ($content)
-					ob_clean();
-				if ($buffer)
-					echo $buffer; // Resume the output buffer
-				return $content;
-			}
-		}
-	}
-
 	// Set up Breadcrumb
 	protected function setupBreadcrumb()
 	{
@@ -1242,8 +902,6 @@ class city_view extends city
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_city_tehsil_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1264,8 +922,6 @@ class city_view extends city
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_city_tehsil_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

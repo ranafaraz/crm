@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * File Viewer class
@@ -66,11 +66,6 @@ class FileViewer
 			$fn = Decrypt($fn, $key); // File path is always encrypted
 		} else { // DO NOT support external request for file path
 			$fn = "";
-		}
-
-		// Check security
-		if ($validRequest && $tableName != "") {
-			$validRequest = $Security->isLoggedIn(); // Logged in
 		}
 
 		// Reject invalid request

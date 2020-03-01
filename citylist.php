@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $city_list = new city_list();
 $city_list->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,7 +85,6 @@ loadjs.ready("head", function() {
 <?php
 $city_list->renderOtherOptions();
 ?>
-<?php if ($Security->CanSearch()) { ?>
 <?php if (!$city_list->isExport() && !$city->CurrentAction) { ?>
 <form name="fcitylistsrch" id="fcitylistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <div id="fcitylistsrch-search-panel" class="<?php echo $city_list->SearchPanelClass ?>">
@@ -113,33 +111,68 @@ $city_list->renderOtherOptions();
 </div><!-- /.ew-search-panel -->
 </form>
 <?php } ?>
-<?php } ?>
 <?php $city_list->showPageHeader(); ?>
 <?php
 $city_list->showMessage();
 ?>
 <?php if ($city_list->TotalRecords > 0 || $city->CurrentAction) { ?>
-<div class="ew-multi-column-grid">
-<?php if (!$city_list->isExport()) { ?>
-<div>
-<?php if (!$city_list->isGridAdd()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php echo $city_list->Pager->render() ?>
-</form>
-<?php } ?>
-<div class="ew-list-other-options">
-<?php $city_list->OtherOptions->render("body") ?>
-</div>
-<div class="clearfix"></div>
-</div>
-<?php } ?>
-<form name="fcitylist" id="fcitylist" class="ew-horizontal ew-form ew-list-form ew-multi-column-form" action="<?php echo CurrentPageName() ?>" method="post">
+<div class="card ew-card ew-grid<?php if ($city_list->isAddOrEdit()) { ?> ew-grid-add-edit<?php } ?> city">
+<form name="fcitylist" id="fcitylist" class="form-inline ew-form ew-list-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($Page->CheckToken) { ?>
 <input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="city">
-<div class="row ew-multi-column-row">
+<div id="gmp_city" class="<?php echo ResponsiveTableClass() ?>card-body ew-grid-middle-panel">
 <?php if ($city_list->TotalRecords > 0 || $city_list->isGridEdit()) { ?>
+<table id="tbl_citylist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+<?php
+
+// Header row
+$city->RowType = ROWTYPE_HEADER;
+
+// Render list options
+$city_list->renderListOptions();
+
+// Render list options (header, left)
+$city_list->ListOptions->render("header", "left");
+?>
+<?php if ($city_list->city_id->Visible) { // city_id ?>
+	<?php if ($city_list->SortUrl($city_list->city_id) == "") { ?>
+		<th data-name="city_id" class="<?php echo $city_list->city_id->headerCellClass() ?>"><div id="elh_city_city_id" class="city_city_id"><div class="ew-table-header-caption"><?php echo $city_list->city_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="city_id" class="<?php echo $city_list->city_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $city_list->SortUrl($city_list->city_id) ?>', 1);"><div id="elh_city_city_id" class="city_city_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $city_list->city_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($city_list->city_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($city_list->city_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($city_list->city_tehsil_id->Visible) { // city_tehsil_id ?>
+	<?php if ($city_list->SortUrl($city_list->city_tehsil_id) == "") { ?>
+		<th data-name="city_tehsil_id" class="<?php echo $city_list->city_tehsil_id->headerCellClass() ?>"><div id="elh_city_city_tehsil_id" class="city_city_tehsil_id"><div class="ew-table-header-caption"><?php echo $city_list->city_tehsil_id->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="city_tehsil_id" class="<?php echo $city_list->city_tehsil_id->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $city_list->SortUrl($city_list->city_tehsil_id) ?>', 1);"><div id="elh_city_city_tehsil_id" class="city_city_tehsil_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $city_list->city_tehsil_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($city_list->city_tehsil_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($city_list->city_tehsil_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php if ($city_list->city_name->Visible) { // city_name ?>
+	<?php if ($city_list->SortUrl($city_list->city_name) == "") { ?>
+		<th data-name="city_name" class="<?php echo $city_list->city_name->headerCellClass() ?>"><div id="elh_city_city_name" class="city_city_name"><div class="ew-table-header-caption"><?php echo $city_list->city_name->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="city_name" class="<?php echo $city_list->city_name->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event, '<?php echo $city_list->SortUrl($city_list->city_name) ?>', 1);"><div id="elh_city_city_name" class="city_city_name">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $city_list->city_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($city_list->city_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($city_list->city_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
+<?php
+
+// Render list options (header, right)
+$city_list->ListOptions->render("header", "right");
+?>
+	</tr>
+</thead>
+<tbody>
 <?php
 if ($city_list->ExportAll && $city_list->isExport()) {
 	$city_list->StopRecord = $city_list->TotalRecords;
@@ -160,6 +193,11 @@ if ($city_list->Recordset && !$city_list->Recordset->EOF) {
 } elseif (!$city->AllowAddDeleteRow && $city_list->StopRecord == 0) {
 	$city_list->StopRecord = $city->GridAddRowCount;
 }
+
+// Initialize aggregate
+$city->RowType = ROWTYPE_AGGREGATEINIT;
+$city->resetAttributes();
+$city_list->renderRow();
 while ($city_list->RecordCount < $city_list->StopRecord) {
 	$city_list->RecordCount++;
 	if ($city_list->RecordCount >= $city_list->StartRecord) {
@@ -186,125 +224,49 @@ while ($city_list->RecordCount < $city_list->StopRecord) {
 		// Render list options
 		$city_list->renderListOptions();
 ?>
-<div class="<?php echo $city_list->getMultiColumnClass() ?>" <?php echo $city->rowAttributes() ?>>
-	<div class="card ew-card">
-	<div class="card-body">
-	<?php if ($city->RowType == ROWTYPE_VIEW) { // View record ?>
-	<table class="table table-striped table-sm ew-view-table">
-	<?php } ?>
-	<?php if ($city_list->city_id->Visible) { // city_id ?>
-		<?php if ($city->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $city_list->TableLeftColumnClass ?>"><span class="city_city_id">
-<?php if ($city_list->isExport() || $city_list->SortUrl($city_list->city_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $city_list->city_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $city_list->SortUrl($city_list->city_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $city_list->city_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($city_list->city_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($city_list->city_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $city_list->city_id->cellAttributes() ?>>
-<span id="el<?php echo $city_list->RowCount ?>_city_city_id">
-<span<?php echo $city_list->city_id->viewAttributes() ?>><?php echo $city_list->city_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row city_city_id">
-			<label class="<?php echo $city_list->LeftColumnClass ?>"><?php echo $city_list->city_id->caption() ?></label>
-			<div class="<?php echo $city_list->RightColumnClass ?>"><div <?php echo $city_list->city_id->cellAttributes() ?>>
-<span id="el<?php echo $city_list->RowCount ?>_city_city_id">
-<span<?php echo $city_list->city_id->viewAttributes() ?>><?php echo $city_list->city_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($city_list->city_tehsil_id->Visible) { // city_tehsil_id ?>
-		<?php if ($city->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $city_list->TableLeftColumnClass ?>"><span class="city_city_tehsil_id">
-<?php if ($city_list->isExport() || $city_list->SortUrl($city_list->city_tehsil_id) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $city_list->city_tehsil_id->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $city_list->SortUrl($city_list->city_tehsil_id) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $city_list->city_tehsil_id->caption() ?></span><span class="ew-table-header-sort"><?php if ($city_list->city_tehsil_id->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($city_list->city_tehsil_id->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $city_list->city_tehsil_id->cellAttributes() ?>>
-<span id="el<?php echo $city_list->RowCount ?>_city_city_tehsil_id">
-<span<?php echo $city_list->city_tehsil_id->viewAttributes() ?>><?php echo $city_list->city_tehsil_id->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row city_city_tehsil_id">
-			<label class="<?php echo $city_list->LeftColumnClass ?>"><?php echo $city_list->city_tehsil_id->caption() ?></label>
-			<div class="<?php echo $city_list->RightColumnClass ?>"><div <?php echo $city_list->city_tehsil_id->cellAttributes() ?>>
-<span id="el<?php echo $city_list->RowCount ?>_city_city_tehsil_id">
-<span<?php echo $city_list->city_tehsil_id->viewAttributes() ?>><?php echo $city_list->city_tehsil_id->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($city_list->city_name->Visible) { // city_name ?>
-		<?php if ($city->RowType == ROWTYPE_VIEW) { // View record ?>
-		<tr>
-			<td class="ew-table-header <?php echo $city_list->TableLeftColumnClass ?>"><span class="city_city_name">
-<?php if ($city_list->isExport() || $city_list->SortUrl($city_list->city_name) == "") { ?>
-				<div class="ew-table-header-caption"><?php echo $city_list->city_name->caption() ?></div>
-<?php } else { ?>
-				<div class="ew-pointer" onclick="ew.sort(event, '<?php echo $city_list->SortUrl($city_list->city_name) ?>', 1);">
-				<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $city_list->city_name->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($city_list->city_name->getSort() == "ASC") { ?><i class="fas fa-sort-up"></i><?php } elseif ($city_list->city_name->getSort() == "DESC") { ?><i class="fas fa-sort-down"></i><?php } ?></span></div>
-				</div>
-<?php } ?>
-			</span></td>
-			<td <?php echo $city_list->city_name->cellAttributes() ?>>
-<span id="el<?php echo $city_list->RowCount ?>_city_city_name">
-<span<?php echo $city_list->city_name->viewAttributes() ?>><?php echo $city_list->city_name->getViewValue() ?></span>
-</span>
-</td>
-		</tr>
-		<?php } else { // Add/edit record ?>
-		<div class="form-group row city_city_name">
-			<label class="<?php echo $city_list->LeftColumnClass ?>"><?php echo $city_list->city_name->caption() ?></label>
-			<div class="<?php echo $city_list->RightColumnClass ?>"><div <?php echo $city_list->city_name->cellAttributes() ?>>
-<span id="el<?php echo $city_list->RowCount ?>_city_city_name">
-<span<?php echo $city_list->city_name->viewAttributes() ?>><?php echo $city_list->city_name->getViewValue() ?></span>
-</span>
-</div></div>
-		</div>
-		<?php } ?>
-	<?php } ?>
-	<?php if ($city->RowType == ROWTYPE_VIEW) { // View record ?>
-	</table>
-	<?php } ?>
-	</div><!-- /.card-body -->
-<?php if (!$city_list->isExport()) { ?>
-	<div class="card-footer">
-		<div class="ew-multi-column-list-option">
+	<tr <?php echo $city->rowAttributes() ?>>
 <?php
 
-// Render list options (body, bottom)
-$city_list->ListOptions->render("body", "bottom", $city_list->RowCount);
+// Render list options (body, left)
+$city_list->ListOptions->render("body", "left", $city_list->RowCount);
 ?>
-		</div><!-- /.ew-multi-column-list-option -->
-		<div class="clearfix"></div>
-	</div><!-- /.card-footer -->
-<?php } ?>
-	</div><!-- /.card -->
-</div><!-- /.col-* -->
+	<?php if ($city_list->city_id->Visible) { // city_id ?>
+		<td data-name="city_id" <?php echo $city_list->city_id->cellAttributes() ?>>
+<span id="el<?php echo $city_list->RowCount ?>_city_city_id">
+<span<?php echo $city_list->city_id->viewAttributes() ?>><?php echo $city_list->city_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($city_list->city_tehsil_id->Visible) { // city_tehsil_id ?>
+		<td data-name="city_tehsil_id" <?php echo $city_list->city_tehsil_id->cellAttributes() ?>>
+<span id="el<?php echo $city_list->RowCount ?>_city_city_tehsil_id">
+<span<?php echo $city_list->city_tehsil_id->viewAttributes() ?>><?php echo $city_list->city_tehsil_id->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($city_list->city_name->Visible) { // city_name ?>
+		<td data-name="city_name" <?php echo $city_list->city_name->cellAttributes() ?>>
+<span id="el<?php echo $city_list->RowCount ?>_city_city_name">
+<span<?php echo $city_list->city_name->viewAttributes() ?>><?php echo $city_list->city_name->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+<?php
+
+// Render list options (body, right)
+$city_list->ListOptions->render("body", "right", $city_list->RowCount);
+?>
+	</tr>
 <?php
 	}
 	if (!$city_list->isGridAdd())
 		$city_list->Recordset->moveNext();
 }
 ?>
+</tbody>
+</table><!-- /.ew-table -->
 <?php } ?>
-</div><!-- /.ew-multi-column-row -->
+</div><!-- /.ew-grid-middle-panel -->
 <?php if (!$city->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
 <?php } ?>
@@ -316,7 +278,7 @@ if ($city_list->Recordset)
 	$city_list->Recordset->Close();
 ?>
 <?php if (!$city_list->isExport()) { ?>
-<div>
+<div class="card-footer ew-grid-lower-panel">
 <?php if (!$city_list->isGridAdd()) { ?>
 <form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
 <?php echo $city_list->Pager->render() ?>
@@ -328,7 +290,7 @@ if ($city_list->Recordset)
 <div class="clearfix"></div>
 </div>
 <?php } ?>
-</div><!-- /.ew-multi-column-grid -->
+</div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($city_list->TotalRecords == 0 && !$city->CurrentAction) { // Show other options ?>
 <div class="ew-list-other-options">

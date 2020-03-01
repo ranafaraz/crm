@@ -1,4 +1,4 @@
-<?php namespace PHPMaker2020\dexdevs_crm; ?>
+<?php namespace PHPMaker2020\project1; ?>
 <?php
 
 /**
@@ -78,7 +78,7 @@ class user_type extends DbTable
 		$this->fields['user_type_name'] = &$this->user_type_name;
 
 		// user_type_desc
-		$this->user_type_desc = new DbField('user_type', 'user_type', 'x_user_type_desc', 'user_type_desc', '`user_type_desc`', '`user_type_desc`', 200, 100, -1, FALSE, '`user_type_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->user_type_desc = new DbField('user_type', 'user_type', 'x_user_type_desc', 'user_type_desc', '`user_type_desc`', '`user_type_desc`', 200, 100, -1, FALSE, '`user_type_desc`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->user_type_desc->Nullable = FALSE; // NOT NULL field
 		$this->user_type_desc->Required = TRUE; // Required field
 		$this->user_type_desc->Sortable = TRUE; // Allow sort
@@ -356,7 +356,7 @@ class user_type extends DbTable
 		}
 		$names = preg_replace('/,+$/', "", $names);
 		$values = preg_replace('/,+$/', "", $values);
-		return "INSERT INTO " . $this->UpdateTable . " ($names) VALUES ($values)";
+		return "INSERT INTO " . $this->UpdateTable . " (" . $names . ") VALUES (" . $values . ")";
 	}
 
 	// Insert
@@ -689,7 +689,6 @@ class user_type extends DbTable
 		// user_type_id
 
 		$this->user_type_id->ViewValue = $this->user_type_id->CurrentValue;
-		$this->user_type_id->CssClass = "font-weight-bold";
 		$this->user_type_id->ViewCustomAttributes = "";
 
 		// user_type_name
@@ -734,7 +733,6 @@ class user_type extends DbTable
 		$this->user_type_id->EditAttrs["class"] = "form-control";
 		$this->user_type_id->EditCustomAttributes = "";
 		$this->user_type_id->EditValue = $this->user_type_id->CurrentValue;
-		$this->user_type_id->CssClass = "font-weight-bold";
 		$this->user_type_id->ViewCustomAttributes = "";
 
 		// user_type_name
@@ -748,6 +746,8 @@ class user_type extends DbTable
 		// user_type_desc
 		$this->user_type_desc->EditAttrs["class"] = "form-control";
 		$this->user_type_desc->EditCustomAttributes = "";
+		if (!$this->user_type_desc->Raw)
+			$this->user_type_desc->CurrentValue = HtmlDecode($this->user_type_desc->CurrentValue);
 		$this->user_type_desc->EditValue = $this->user_type_desc->CurrentValue;
 		$this->user_type_desc->PlaceHolder = RemoveHtml($this->user_type_desc->caption());
 
@@ -786,6 +786,7 @@ class user_type extends DbTable
 				} else {
 					$doc->exportCaption($this->user_type_id);
 					$doc->exportCaption($this->user_type_name);
+					$doc->exportCaption($this->user_type_desc);
 				}
 				$doc->endExportRow();
 			}
@@ -823,6 +824,7 @@ class user_type extends DbTable
 					} else {
 						$doc->exportField($this->user_type_id);
 						$doc->exportField($this->user_type_name);
+						$doc->exportField($this->user_type_desc);
 					}
 					$doc->endExportRow($rowCnt);
 				}

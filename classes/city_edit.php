@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class city_edit extends city
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'city';
@@ -325,7 +325,6 @@ class city_edit extends city
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class city_edit extends city
 			$GLOBALS["Table"] = &$GLOBALS["city"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'edit');
@@ -369,9 +364,6 @@ class city_edit extends city
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class city_edit extends city
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class city_edit extends city
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -640,22 +626,6 @@ class city_edit extends city
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canEdit()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("citylist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -685,9 +655,8 @@ class city_edit extends city
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->city_tehsil_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -870,11 +839,6 @@ class city_edit extends city
 			return;
 		$this->city_id->setDbValue($row['city_id']);
 		$this->city_tehsil_id->setDbValue($row['city_tehsil_id']);
-		if (array_key_exists('EV__city_tehsil_id', $rs->fields)) {
-			$this->city_tehsil_id->VirtualValue = $rs->fields('EV__city_tehsil_id'); // Set up virtual field value
-		} else {
-			$this->city_tehsil_id->VirtualValue = ""; // Clear value
-		}
 		$this->city_name->setDbValue($row['city_name']);
 	}
 
@@ -930,33 +894,11 @@ class city_edit extends city
 
 			// city_id
 			$this->city_id->ViewValue = $this->city_id->CurrentValue;
-			$this->city_id->CssClass = "font-weight-bold";
 			$this->city_id->ViewCustomAttributes = "";
 
 			// city_tehsil_id
-			if ($this->city_tehsil_id->VirtualValue != "") {
-				$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->VirtualValue;
-			} else {
-				$curVal = strval($this->city_tehsil_id->CurrentValue);
-				if ($curVal != "") {
-					$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->lookupCacheOption($curVal);
-					if ($this->city_tehsil_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`tehsil_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->city_tehsil_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->city_tehsil_id->ViewValue = NULL;
-				}
-			}
+			$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->CurrentValue;
+			$this->city_tehsil_id->ViewValue = FormatNumber($this->city_tehsil_id->ViewValue, 0, -2, -2, -2);
 			$this->city_tehsil_id->ViewCustomAttributes = "";
 
 			// city_name
@@ -983,40 +925,13 @@ class city_edit extends city
 			$this->city_id->EditAttrs["class"] = "form-control";
 			$this->city_id->EditCustomAttributes = "";
 			$this->city_id->EditValue = $this->city_id->CurrentValue;
-			$this->city_id->CssClass = "font-weight-bold";
 			$this->city_id->ViewCustomAttributes = "";
 
 			// city_tehsil_id
+			$this->city_tehsil_id->EditAttrs["class"] = "form-control";
 			$this->city_tehsil_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->city_tehsil_id->CurrentValue));
-			if ($curVal != "")
-				$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->lookupCacheOption($curVal);
-			else
-				$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->Lookup !== NULL && is_array($this->city_tehsil_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->city_tehsil_id->ViewValue !== NULL) { // Load from cache
-				$this->city_tehsil_id->EditValue = array_values($this->city_tehsil_id->Lookup->Options);
-				if ($this->city_tehsil_id->ViewValue == "")
-					$this->city_tehsil_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`tehsil_id`" . SearchString("=", $this->city_tehsil_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->city_tehsil_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->city_tehsil_id->ViewValue = $this->city_tehsil_id->displayValue($arwrk);
-				} else {
-					$this->city_tehsil_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->city_tehsil_id->EditValue = $arwrk;
-			}
+			$this->city_tehsil_id->EditValue = HtmlEncode($this->city_tehsil_id->CurrentValue);
+			$this->city_tehsil_id->PlaceHolder = RemoveHtml($this->city_tehsil_id->caption());
 
 			// city_name
 			$this->city_name->EditAttrs["class"] = "form-control";
@@ -1068,6 +983,9 @@ class city_edit extends city
 			if (!$this->city_tehsil_id->IsDetailKey && $this->city_tehsil_id->FormValue != NULL && $this->city_tehsil_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->city_tehsil_id->caption(), $this->city_tehsil_id->RequiredErrorMessage));
 			}
+		}
+		if (!CheckInteger($this->city_tehsil_id->FormValue)) {
+			AddMessage($FormError, $this->city_tehsil_id->errorMessage());
 		}
 		if ($this->city_name->Required) {
 			if (!$this->city_name->IsDetailKey && $this->city_name->FormValue != NULL && $this->city_name->FormValue == "") {
@@ -1198,8 +1116,6 @@ class city_edit extends city
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_city_tehsil_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1220,8 +1136,6 @@ class city_edit extends city
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_city_tehsil_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class organization_delete extends organization
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'organization';
@@ -325,7 +325,6 @@ class organization_delete extends organization
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class organization_delete extends organization
 			$GLOBALS["Table"] = &$GLOBALS["organization"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'delete');
@@ -369,9 +364,6 @@ class organization_delete extends organization
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -520,9 +512,6 @@ class organization_delete extends organization
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -550,22 +539,6 @@ class organization_delete extends organization
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canDelete()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("organizationlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->org_id->setVisibility();
@@ -600,9 +573,8 @@ class organization_delete extends organization
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->org_city_id);
-
 		// Set up Breadcrumb
+
 		$this->setupBreadcrumb();
 
 		// Load key parameters
@@ -669,7 +641,7 @@ class organization_delete extends organization
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = Config("ERROR_FUNC");
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
 			} else {
 				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
 			}
@@ -720,17 +692,11 @@ class organization_delete extends organization
 			return;
 		$this->org_id->setDbValue($row['org_id']);
 		$this->org_city_id->setDbValue($row['org_city_id']);
-		if (array_key_exists('EV__org_city_id', $rs->fields)) {
-			$this->org_city_id->VirtualValue = $rs->fields('EV__org_city_id'); // Set up virtual field value
-		} else {
-			$this->org_city_id->VirtualValue = ""; // Clear value
-		}
 		$this->org_name->setDbValue($row['org_name']);
 		$this->org_head_office->setDbValue($row['org_head_office']);
 		$this->org_owner->setDbValue($row['org_owner']);
 		$this->org_contact_no->setDbValue($row['org_contact_no']);
-		$this->org_logo->Upload->DbValue = $row['org_logo'];
-		$this->org_logo->setDbValue($this->org_logo->Upload->DbValue);
+		$this->org_logo->setDbValue($row['org_logo']);
 		$this->org_bank_acc->setDbValue($row['org_bank_acc']);
 		$this->org_ntn->setDbValue($row['org_ntn']);
 		$this->org_email->setDbValue($row['org_email']);
@@ -782,33 +748,11 @@ class organization_delete extends organization
 
 			// org_id
 			$this->org_id->ViewValue = $this->org_id->CurrentValue;
-			$this->org_id->CssClass = "font-weight-bold";
 			$this->org_id->ViewCustomAttributes = "";
 
 			// org_city_id
-			if ($this->org_city_id->VirtualValue != "") {
-				$this->org_city_id->ViewValue = $this->org_city_id->VirtualValue;
-			} else {
-				$curVal = strval($this->org_city_id->CurrentValue);
-				if ($curVal != "") {
-					$this->org_city_id->ViewValue = $this->org_city_id->lookupCacheOption($curVal);
-					if ($this->org_city_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`city_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->org_city_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->org_city_id->ViewValue = $this->org_city_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->org_city_id->ViewValue = $this->org_city_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->org_city_id->ViewValue = NULL;
-				}
-			}
+			$this->org_city_id->ViewValue = $this->org_city_id->CurrentValue;
+			$this->org_city_id->ViewValue = FormatNumber($this->org_city_id->ViewValue, 0, -2, -2, -2);
 			$this->org_city_id->ViewCustomAttributes = "";
 
 			// org_name
@@ -828,14 +772,7 @@ class organization_delete extends organization
 			$this->org_contact_no->ViewCustomAttributes = "";
 
 			// org_logo
-			if (!EmptyValue($this->org_logo->Upload->DbValue)) {
-				$this->org_logo->ImageWidth = 200;
-				$this->org_logo->ImageHeight = 0;
-				$this->org_logo->ImageAlt = $this->org_logo->alt();
-				$this->org_logo->ViewValue = $this->org_logo->Upload->DbValue;
-			} else {
-				$this->org_logo->ViewValue = "";
-			}
+			$this->org_logo->ViewValue = $this->org_logo->CurrentValue;
 			$this->org_logo->ViewCustomAttributes = "";
 
 			// org_bank_acc
@@ -886,22 +823,8 @@ class organization_delete extends organization
 
 			// org_logo
 			$this->org_logo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->org_logo->Upload->DbValue)) {
-				$this->org_logo->HrefValue = GetFileUploadUrl($this->org_logo, $this->org_logo->htmlDecode($this->org_logo->Upload->DbValue)); // Add prefix/suffix
-				$this->org_logo->LinkAttrs["target"] = ""; // Add target
-				if ($this->isExport())
-					$this->org_logo->HrefValue = FullUrl($this->org_logo->HrefValue, "href");
-			} else {
-				$this->org_logo->HrefValue = "";
-			}
-			$this->org_logo->ExportHrefValue = $this->org_logo->UploadPath . $this->org_logo->Upload->DbValue;
+			$this->org_logo->HrefValue = "";
 			$this->org_logo->TooltipValue = "";
-			if ($this->org_logo->UseColorbox) {
-				if (EmptyValue($this->org_logo->TooltipValue))
-					$this->org_logo->LinkAttrs["title"] = $Language->phrase("ViewImageGallery");
-				$this->org_logo->LinkAttrs["data-rel"] = "organization_x_org_logo";
-				$this->org_logo->LinkAttrs->appendClass("ew-lightbox");
-			}
 
 			// org_bank_acc
 			$this->org_bank_acc->LinkCustomAttributes = "";
@@ -933,10 +856,6 @@ class organization_delete extends organization
 	protected function deleteRows()
 	{
 		global $Language, $Security;
-		if (!$Security->canDelete()) {
-			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
-			return FALSE;
-		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = $this->getConnection();
@@ -1044,8 +963,6 @@ class organization_delete extends organization
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_org_city_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1066,8 +983,6 @@ class organization_delete extends organization
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_org_city_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();

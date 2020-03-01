@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 // Session
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -23,7 +23,6 @@ $division_add = new division_add();
 $division_add->run();
 
 // Setup login status
-SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -61,6 +60,9 @@ loadjs.ready("head", function() {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $division_add->division_state_id->caption(), $division_add->division_state_id->RequiredErrorMessage)) ?>");
 			<?php } ?>
+				elm = this.getElements("x" + infix + "_division_state_id");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "<?php echo JsEncode($division_add->division_state_id->errorMessage()) ?>");
 			<?php if ($division_add->division_name->Required) { ?>
 				elm = this.getElements("x" + infix + "_division_name");
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -99,8 +101,6 @@ loadjs.ready("head", function() {
 	fdivisionadd.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
 
 	// Dynamic selection lists
-	fdivisionadd.lists["x_division_state_id"] = <?php echo $division_add->division_state_id->Lookup->toClientList($division_add) ?>;
-	fdivisionadd.lists["x_division_state_id"].options = <?php echo JsonEncode($division_add->division_state_id->lookupOptions()) ?>;
 	loadjs.done("fdivisionadd");
 });
 </script>
@@ -129,23 +129,7 @@ $division_add->showMessage();
 		<label id="elh_division_division_state_id" for="x_division_state_id" class="<?php echo $division_add->LeftColumnClass ?>"><?php echo $division_add->division_state_id->caption() ?><?php echo $division_add->division_state_id->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $division_add->RightColumnClass ?>"><div <?php echo $division_add->division_state_id->cellAttributes() ?>>
 <span id="el_division_division_state_id">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($division_add->division_state_id->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $division_add->division_state_id->ViewValue ?></button>
-		<div id="dsl_x_division_state_id" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $division_add->division_state_id->radioButtonListHtml(TRUE, "x_division_state_id") ?>
-			</div><!-- /.ew-items -->
-		</div><!-- /.dropdown-menu -->
-		<div id="tp_x_division_state_id" class="ew-template"><input type="radio" class="custom-control-input" data-table="division" data-field="x_division_state_id" data-value-separator="<?php echo $division_add->division_state_id->displayValueSeparatorAttribute() ?>" name="x_division_state_id" id="x_division_state_id" value="{value}"<?php echo $division_add->division_state_id->editAttributes() ?>></div>
-	</div><!-- /.btn-group -->
-	<?php if (!$division_add->division_state_id->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fas fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list -->
-<?php echo $division_add->division_state_id->Lookup->getParamTag($division_add, "p_x_division_state_id") ?>
+<input type="text" data-table="division" data-field="x_division_state_id" name="x_division_state_id" id="x_division_state_id" size="30" maxlength="12" placeholder="<?php echo HtmlEncode($division_add->division_state_id->getPlaceHolder()) ?>" value="<?php echo $division_add->division_state_id->EditValue ?>"<?php echo $division_add->division_state_id->editAttributes() ?>>
 </span>
 <?php echo $division_add->division_state_id->CustomMsg ?></div></div>
 	</div>

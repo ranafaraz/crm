@@ -1,5 +1,5 @@
 <?php
-namespace PHPMaker2020\dexdevs_crm;
+namespace PHPMaker2020\project1;
 
 /**
  * Page class
@@ -11,7 +11,7 @@ class acc_transaction_edit extends acc_transaction
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "{95D902CB-0C6D-412B-B939-09A42C7A8FBF}";
+	public $ProjectID = "{5525D2B6-89E2-4D25-84CF-86BD784D9909}";
 
 	// Table name
 	public $TableName = 'acc_transaction';
@@ -325,7 +325,6 @@ class acc_transaction_edit extends acc_transaction
 	public function __construct()
 	{
 		global $Language, $DashboardReport;
-		global $UserTable;
 
 		// Check token
 		$this->CheckToken = Config("CHECK_TOKEN");
@@ -347,10 +346,6 @@ class acc_transaction_edit extends acc_transaction
 			$GLOBALS["Table"] = &$GLOBALS["acc_transaction"];
 		}
 
-		// Table object (user)
-		if (!isset($GLOBALS['user']))
-			$GLOBALS['user'] = new user();
-
 		// Page ID (for backward compatibility only)
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'edit');
@@ -369,9 +364,6 @@ class acc_transaction_edit extends acc_transaction
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = $this->getConnection();
-
-		// User table object (user)
-		$UserTable = $UserTable ?: new user();
 	}
 
 	// Terminate page
@@ -548,9 +540,6 @@ class acc_transaction_edit extends acc_transaction
 		$lookup = $lookupField->Lookup;
 		if ($lookup === NULL)
 			return FALSE;
-		$tbl = $lookup->getTable();
-		if (!$Security->allowLookup(Config("PROJECT_ID") . $tbl->TableName)) // Lookup permission
-			return FALSE;
 
 		// Get lookup parameters
 		$lookupType = Post("ajax", "unknown");
@@ -609,9 +598,6 @@ class acc_transaction_edit extends acc_transaction
 
 		// Check security for API request
 		If (ValidApiRequest()) {
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel(Config("PROJECT_ID") . $this->TableName);
-			if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
 			return TRUE;
 		}
 		return FALSE;
@@ -640,22 +626,6 @@ class acc_transaction_edit extends acc_transaction
 		// Security
 		if (!$this->setupApiRequest()) {
 			$Security = new AdvancedSecurity();
-			if (!$Security->isLoggedIn())
-				$Security->autoLogin();
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loading();
-			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
-			if ($Security->isLoggedIn())
-				$Security->TablePermission_Loaded();
-			if (!$Security->canEdit()) {
-				$Security->saveLastUrl();
-				$this->setFailureMessage(DeniedMessage()); // Set no permission
-				if ($Security->canList())
-					$this->terminate(GetUrl("acc_transactionlist.php"));
-				else
-					$this->terminate(GetUrl("login.php"));
-				return;
-			}
 		}
 
 		// Create form object
@@ -688,10 +658,8 @@ class acc_transaction_edit extends acc_transaction
 		$this->createToken();
 
 		// Set up lookup cache
-		$this->setupLookupOptions($this->acc_trans_branch_id);
-		$this->setupLookupOptions($this->acc_trans_acc_head_id);
-
 		// Check modal
+
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
@@ -907,11 +875,6 @@ class acc_transaction_edit extends acc_transaction
 		$this->acc_trans_id->setDbValue($row['acc_trans_id']);
 		$this->acc_trans_branch_id->setDbValue($row['acc_trans_branch_id']);
 		$this->acc_trans_acc_head_id->setDbValue($row['acc_trans_acc_head_id']);
-		if (array_key_exists('EV__acc_trans_acc_head_id', $rs->fields)) {
-			$this->acc_trans_acc_head_id->VirtualValue = $rs->fields('EV__acc_trans_acc_head_id'); // Set up virtual field value
-		} else {
-			$this->acc_trans_acc_head_id->VirtualValue = ""; // Clear value
-		}
 		$this->acc_trans_narration->setDbValue($row['acc_trans_narration']);
 		$this->acc_trans_amount->setDbValue($row['acc_trans_amount']);
 		$this->acc_trans_date->setDbValue($row['acc_trans_date']);
@@ -975,55 +938,16 @@ class acc_transaction_edit extends acc_transaction
 
 			// acc_trans_id
 			$this->acc_trans_id->ViewValue = $this->acc_trans_id->CurrentValue;
-			$this->acc_trans_id->CssClass = "font-weight-bold";
 			$this->acc_trans_id->ViewCustomAttributes = "";
 
 			// acc_trans_branch_id
-			$curVal = strval($this->acc_trans_branch_id->CurrentValue);
-			if ($curVal != "") {
-				$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->lookupCacheOption($curVal);
-				if ($this->acc_trans_branch_id->ViewValue === NULL) { // Lookup from database
-					$filterWrk = "`branch_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-					$sqlWrk = $this->acc_trans_branch_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-					$rswrk = Conn()->execute($sqlWrk);
-					if ($rswrk && !$rswrk->EOF) { // Lookup values found
-						$arwrk = [];
-						$arwrk[1] = $rswrk->fields('df');
-						$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->displayValue($arwrk);
-						$rswrk->Close();
-					} else {
-						$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->CurrentValue;
-					}
-				}
-			} else {
-				$this->acc_trans_branch_id->ViewValue = NULL;
-			}
+			$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->CurrentValue;
+			$this->acc_trans_branch_id->ViewValue = FormatNumber($this->acc_trans_branch_id->ViewValue, 0, -2, -2, -2);
 			$this->acc_trans_branch_id->ViewCustomAttributes = "";
 
 			// acc_trans_acc_head_id
-			if ($this->acc_trans_acc_head_id->VirtualValue != "") {
-				$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->VirtualValue;
-			} else {
-				$curVal = strval($this->acc_trans_acc_head_id->CurrentValue);
-				if ($curVal != "") {
-					$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->lookupCacheOption($curVal);
-					if ($this->acc_trans_acc_head_id->ViewValue === NULL) { // Lookup from database
-						$filterWrk = "`acc_head_id`" . SearchString("=", $curVal, DATATYPE_NUMBER, "");
-						$sqlWrk = $this->acc_trans_acc_head_id->Lookup->getSql(FALSE, $filterWrk, '', $this);
-						$rswrk = Conn()->execute($sqlWrk);
-						if ($rswrk && !$rswrk->EOF) { // Lookup values found
-							$arwrk = [];
-							$arwrk[1] = $rswrk->fields('df');
-							$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->displayValue($arwrk);
-							$rswrk->Close();
-						} else {
-							$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->CurrentValue;
-						}
-					}
-				} else {
-					$this->acc_trans_acc_head_id->ViewValue = NULL;
-				}
-			}
+			$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->CurrentValue;
+			$this->acc_trans_acc_head_id->ViewValue = FormatNumber($this->acc_trans_acc_head_id->ViewValue, 0, -2, -2, -2);
 			$this->acc_trans_acc_head_id->ViewCustomAttributes = "";
 
 			// acc_trans_narration
@@ -1075,72 +999,19 @@ class acc_transaction_edit extends acc_transaction
 			$this->acc_trans_id->EditAttrs["class"] = "form-control";
 			$this->acc_trans_id->EditCustomAttributes = "";
 			$this->acc_trans_id->EditValue = $this->acc_trans_id->CurrentValue;
-			$this->acc_trans_id->CssClass = "font-weight-bold";
 			$this->acc_trans_id->ViewCustomAttributes = "";
 
 			// acc_trans_branch_id
+			$this->acc_trans_branch_id->EditAttrs["class"] = "form-control";
 			$this->acc_trans_branch_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->acc_trans_branch_id->CurrentValue));
-			if ($curVal != "")
-				$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->lookupCacheOption($curVal);
-			else
-				$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->Lookup !== NULL && is_array($this->acc_trans_branch_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->acc_trans_branch_id->ViewValue !== NULL) { // Load from cache
-				$this->acc_trans_branch_id->EditValue = array_values($this->acc_trans_branch_id->Lookup->Options);
-				if ($this->acc_trans_branch_id->ViewValue == "")
-					$this->acc_trans_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`branch_id`" . SearchString("=", $this->acc_trans_branch_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->acc_trans_branch_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->acc_trans_branch_id->ViewValue = $this->acc_trans_branch_id->displayValue($arwrk);
-				} else {
-					$this->acc_trans_branch_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->acc_trans_branch_id->EditValue = $arwrk;
-			}
+			$this->acc_trans_branch_id->EditValue = HtmlEncode($this->acc_trans_branch_id->CurrentValue);
+			$this->acc_trans_branch_id->PlaceHolder = RemoveHtml($this->acc_trans_branch_id->caption());
 
 			// acc_trans_acc_head_id
+			$this->acc_trans_acc_head_id->EditAttrs["class"] = "form-control";
 			$this->acc_trans_acc_head_id->EditCustomAttributes = "";
-			$curVal = trim(strval($this->acc_trans_acc_head_id->CurrentValue));
-			if ($curVal != "")
-				$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->lookupCacheOption($curVal);
-			else
-				$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->Lookup !== NULL && is_array($this->acc_trans_acc_head_id->Lookup->Options) ? $curVal : NULL;
-			if ($this->acc_trans_acc_head_id->ViewValue !== NULL) { // Load from cache
-				$this->acc_trans_acc_head_id->EditValue = array_values($this->acc_trans_acc_head_id->Lookup->Options);
-				if ($this->acc_trans_acc_head_id->ViewValue == "")
-					$this->acc_trans_acc_head_id->ViewValue = $Language->phrase("PleaseSelect");
-			} else { // Lookup from database
-				if ($curVal == "") {
-					$filterWrk = "0=1";
-				} else {
-					$filterWrk = "`acc_head_id`" . SearchString("=", $this->acc_trans_acc_head_id->CurrentValue, DATATYPE_NUMBER, "");
-				}
-				$sqlWrk = $this->acc_trans_acc_head_id->Lookup->getSql(TRUE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = [];
-					$arwrk[1] = HtmlEncode($rswrk->fields('df'));
-					$this->acc_trans_acc_head_id->ViewValue = $this->acc_trans_acc_head_id->displayValue($arwrk);
-				} else {
-					$this->acc_trans_acc_head_id->ViewValue = $Language->phrase("PleaseSelect");
-				}
-				$arwrk = $rswrk ? $rswrk->getRows() : [];
-				if ($rswrk)
-					$rswrk->close();
-				$this->acc_trans_acc_head_id->EditValue = $arwrk;
-			}
+			$this->acc_trans_acc_head_id->EditValue = HtmlEncode($this->acc_trans_acc_head_id->CurrentValue);
+			$this->acc_trans_acc_head_id->PlaceHolder = RemoveHtml($this->acc_trans_acc_head_id->caption());
 
 			// acc_trans_narration
 			$this->acc_trans_narration->EditAttrs["class"] = "form-control";
@@ -1215,10 +1086,16 @@ class acc_transaction_edit extends acc_transaction
 				AddMessage($FormError, str_replace("%s", $this->acc_trans_branch_id->caption(), $this->acc_trans_branch_id->RequiredErrorMessage));
 			}
 		}
+		if (!CheckInteger($this->acc_trans_branch_id->FormValue)) {
+			AddMessage($FormError, $this->acc_trans_branch_id->errorMessage());
+		}
 		if ($this->acc_trans_acc_head_id->Required) {
 			if (!$this->acc_trans_acc_head_id->IsDetailKey && $this->acc_trans_acc_head_id->FormValue != NULL && $this->acc_trans_acc_head_id->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->acc_trans_acc_head_id->caption(), $this->acc_trans_acc_head_id->RequiredErrorMessage));
 			}
+		}
+		if (!CheckInteger($this->acc_trans_acc_head_id->FormValue)) {
+			AddMessage($FormError, $this->acc_trans_acc_head_id->errorMessage());
 		}
 		if ($this->acc_trans_narration->Required) {
 			if (!$this->acc_trans_narration->IsDetailKey && $this->acc_trans_narration->FormValue != NULL && $this->acc_trans_narration->FormValue == "") {
@@ -1374,10 +1251,6 @@ class acc_transaction_edit extends acc_transaction
 
 			// Set up lookup SQL and connection
 			switch ($fld->FieldVar) {
-				case "x_acc_trans_branch_id":
-					break;
-				case "x_acc_trans_acc_head_id":
-					break;
 				default:
 					$lookupFilter = "";
 					break;
@@ -1398,10 +1271,6 @@ class acc_transaction_edit extends acc_transaction
 
 					// Format the field values
 					switch ($fld->FieldVar) {
-						case "x_acc_trans_branch_id":
-							break;
-						case "x_acc_trans_acc_head_id":
-							break;
 					}
 					$ar[strval($row[0])] = $row;
 					$rs->moveNext();
