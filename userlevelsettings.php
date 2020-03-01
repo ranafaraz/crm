@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * PHPMaker 2020 user level settings
+ */
+namespace PHPMaker2020\dexdevs_crm;
+
+// User level info
+$USER_LEVELS = [["-2","Anonymous"]];
+
+// User level priv info
+$USER_LEVEL_PRIVS = [["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}acc_head","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}acc_nature","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}acc_transaction","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}branch","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}business","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}business_nature","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}business_status","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}business_type","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}city","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}country","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}cus_support","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}designation","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}district","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}division","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}employees","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}followup","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}followup_no","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}invoices","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}organization","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}quotation","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}reference_letter","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}referral","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}services","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}services_availed_by_customer","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}sms_api","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}sms_log","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}sms_package","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}sms_template","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}state","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}tehsil","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}user","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}user_type","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}userlevelpermissions","-2","0"],
+	["{95D902CB-0C6D-412B-B939-09A42C7A8FBF}userlevels","-2","0"]];
+
+// User level table info
+$USER_LEVEL_TABLES = [];
